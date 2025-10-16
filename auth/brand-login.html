@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - تسجيل الدخول للعلامات التجارية</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5b13ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#161022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }.form-input.invalid {
+            border-color: #e53e3e;}
+        .form-input.valid {
+            border-color: #38a169;}
+        .error-message {
+            color: #e53e3e;
+            display: none;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .form-input.invalid ~ .error-message {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="flex flex-col min-h-screen">
+<header class="border-b border-primary/20 dark:border-primary/30">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-20">
+<div class="flex items-center gap-4 text-slate-800 dark:text-slate-200">
+<div class="w-8 h-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold">UGC Maroc</h1>
+</div>
+<div class="flex items-center gap-2">
+<a class="px-4 py-2 text-sm font-bold text-slate-800 dark:text-slate-200 bg-primary/10 dark:bg-primary/20 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" href="/auth/creator-login.html">تسجيل دخول المبدعين</a>
+<a class="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors" href="/auth/brand-signup.html">تسجيل</a>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="w-full max-w-md space-y-6">
+<div class="text-center">
+<h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">أهلاً بعودتك!</h2>
+<p class="mt-2 text-base text-slate-600 dark:text-slate-400">سجل الدخول لإدارة حملاتك والوصول إلى أفضل منشئي المحتوى في المغرب.</p>
+</div>
+<div class="bg-background-light dark:bg-background-dark p-8 shadow-xl rounded-xl border border-primary/10 dark:border-primary/20">
+<div class="hidden p-4 mb-4 text-sm rounded-lg" id="alert-message" role="alert">
+<span class="font-medium" id="alert-text"></span>
+</div>
+<form class="space-y-6" id="login-form" novalidate="">
+<div>
+<label class="sr-only" for="email-address">البريد الإلكتروني/اسم المستخدم</label>
+<input autocomplete="email" class="form-input appearance-none rounded-lg relative block w-full px-3 py-4 border border-slate-300 dark:border-slate-700 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white bg-background-light dark:bg-background-dark focus:outline-none focus:ring-primary focus:border-primary focus:z-10 text-base" id="email-address" name="email" placeholder="البريد الإلكتروني/اسم المستخدم" required="" type="email"/>
+<p class="error-message">الرجاء إدخال بريد إلكتروني صحيح.</p>
+</div>
+<div class="relative">
+<label class="sr-only" for="password">كلمة المرور</label>
+<input autocomplete="current-password" class="form-input appearance-none rounded-lg relative block w-full px-3 py-4 border border-slate-300 dark:border-slate-700 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white bg-background-light dark:bg-background-dark focus:outline-none focus:ring-primary focus:border-primary focus:z-10 text-base" id="password" name="password" placeholder="كلمة المرور" required="" type="password"/>
+<button class="absolute inset-y-0 left-0 px-3 flex items-center text-slate-500 dark:text-slate-400" id="toggle-password" type="button">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+<p class="error-message">كلمة المرور مطلوبة.</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<input class="h-4 w-4 text-primary bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary rounded" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="mr-2 block text-sm text-slate-900 dark:text-slate-300" for="remember-me">تذكرني</label>
+</div>
+<div class="text-sm">
+<a class="font-medium text-primary hover:text-primary/90" href="/auth/forgot-password.html">نسيت كلمة المرور؟</a>
+</div>
+</div>
+<div>
+<button class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed" id="login-button" type="submit">
+<span class="button-text">تسجيل الدخول</span>
+<span class="button-loader hidden absolute inset-0 flex items-center justify-center">
+<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+</span>
+</button>
+</div>
+</form>
+<div class="mt-6 text-center">
+<p class="text-sm text-slate-600 dark:text-slate-400">
+                        ليس لديك حساب؟
+                        <a class="font-medium text-primary hover:text-primary/90" href="/auth/brand-signup.html">سجل كعلامة تجارية</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+    const loginForm = document.getElementById('login-form');
+    const emailInput = document.getElementById('email-address');
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('toggle-password');
+    const loginButton = document.getElementById('login-button');
+    const buttonText = loginButton.querySelector('.button-text');
+    const buttonLoader = loginButton.querySelector('.button-loader');
+    const alertMessage = document.getElementById('alert-message');
+    const alertText = document.getElementById('alert-text');
+    // Password visibility toggle
+    togglePassword.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        togglePassword.querySelector('.material-symbols-outlined').textContent = type === 'password' ? 'visibility_off' : 'visibility';
+    });
+    // Real-time validation
+    const validateInput = (input) => {
+        if (input.type === 'email') {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(input.value) && input.value !== '') {
+                input.classList.add('invalid');
+                input.classList.remove('valid');
+            } else if (input.value !== '') {
+                input.classList.add('valid');
+                input.classList.remove('invalid');
+            } else {
+                input.classList.remove('invalid', 'valid');
+            }
+        }
+        if (input.type === 'password') {
+             if (input.value.length < 1 && input.value !== '') {
+                input.classList.add('invalid');
+                input.classList.remove('valid');
+            } else if (input.value !== '') {
+                input.classList.add('valid');
+                input.classList.remove('invalid');
+            } else {
+                 input.classList.remove('invalid', 'valid');
+            }
+        }
+    };
+    emailInput.addEventListener('input', () => validateInput(emailInput));
+    passwordInput.addEventListener('input', () => validateInput(passwordInput));
+    // Form submission
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        
+        if (!email || !password) {
+            showAlert('الرجاء إدخال البريد الإلكتروني وكلمة المرور.', 'error');
+            return;
+        }
+        
+        setLoading(true);
+        
+        try {
+            const result = await window.auth.loginUser(email, password);
+            
+            if (result.success) {
+                showAlert('تم تسجيل الدخول بنجاح!', 'success');
+                
+                // Rediriger vers le dashboard brand après 1 seconde
+                setTimeout(() => {
+                    window.location.href = '/brand/brand_dashboard_-_variant_2.html';
+                }, 1000);
+            } else {
+                showAlert(result.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة.', 'error');
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error('Erreur login:', error);
+            showAlert('حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.', 'error');
+            setLoading(false);
+        }
+    });
+    function setLoading(isLoading) {
+        if (isLoading) {
+            loginButton.disabled = true;
+            buttonText.classList.add('invisible');
+            buttonLoader.classList.remove('hidden');
+        } else {
+            loginButton.disabled = false;
+            buttonText.classList.remove('invisible');
+            buttonLoader.classList.add('hidden');
+        }
+    }
+    function showAlert(message, type) {
+        alertText.textContent = message;
+        alertMessage.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'dark:bg-green-900', 'dark:text-green-200', 'bg-red-100', 'text-red-800', 'dark:bg-red-900', 'dark:text-red-200');
+        if (type === 'success') {
+            alertMessage.classList.add('bg-green-100', 'text-green-800', 'dark:bg-green-900', 'dark:text-green-200');
+        } else if (type === 'error') {
+            alertMessage.classList.add('bg-red-100', 'text-red-800', 'dark:bg-red-900', 'dark:text-red-200');
+        }
+    }
+</script>
+
+</body></html>
+
+<!-- ⚙️ Scripts UGC Maroc -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/main.js" defer></script>

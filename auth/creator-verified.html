@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>UGC Maroc - تم تفعيل حسابك!</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#5b13ec",
+            "background-light": "#f6f6f8",
+            "background-dark": "#161022",
+          },
+          fontFamily: {
+            display: ["Manrope"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #5b13ec;
+      animation: confetti-fall 3s linear infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(91, 19, 236, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(91, 19, 236, 0.8); }
+    }
+    .pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+  <div class="flex min-h-screen flex-col items-center justify-center p-4 relative overflow-hidden">
+    <!-- Confetti Elements -->
+    <div id="confetti-container"></div>
+
+    <div class="w-full max-w-2xl relative z-10">
+      <!-- Logo -->
+      <div class="mb-8 flex justify-center">
+        <div class="text-primary">
+          <svg class="h-20 w-20" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Main Card -->
+      <div class="rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-10 shadow-2xl ring-1 ring-gray-900/5 dark:ring-white/10">
+        <!-- Success Icon -->
+        <div class="flex justify-center mb-6">
+          <div class="rounded-full bg-green-100 dark:bg-green-900/30 p-8 pulse-glow">
+            <svg class="h-20 w-20 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-center text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
+          🎉 تم تفعيل حسابك بنجاح!
+        </h1>
+
+        <!-- Message -->
+        <div class="text-center space-y-4 mb-8">
+          <p class="text-xl text-gray-600 dark:text-gray-300">
+            مرحبًا بك في عائلة UGC Maroc!
+          </p>
+          <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+            أنت الآن جزء من مجتمع المبدعين المغاربة المتميزين. استكشف الحملات، تواصل مع العلامات التجارية، وابدأ رحلتك في عالم المحتوى الرقمي.
+          </p>
+        </div>
+
+        <!-- Features List -->
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 mb-8">
+          <h3 class="font-bold text-gray-900 dark:text-white mb-4">ما يمكنك فعله الآن:</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3">
+              <svg class="h-6 w-6 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-gray-700 dark:text-gray-300">تصفح مئات الحملات المتاحة من علامات تجارية موثوقة</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="h-6 w-6 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-gray-700 dark:text-gray-300">أكمل ملفك الشخصي واعرض مهاراتك الإبداعية</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="h-6 w-6 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-gray-700 dark:text-gray-300">ابدأ في كسب المال من محتواك الإبداعي</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- CTA Button -->
+        <a 
+          href="/creator/creator_dashboard_1.html"
+          class="block w-full text-center rounded-lg bg-gradient-to-r from-primary to-purple-600 px-8 py-4 text-lg font-bold text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+          ابدأ رحلتك الآن 🚀
+        </a>
+
+        <!-- Secondary Link -->
+        <div class="text-center mt-6">
+          <a href="/auth/creator-login.html" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">
+            أو قم بتسجيل الدخول
+          </a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+        نحن هنا لدعمك! <a href="mailto:support@ugcmaroc.com" class="text-primary hover:underline">تواصل معنا</a> إذا كنت بحاجة لأي مساعدة.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Create confetti animation
+    function createConfetti() {
+      const container = document.getElementById('confetti-container');
+      const colors = ['#5b13ec', '#ec4899', '#8b5cf6', '#06b6d4', '#10b981'];
+      
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 3 + 's';
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        container.appendChild(confetti);
+      }
+    }
+
+    // Run confetti on page load
+    window.addEventListener('load', createConfetti);
+  </script>
+</body>
+</html>

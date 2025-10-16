@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تفاصيل الحملة - UGC Maroc</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5b13ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#161022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .dark .status-pending {
+            background-color: #78350f;
+            color: #fef3c7;
+        }
+        .status-accepted {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .dark .status-accepted {
+            background-color: #064e3b;
+            color: #d1fae5;
+        }
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .dark .status-rejected {
+            background-color: #7f1d1d;
+            color: #fee2e2;
+        }
+        .rating .material-symbols-outlined {
+            font-size: 20px;
+            cursor: pointer;
+            color: #d1d5db;
+        }
+        .rating .material-symbols-outlined.text-yellow-400 {
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="flex flex-col min-h-screen">
+<header class="bg-white dark:bg-background-dark/50 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm sticky top-0 z-50">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-4">
+<div class="text-primary size-7">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">UGC Maroc</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-primary" href="#">الحملات</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">المبدعون</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">التقارير</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">المساعدة</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBsvICWxbJOFbvPfCeg6k6FwGwsPFiyfhRQF7jiTI3uoo5S7Yh_6Ep8dSRJ2Rmr7GMud9lcZ2q1B6blVxgdPyhO9BFky9ChV2MppR-LX1upwAk0YRsY4AoiGI6t4gidFeA1IgoLEy7poJzkWFZA_qW-tvrfEaLJEUS2PlqBE-jP_0aooM7XveVANMKvj_6ZFtxYaKtZWEkhEaYqj0u-A3xE-A2YKTkSYpaM_BYNeJj6DEeqjj5u1llxbgBn_SfXhdarL4ADdAzXq0s");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="space-y-8">
+<div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h2 class="text-3xl font-bold text-gray-900 dark:text-white">حملة ترويجية لمنتج جديد</h2>
+<div class="relative inline-block text-left">
+<div>
+<button aria-expanded="true" aria-haspopup="true" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" id="menu-button" type="button">
+<span>مفتوحة</span>
+<span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+<p class="text-gray-500 dark:text-gray-400">إدارة وتتبع حملتك الترويجية لمنتجك الجديد</p>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button class="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-yellow-500/10 dark:bg-yellow-500/20 text-yellow-500 font-semibold text-sm hover:bg-yellow-500/20 dark:hover:bg-yellow-500/30 transition-colors">
+<span class="material-symbols-outlined text-base">pause</span>
+<span>إيقاف مؤقت</span>
+</button>
+<button class="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-red-500/10 dark:bg-red-500/20 text-red-500 font-semibold text-sm hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-colors">
+<span class="material-symbols-outlined text-base">close_small</span>
+<span>إغلاق الحملة</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 space-y-8">
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">قوالب الرد السريع</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="accept-template">قالب القبول</label>
+<textarea class="mt-1 w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary" id="accept-template" rows="3">تهانينا! تم قبول تقديمك. نتطلع لرؤية المحتوى الرائع الذي ستقدمه.</textarea>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="reject-template">قالب الرفض</label>
+<textarea class="mt-1 w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-primary focus:border-primary" id="reject-template" rows="3">شكراً لتقديمك. للأسف، لم يتم اختيار عملك هذه المرة. نتمنى لك حظاً أوفر في الحملات القادمة.</textarea>
+</div>
+<button class="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary text-white font-semibold text-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-base">save</span>
+<span>حفظ القوالب</span>
+</button>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+<div class="p-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white">التقديمات (3)</h3>
+<div class="flex items-center gap-2">
+<label class="text-sm font-medium text-gray-600 dark:text-gray-300" for="sort-by">تصنيف حسب:</label>
+<select class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:ring-primary focus:border-primary" id="sort-by">
+<option value="submissionDate">تاريخ التقديم</option>
+<option value="ratingByBrand">تقييم العلامة التجارية</option>
+</select>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="min-w-full text-sm text-left">
+<thead class="bg-gray-50 dark:bg-white/5 text-xs text-gray-700 dark:text-gray-400 uppercase">
+<tr>
+<th class="p-4" scope="col"><input class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary-darker dark:bg-gray-700" type="checkbox"/></th>
+<th class="px-6 py-3" scope="col">المبدع</th>
+<th class="px-6 py-3" scope="col">الحالة</th>
+<th class="px-6 py-3" scope="col">الفيديو</th>
+<th class="px-6 py-3" scope="col">تقييم</th>
+<th class="px-6 py-3 text-center" scope="col">إجراءات</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-t border-gray-200 dark:border-gray-800">
+<td class="p-4"><input class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary-darker dark:bg-gray-700" type="checkbox"/></td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">ليلى</td>
+<td class="px-6 py-4"><span class="status-badge status-pending">معلق</span></td>
+<td class="px-6 py-4"><button class="text-primary font-semibold hover:underline">عرض الفيديو</button></td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">لا يوجد</td>
+<td class="px-6 py-4 text-center space-x-2 space-x-reverse">
+<button class="p-1 text-green-500 rounded-full hover:bg-green-500/10 transition-colors"><span class="material-symbols-outlined text-lg">check_circle</span></button>
+<button class="p-1 text-red-500 rounded-full hover:bg-red-500/10 transition-colors"><span class="material-symbols-outlined text-lg">cancel</span></button>
+<button class="p-1 text-primary rounded-full hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-lg">chat</span></button>
+</td>
+</tr>
+<tr class="border-t border-gray-200 dark:border-gray-800">
+<td class="p-4"><input class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary-darker dark:bg-gray-700" type="checkbox"/></td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">أحمد</td>
+<td class="px-6 py-4"><span class="status-badge status-accepted">مقبول</span></td>
+<td class="px-6 py-4"><button class="text-primary font-semibold hover:underline">عرض الفيديو</button></td>
+<td class="px-6 py-4 text-gray-600 dark:text-gray-300 font-semibold">4.5/5</td>
+<td class="px-6 py-4 text-center space-x-2 space-x-reverse">
+<button class="p-1 text-primary rounded-full hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-lg">chat</span></button>
+</td>
+</tr>
+<tr class="border-t border-gray-200 dark:border-gray-800">
+<td class="p-4"><input class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary-darker dark:bg-gray-700" type="checkbox"/></td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">فاطمة</td>
+<td class="px-6 py-4"><span class="status-badge status-rejected">مرفوض</span></td>
+<td class="px-6 py-4"><button class="text-primary font-semibold hover:underline">عرض الفيديو</button></td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">لا يوجد</td>
+<td class="px-6 py-4 text-center space-x-2 space-x-reverse">
+<button class="p-1 text-primary rounded-full hover:bg-primary/10 transition-colors"><span class="material-symbols-outlined text-lg">chat</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">معرض المرفقات المشتركة</h3>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+<div class="relative group aspect-square">
+<img alt="مرفق 1" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiib26AGB0MCKLkwUOBJwio30NRVf38ftk2BhlhhlyFF4tusxsQiEuPazMMBDJ8gulyfg-qvMOnoCOvCAuE3jXNjzaUGF2zPd-Csa-VS742S099AQn8ZXcoFf7uj_rDToaZ5klq1WAKDpPEG-JpIQu8xuBHZu9Py1nHHVsn5DUs1ps6nwbDe9-B9JxvhXGqpWN08hsWDWUq6gD477DUBjLa5rdUH73Vmti4G5-lqikHihAr-i335OGGv0kktk3BKhE2ZiYJklVVnA"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-white"><span class="material-symbols-outlined">download</span></button>
+</div>
+</div>
+<div class="relative group aspect-square">
+<img alt="مرفق 2" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANRbpsZSALwFzBCNJCgbuK9n_AB5_R4B3mBVRuljGSfcQe-R1nsgEjsq9Tw2g_zE5bo3tqYjBkD5zDzPqzvT9GBqDiX0EN35Va0YP7nsmbIXV_g4bWEP-QWB2JILp_e8FNFKNUn9BR0v3uV5HZ9OPIDZHAG2102V8XQOUTa3XKqaTWMeCgLw4xi1Iu9_trkqy-R2sO1sDjO_pqAK9NaCxwVZSUxIF01yHE9eGm4vGXuFvxyJu9E4ydWK4jpFQYd8v4uy2Tpt7qxHk"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-white"><span class="material-symbols-outlined">download</span></button>
+</div>
+</div>
+<div class="relative group aspect-square">
+<div class="w-full h-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-4xl">add_photo_alternate</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-8">
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">سجل تقييمات المبدع: <span class="text-primary">أحمد</span></h3>
+<div class="space-y-4">
+<div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1 rating">
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400 text-opacity-50">star_half</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400">18 مايو 2024</p>
+</div>
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">"عمل رائع! الفيديو تجاوز توقعاتنا. جودة عالية وإبداع."</p>
+</div>
+<div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1 rating">
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined text-yellow-400">star</span>
+<span class="material-symbols-outlined">star</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400">10 أبريل 2024</p>
+</div>
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">"تسليم في الوقت المحدد وتواصل ممتاز."</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">تحليلات الحملة</h3>
+<div class="grid grid-cols-2 gap-4 text-center">
+<div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+<p class="text-2xl font-bold text-primary">3</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">إجمالي التقديمات</p>
+</div>
+<div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+<p class="text-2xl font-bold text-primary">4.5/5</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">متوسط التقييم</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">سجل النشاط</h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<div class="bg-green-100 dark:bg-green-900 rounded-full p-1.5 flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-sm text-green-600 dark:text-green-300">check</span>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-800 dark:text-gray-200">تم قبول تقديم <span class="font-bold">أحمد</span></p>
+<p class="text-xs text-gray-500 dark:text-gray-400">18 مايو 2024, 10:30 صباحًا</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="bg-red-100 dark:bg-red-900 rounded-full p-1.5 flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-sm text-red-600 dark:text-red-300">close</span>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-800 dark:text-gray-200">تم رفض تقديم <span class="font-bold">فاطمة</span></p>
+<p class="text-xs text-gray-500 dark:text-gray-400">17 مايو 2024, 02:15 مساءً</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="bg-blue-100 dark:bg-blue-900 rounded-full p-1.5 flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-sm text-blue-600 dark:text-blue-300">add</span>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-800 dark:text-gray-200">تم استلام تقديم جديد من <span class="font-bold">ليلى</span></p>
+<p class="text-xs text-gray-500 dark:text-gray-400">16 مايو 2024, 09:00 صباحًا</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="bg-purple-100 dark:bg-purple-900 rounded-full p-1.5 flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-sm text-purple-600 dark:text-purple-300">campaign</span>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-800 dark:text-gray-200">تم إنشاء الحملة</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">15 مايو 2024, 04:45 مساءً</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+
+<!-- Scripts Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts UGC Maroc -->
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard-brand.js"></script>
+
+</body></html>

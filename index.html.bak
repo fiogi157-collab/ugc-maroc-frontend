@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link href="https://unpkg.com/swiper/swiper-bundle.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .swiper-button-next, .swiper-button-prev {
+        color: #5b13ec;
+    }
+    .swiper-pagination-bullet-active {
+        background-color: #5b13ec;
+    }
+  </style>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#5b13ec",
+            "secondary": "#1e3a8a",
+            "accent": "#60a5fa",
+            "background": "#ffffff",
+            "text-primary": "#0e121b",
+            "text-secondary": "#506495"
+          },
+          fontFamily: {
+            "display": ["Cairo", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+          boxShadow: {
+              'primary-glow': '0 0 20px rgba(91, 19, 236, 0.4), 0 0 40px rgba(91, 19, 236, 0.2)',
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-background text-text-primary font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-white/20 bg-white/95 px-4 py-4 backdrop-blur-xl shadow-lg shadow-gray-900/5 transition-all duration-300 sm:px-6 md:px-10">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-text-primary sm:text-2xl">UGC Maroc</h2>
+</div>
+<div class="flex items-center gap-2">
+<a href="/auth/creator-login.html" class="flex min-w-[100px] sm:min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:bg-primary/90 hover:shadow-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/50">
+<span class="truncate">دخول المبدعين</span>
+</a>
+<a href="/auth/brand-login.html" class="flex min-w-[100px] sm:min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-secondary bg-transparent px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold text-secondary shadow-lg shadow-secondary/10 transition-all duration-300 hover:bg-secondary hover:text-white focus:outline-none focus:ring-4 focus:ring-secondary/50">
+<span class="truncate">دخول الشركات</span>
+</a>
+</div>
+</header>
+<main class="flex-grow">
+<section class="relative flex min-h-[90vh] items-center justify-center overflow-hidden py-16 sm:py-20">
+<div class="absolute inset-0 z-[-1] bg-gradient-to-br from-secondary via-primary to-accent opacity-20 [transform:translateZ(0)]"></div>
+<div class="container mx-auto px-4 sm:px-6">
+<div class="flex flex-col items-center gap-8 md:flex-row md:text-right">
+<div class="flex-1 space-y-6 text-center md:text-right">
+<h1 class="text-3xl font-black leading-tight tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-6xl">
+                منصة UGC Maroc المدعومة بالذكاء الاصطناعي
+              </h1>
+<p class="mx-auto max-w-2xl text-base text-text-secondary sm:text-lg md:mx-0">
+                أول منصة مغربية تستخدم الذكاء الاصطناعي لربط العلامات التجارية بصُناع المحتوى الأكثر ملاءمة. نضمن لك حملات تسويقية فعّالة، محتوى أصيل عالي الجودة، ومعدل عائد استثمار مُثبت يفوق 300%.
+              </p>
+<div class="flex flex-col justify-center gap-4 sm:flex-row md:justify-start">
+<a href="/auth/creator-signup.html" class="flex w-full min-w-[180px] transform cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-6 py-3 text-base font-bold text-white shadow-xl shadow-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-primary/50 hover:bg-primary/90 sm:w-auto sm:text-lg group">
+<span class="truncate">للمبدعين: ابدأ الربح اليوم 🎨</span>
+<span class="material-symbols-outlined transform group-hover:translate-x-1 transition-transform">arrow_back</span>
+</a>
+<a href="/auth/brand-signup.html" class="flex w-full min-w-[180px] transform cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg border-2 border-primary bg-transparent px-6 py-3 text-base font-bold text-primary shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-primary hover:text-white sm:w-auto sm:text-lg group">
+<span class="truncate">للعلامات: ضاعف أرباحك ×3 📈</span>
+<span class="material-symbols-outlined transform group-hover:translate-x-1 transition-transform">arrow_back</span>
+</a>
+</div>
+</div>
+<div class="relative mt-10 w-full flex-1 md:mt-0">
+<div class="relative mx-auto max-w-xs sm:max-w-sm rounded-xl overflow-hidden shadow-2xl">
+<video 
+  autoplay 
+  muted 
+  loop 
+  playsinline
+  class="h-auto w-full object-cover"
+  poster="https://lh3.googleusercontent.com/aida-public/AB6AXuCIrNlaAMDGfpi6lZiSLT-7aL9EYi-p--fj38GlQijMj_qna4DODCWVo5B7spUk0jJJLEaV-zyisfzJM0JFWaIi_MULAVe2y85bb1l0xk8Ke7er_8T4nOOzkrBGOTZbWALTWvxSx24bKFKMTVZpoPh0qe3McXUBWo5R-JO76Eb4A_HUdIWlpv2m2zKHnQD-yGOr7g8tN-gJkmMHnG3Evlw7WaWedfGilpd_8h6lf1NMrNsMPAJ9bjt1Xp4YdbHcMNyjxq6IRZAz_kI"
+>
+  <source src="/attached_assets/13929660-uhd_2160_3840_24fps_1760437972225.mp4" type="video/mp4">
+  Votre navigateur ne supporte pas les vidéos.
+</video>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent pointer-events-none"></div>
+</div>
+<div class="absolute -bottom-8 -right-8 -z-10 h-32 w-32 rounded-full bg-gradient-to-br from-accent to-primary opacity-50 blur-3xl sm:h-48 sm:w-48"></div>
+<div class="absolute -left-8 top-16 -z-10 h-24 w-24 rounded-full bg-gradient-to-br from-secondary to-primary opacity-40 blur-2xl sm:h-32 sm:w-32"></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 🎯 SECTION: QU'EST-CE QUE L'UGC ET POURQUOI C'EST RÉVOLUTIONNAIRE -->
+<section class="py-16 sm:py-24 bg-white">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="max-w-4xl mx-auto text-center mb-12">
+<span class="inline-block px-4 py-2 mb-4 text-sm font-bold text-primary bg-primary/10 rounded-full">المحتوى المُنشأ من قبل المستخدمين</span>
+<h2 class="text-3xl sm:text-4xl font-black text-text-primary mb-6">ما هو UGC ولماذا يُحدث ثورة في التسويق الرقمي؟</h2>
+<p class="text-lg text-text-secondary leading-relaxed">
+المحتوى المُنشأ من قبل المستخدمين (UGC) هو أي محتوى - فيديوهات، صور، تقييمات - يتم إنشاؤه بواسطة أشخاص حقيقيين حول منتجاتك أو خدماتك. على عكس الإعلانات التقليدية، UGC أصيل، موثوق، ويحقق نتائج مُثبتة علمياً.
+</p>
+</div>
+
+<div class="grid md:grid-cols-3 gap-8 mb-12">
+<div class="text-center p-6 rounded-xl bg-green-50 border border-green-200">
+<div class="text-5xl font-black text-green-600 mb-2">79%</div>
+<p class="text-sm text-text-secondary">من المستهلكين يثقون في UGC أكثر من الإعلانات التقليدية</p>
+</div>
+<div class="text-center p-6 rounded-xl bg-blue-50 border border-blue-200">
+<div class="text-5xl font-black text-blue-600 mb-2">4.5x</div>
+<p class="text-sm text-text-secondary">معدل تحويل أعلى مقارنة بالمحتوى التسويقي التقليدي</p>
+</div>
+<div class="text-center p-6 rounded-xl bg-purple-50 border border-purple-200">
+<div class="text-5xl font-black text-primary mb-2">-60%</div>
+<p class="text-sm text-text-secondary">انخفاض في تكلفة اكتساب العميل الواحد (CAC)</p>
+</div>
+</div>
+
+<div class="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-8 sm:p-12">
+<div class="grid md:grid-cols-2 gap-8 items-center">
+<div>
+<h3 class="text-2xl font-bold text-text-primary mb-4">لماذا UGC أقوى من الإعلانات التقليدية؟</h3>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-500 text-white text-sm">✓</span>
+<span class="text-text-secondary"><strong class="text-text-primary">أصالة مُثبتة:</strong> المستهلكون يثقون بآراء الأشخاص الحقيقيين 92% أكثر من الإعلانات</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-500 text-white text-sm">✓</span>
+<span class="text-text-secondary"><strong class="text-text-primary">تكلفة منخفضة:</strong> إنتاج UGC أرخص بـ 50% من الفيديوهات الاحترافية</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-500 text-white text-sm">✓</span>
+<span class="text-text-secondary"><strong class="text-text-primary">نتائج قابلة للقياس:</strong> زيادة معدل التفاعل بنسبة 28% على وسائل التواصل</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-500 text-white text-sm">✓</span>
+<span class="text-text-secondary"><strong class="text-text-primary">تنوع هائل:</strong> محتوى ملائم لكل منصة - TikTok, Instagram, YouTube, Facebook</span>
+</li>
+</ul>
+</div>
+<div class="bg-white rounded-xl p-6 shadow-xl border border-gray-100">
+<h4 class="text-lg font-bold text-text-primary mb-4 text-center">مقارنة سريعة</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center pb-3 border-b">
+<span class="text-sm text-text-secondary">التكلفة</span>
+<div class="flex gap-2">
+<span class="px-3 py-1 text-xs font-bold bg-red-100 text-red-600 rounded">إعلان تقليدي: 50,000 MAD</span>
+<span class="px-3 py-1 text-xs font-bold bg-green-100 text-green-600 rounded">UGC: 8,000 MAD</span>
+</div>
+</div>
+<div class="flex justify-between items-center pb-3 border-b">
+<span class="text-sm text-text-secondary">معدل التحويل</span>
+<div class="flex gap-2">
+<span class="px-3 py-1 text-xs font-bold bg-red-100 text-red-600 rounded">تقليدي: 1.2%</span>
+<span class="px-3 py-1 text-xs font-bold bg-green-100 text-green-600 rounded">UGC: 5.4%</span>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm text-text-secondary">مستوى الثقة</span>
+<div class="flex gap-2">
+<span class="px-3 py-1 text-xs font-bold bg-red-100 text-red-600 rounded">تقليدي: 21%</span>
+<span class="px-3 py-1 text-xs font-bold bg-green-100 text-green-600 rounded">UGC: 79%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ✨ SECTION STATISTIQUES IMPRESSIONNANTES -->
+<section class="py-16 sm:py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+<div class="text-center transform transition-all duration-500 hover:scale-110">
+<div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-3xl">groups</span>
+</div>
+<div class="text-4xl md:text-5xl font-black text-primary mb-2" data-count="500">0</div>
+<p class="text-sm md:text-base text-text-secondary font-semibold">صانع محتوى محترف</p>
+<p class="text-xs text-text-secondary mt-1">معتمدون ومُتحقق منهم</p>
+</div>
+<div class="text-center transform transition-all duration-500 hover:scale-110">
+<div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-secondary/20 text-secondary">
+<span class="material-symbols-outlined text-3xl">campaign</span>
+</div>
+<div class="text-4xl md:text-5xl font-black text-secondary mb-2" data-count="1200">0</div>
+<p class="text-sm md:text-base text-text-secondary font-semibold">حملة تسويقية ناجحة</p>
+<p class="text-xs text-text-secondary mt-1">بفضل الذكاء الاصطناعي</p>
+</div>
+<div class="text-center transform transition-all duration-500 hover:scale-110">
+<div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-accent/20 text-accent">
+<span class="material-symbols-outlined text-3xl">payments</span>
+</div>
+<div class="text-4xl md:text-5xl font-black text-accent mb-2"><span data-count="2.5">0</span>M</div>
+<p class="text-sm md:text-base text-text-secondary font-semibold">درهم مغربي مُوزّع</p>
+<p class="text-xs text-text-secondary mt-1">على الصُناع المبدعين</p>
+</div>
+<div class="text-center transform transition-all duration-500 hover:scale-110">
+<div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-green-500/20 text-green-600">
+<span class="material-symbols-outlined text-3xl">star</span>
+</div>
+<div class="text-4xl md:text-5xl font-black text-green-600 mb-2"><span data-count="4.8">0</span>/5</div>
+<p class="text-sm md:text-base text-text-secondary font-semibold">معدل رضا العملاء</p>
+<p class="text-xs text-text-secondary mt-1">من العلامات والمبدعين</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-16 sm:py-24">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="mb-12 text-center sm:mb-16">
+<h2 class="text-3xl font-bold text-text-primary sm:text-4xl">كيف يعمل الذكاء الاصطناعي لصالحك</h2>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">تقنية متطورة تضمن لك أفضل النتائج في 3 خطوات بسيطة</p>
+</div>
+<div class="grid gap-8 md:grid-cols-3">
+<div class="transform rounded-xl border border-gray-200/80 bg-background p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl sm:p-8">
+<div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+<svg fill="currentColor" height="32" viewBox="0 0 256 256" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M169.64,134.33l44.77-19.46A16,16,0,0,0,213,85.07L52.92,32.8A16,16,0,0,0,32.8,52.92L85.07,213a15.83,15.83,0,0,0,14.41,11l.79,0a15.83,15.83,0,0,0,14.6-9.59h0l19.46-44.77L184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63Zm-69.48,73.76.06-.05Zm95.15-.09-49.66-49.67a16,16,0,0,0-26,4.94l-19.42,44.65L48,48l159.87,52.21-44.64,19.41a16,16,0,0,0-4.94,26L208,195.31ZM88,24V16a8,8,0,0,1,16,0v8a8,8,0,0,1-16,0ZM8,96a8,8,0,0,1,8-8h8a8,8,0,0,1,0,16H16A8,8,0,0,1,8,96ZM120.85,28.42l8-16a8,8,0,0,1,14.31,7.16l-8,16a8,8,0,1,1-14.31-7.16Zm-81.69,96a8,8,0,0,1-3.58,10.74l-16,8a8,8,0,0,1-7.16-14.31l16-8A8,8,0,0,1,39.16,124.42Z"></path>
+</svg>
+</div>
+<h3 class="mb-2 text-lg font-bold text-text-primary sm:text-xl">مطابقة ذكية بالذكاء الاصطناعي</h3>
+<p class="text-sm text-text-secondary sm:text-base">يحلل نظامنا الذكي أهداف حملتك، جمهورك المستهدف، وميزانيتك ليقترح عليك أنسب صُناع المحتوى بدقة تفوق 95%. وفّر وقتك واحصل على نتائج مضمونة من أول حملة.</p>
+</div>
+<div class="transform rounded-xl border border-gray-200/80 bg-background p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl sm:p-8">
+<div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+<svg fill="currentColor" height="32" viewBox="0 0 256 256" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"></path>
+</svg>
+</div>
+<h3 class="mb-2 text-lg font-bold text-text-primary sm:text-xl">تعاون سلس ومراقبة مباشرة</h3>
+<p class="text-sm text-text-secondary sm:text-base">تواصل مع الصانع المناسب عبر منصتنا الآمنة، تابع تقدم العمل لحظة بلحظة، واستفد من نظام الضمان (Escrow) الذي يحمي حقوقك المالية 100%. نحن نضمن جودة المحتوى أو نسترجع أموالك.</p>
+</div>
+<div class="transform rounded-xl border border-gray-200/80 bg-background p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl sm:p-8">
+<div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+<svg fill="currentColor" height="32" viewBox="0 0 256 256" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-68a28,28,0,0,1-28,28h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24A28,28,0,0,1,168,148Z"></path>
+</svg>
+</div>
+<h3 class="mb-2 text-lg font-bold text-text-primary sm:text-xl">نتائج قابلة للقياس ومضمونة</h3>
+<p class="text-sm text-text-secondary sm:text-base">احصل على محتوى احترافي جاهز للنشر، ادفع بأمان عبر نظامنا المشفّر، وتابع مؤشرات الأداء (KPIs) لحملتك مباشرةً. عملاؤنا يحققون في المتوسط زيادة 350% في معدل التفاعل.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 🎯 SECTION BÉNÉFICES MARQUES -->
+<section class="py-16 sm:py-24 bg-gradient-to-br from-primary/5 to-secondary/5">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="text-center mb-12">
+<span class="inline-block px-4 py-2 mb-4 text-sm font-bold text-primary bg-white rounded-full shadow">للعلامات التجارية</span>
+<h2 class="text-3xl sm:text-4xl font-black text-text-primary mb-4">حقق نمواً استثنائياً بتكلفة أقل بـ 60%</h2>
+<p class="text-lg text-text-secondary max-w-3xl mx-auto">استثمر في UGC واحصل على عائد استثمار (ROI) يفوق التوقعات. علاماتنا التجارية تحقق نتائج مُثبتة ومضمونة.</p>
+</div>
+
+<div class="grid md:grid-cols-2 gap-8 mb-12">
+<div class="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-green-600">trending_up</span>
+</div>
+<div>
+<h3 class="text-2xl font-bold text-text-primary">+285%</h3>
+<p class="text-sm text-text-secondary">زيادة في معدل التحويل</p>
+</div>
+</div>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center mt-0.5">✓</span>
+<span class="text-text-secondary text-sm">محتوى أصيل يُحفّز المستهلكين على الشراء الفوري</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center mt-0.5">✓</span>
+<span class="text-text-secondary text-sm">تأثير نفسي قوي - العملاء يثقون بآراء الأشخاص الحقيقيين</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center mt-0.5">✓</span>
+<span class="text-text-secondary text-sm">استهداف دقيق بفضل الذكاء الاصطناعي - وصول للجمهور المثالي</span>
+</li>
+</ul>
+</div>
+
+<div class="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-blue-600">savings</span>
+</div>
+<div>
+<h3 class="text-2xl font-bold text-text-primary">-60%</h3>
+<p class="text-sm text-text-secondary">خفض تكلفة الإنتاج</p>
+</div>
+</div>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">✓</span>
+<span class="text-text-secondary text-sm">بدون استوديوهات باهظة أو فرق إنتاج ضخمة</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">✓</span>
+<span class="text-text-secondary text-sm">محتوى متنوع بميزانية واحدة - عشرات الفيديوهات بسعر حملة واحدة</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">✓</span>
+<span class="text-text-secondary text-sm">سرعة التنفيذ - احصل على محتوى جاهز في 48 ساعة</span>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="bg-gradient-to-r from-primary to-secondary rounded-2xl p-8 sm:p-12 text-white text-center">
+<h3 class="text-2xl sm:text-3xl font-black mb-4">حالة عملية: علامة تجارية مغربية</h3>
+<div class="grid sm:grid-cols-3 gap-6 mt-8">
+<div>
+<div class="text-4xl font-black mb-2">9,000 MAD</div>
+<p class="text-white/80 text-sm">استثمار في حملة UGC</p>
+</div>
+<div>
+<div class="text-4xl font-black mb-2">144,000 MAD</div>
+<p class="text-white/80 text-sm">عائد المبيعات في شهر واحد</p>
+</div>
+<div>
+<div class="text-4xl font-black mb-2">16x</div>
+<p class="text-white/80 text-sm">عائد الاستثمار (ROI)</p>
+</div>
+</div>
+<a href="/auth/brand-signup.html" class="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-white text-primary font-bold rounded-full hover:shadow-2xl transition-all transform hover:scale-105">
+<span>ابدأ حملتك الآن واحصل على استشارة مجانية</span>
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+</div>
+</div>
+</section>
+
+<!-- 💰 SECTION BÉNÉFICES CRÉATEURS -->
+<section class="py-16 sm:py-24 bg-white">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="text-center mb-12">
+<span class="inline-block px-4 py-2 mb-4 text-sm font-bold text-primary bg-primary/10 rounded-full">لصُنّاع المحتوى</span>
+<h2 class="text-3xl sm:text-4xl font-black text-text-primary mb-4">حوّل إبداعك إلى دخل شهري ثابت يصل إلى 50,000 MAD</h2>
+<p class="text-lg text-text-secondary max-w-3xl mx-auto">انضم إلى 500+ صانع محتوى يحققون دخلاً مستقراً ومتنامياً من منازلهم. لا خبرة سابقة مطلوبة - فقط شغفك وإبداعك.</p>
+</div>
+
+<div class="grid md:grid-cols-3 gap-6 mb-12">
+<div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 text-center border border-green-200">
+<div class="text-5xl font-black text-green-600 mb-2">5,000 - 15,000</div>
+<p class="text-sm font-semibold text-green-800 mb-3">درهم/شهر</p>
+<p class="text-xs text-green-700">للمبتدئين (1-3 أشهر)</p>
+<ul class="mt-4 text-right text-xs text-green-800 space-y-1">
+<li>• 3-5 تعاونات شهرياً</li>
+<li>• محتوى بسيط (Reels, Stories)</li>
+<li>• مرونة كاملة في الجدول</li>
+</ul>
+</div>
+
+<div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 text-center border-2 border-blue-400 relative">
+<div class="absolute -top-3 right-1/2 transform translate-x-1/2 bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-bold">الأكثر شيوعاً</div>
+<div class="text-5xl font-black text-blue-600 mb-2">15,000 - 35,000</div>
+<p class="text-sm font-semibold text-blue-800 mb-3">درهم/شهر</p>
+<p class="text-xs text-blue-700">للمحترفين (4-8 أشهر)</p>
+<ul class="mt-4 text-right text-xs text-blue-800 space-y-1">
+<li>• 8-12 تعاون شهرياً</li>
+<li>• محتوى متقدم (Videos, Reviews)</li>
+<li>• بناء سمعة قوية</li>
+</ul>
+</div>
+
+<div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 text-center border border-purple-200">
+<div class="text-5xl font-black text-purple-600 mb-2">35,000 - 50,000+</div>
+<p class="text-sm font-semibold text-purple-800 mb-3">درهم/شهر</p>
+<p class="text-xs text-purple-700">للخبراء (9+ أشهر)</p>
+<ul class="mt-4 text-right text-xs text-purple-800 space-y-1">
+<li>• 15-25 علامة تجارية شهرياً</li>
+<li>• محتوى مميز وحصري</li>
+<li>• شراكات طويلة الأمد</li>
+</ul>
+</div>
+</div>
+
+<div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-8 sm:p-12">
+<div class="grid md:grid-cols-2 gap-8 items-center">
+<div>
+<h3 class="text-2xl font-bold text-text-primary mb-4">لماذا UGC Maroc هي فرصتك الذهبية؟</h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">1</div>
+<div>
+<p class="font-semibold text-text-primary">دخل ثابت ومضمون 100%</p>
+<p class="text-sm text-text-secondary">نظام Escrow يحمي أجرك - استلم مالك فور إتمام العمل</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">2</div>
+<div>
+<p class="font-semibold text-text-primary">حرية كاملة وعمل من أي مكان</p>
+<p class="text-sm text-text-secondary">اختر مشاريعك، حدد أسعارك، واعمل بالجدول الذي يناسبك</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">3</div>
+<div>
+<p class="font-semibold text-text-primary">فرص حصرية مع علامات كبرى</p>
+<p class="text-sm text-text-secondary">الذكاء الاصطناعي يربطك بـ Marjane، Inwi، Jumia وغيرها</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="bg-white rounded-xl p-6 shadow-xl">
+<h4 class="font-bold text-center text-text-primary mb-4">حاسبة الدخل المتوقع</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center pb-3 border-b">
+<span class="text-sm text-text-secondary">3 فيديوهات/أسبوع × 400 MAD</span>
+<span class="font-bold text-green-600">4,800 MAD/شهر</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b">
+<span class="text-sm text-text-secondary">5 صور/أسبوع × 200 MAD</span>
+<span class="font-bold text-green-600">4,000 MAD/شهر</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b">
+<span class="text-sm text-text-secondary">2 مراجعات/أسبوع × 600 MAD</span>
+<span class="font-bold text-green-600">4,800 MAD/شهر</span>
+</div>
+<div class="flex justify-between items-center pt-3 bg-primary/10 rounded-lg p-3">
+<span class="font-bold text-text-primary">الدخل الشهري المتوقع</span>
+<span class="text-2xl font-black text-primary">13,600 MAD</span>
+</div>
+</div>
+<a href="/auth/creator-signup.html" class="mt-6 w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all">
+<span>ابدأ الآن مجاناً - بدون رسوم تسجيل</span>
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<style>
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(91, 19, 236, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(91, 19, 236, 0.8); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.shimmer-effect {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+}
+.ai-badge-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+</style>
+
+<section class="relative overflow-hidden bg-gradient-to-br from-white via-primary/5 to-gray-50 py-16 sm:py-24">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(91,19,236,0.08),transparent_50%)]"></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(0,183,255,0.05),transparent_50%)]"></div>
+
+<div class="container relative mx-auto px-4 sm:px-6">
+<div class="mb-12 text-center">
+<div class="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-primary/10 backdrop-blur-sm rounded-full border border-primary/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-sm font-bold text-primary">مدعوم بالذكاء الاصطناعي</span>
+</div>
+<h2 class="text-3xl font-black text-text-primary sm:text-5xl mb-4">محفظة حملات UGC الناجحة</h2>
+<p class="mt-4 text-base text-text-secondary sm:text-lg max-w-3xl mx-auto">محتوى منتقى بذكاء اصطناعي متطور. كل فيديو مُحلّل ومُصنّف حسب الأداء، معدل التفاعل، والعائد على الاستثمار.</p>
+</div>
+
+<!-- Grille Bento Asymétrique -->
+<div class="grid grid-cols-12 gap-4 sm:gap-6">
+<!-- Grande vidéo Hero -->
+<div class="col-span-12 md:col-span-8 row-span-2 group relative overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
+<video class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuDmZjjbu6NfCbAF3ok46o_cOCb51uvnaR3euA5bwJ18cJq-95SekzQ_M9jduCwP-dFSlFVQxj9Mjvv2AWVWkD6slAhyOQ0ObiIGZLoWtucEjge-E4EQVk0LXKAPT-2uypnf5LXjZmKnjD5UUQTLGCDecA3Wid4Qs5OiGW-TfX5ty74sC2Oz2c4ADKJGaoyTV1deVVN3ZcObeAv2PRmvoAULttfWIblO3Kpe2oXOd3Gl9S6aHm1FBtT7c7sGOE9DmkodHvHFz8QjT2o" src="#"></video>
+<div class="absolute inset-0 bg-gradient-to-t from-white/90 via-white/40 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
+<!-- AI Badges -->
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<div class="ai-badge-glow px-3 py-1.5 bg-primary/90 backdrop-blur-md rounded-full border border-primary/20 text-white text-xs font-bold flex items-center gap-1.5">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+</span>
+AI Match 98%
+</div>
+<div class="px-3 py-1.5 bg-green-500/90 backdrop-blur-md rounded-full text-white text-xs font-bold">
+⚡ Top Performer
+</div>
+</div>
+<!-- Métriques -->
+<div class="absolute bottom-4 right-4 left-4">
+<div class="flex items-center justify-between mb-3">
+<div class="bg-white/90 backdrop-blur-xl rounded-lg px-4 py-2 border border-gray-200/50 shadow-sm">
+<p class="text-text-secondary text-xs mb-1">معدل التحويل</p>
+<p class="text-text-primary text-lg font-black">8.4%</p>
+</div>
+<div class="bg-white/90 backdrop-blur-xl rounded-lg px-4 py-2 border border-gray-200/50 shadow-sm">
+<p class="text-text-secondary text-xs mb-1">المشاهدات</p>
+<p class="text-text-primary text-lg font-black">142K</p>
+</div>
+<div class="bg-white/90 backdrop-blur-xl rounded-lg px-4 py-2 border border-gray-200/50 shadow-sm">
+<p class="text-text-secondary text-xs mb-1">ROI</p>
+<p class="text-text-primary text-lg font-black">16x</p>
+</div>
+</div>
+<p class="text-text-primary font-semibold text-sm bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1.5 inline-block">حملة منتجات تجميل - Marjane</p>
+</div>
+<!-- Play Button -->
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+<div class="relative">
+<div class="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
+<div class="relative w-20 h-20 bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center border-4 border-white/50 transform transition-transform group-hover:scale-110 shadow-xl">
+<span class="material-symbols-outlined text-5xl text-white">play_arrow</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Vidéo moyenne 1 -->
+<div class="col-span-12 md:col-span-4 group relative overflow-hidden rounded-2xl shadow-xl border border-gray-200">
+<video class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuBJTKjuyHGmQygvrxpOCq1ryvjo0ytXhPs0WBERMuI1ImdXdI7OFA5SMTKk4lEBIpuYYFvORoAnbmNhdxARTttobhqOcAJ3cebXPm-wJHRLKEuAWNC9mCWcYPI83-Cva6invOVIiA0zvoEiojX1NzEd5YpUWcWyOe2ju4dOhpVgocrU2U-XedjZFdg9REmtdHRDl2iUA2hOU3ePxzarhkPOVEL-k_LNPL_YfuuBmqN8yWYlgGGMudbQvcdEqgnlYW3D_pOKt9-I6MI" src="#"></video>
+<div class="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent opacity-60 group-hover:opacity-75 transition-opacity"></div>
+<div class="absolute top-3 right-3">
+<div class="px-2.5 py-1 bg-blue-500/90 backdrop-blur-md rounded-full text-white text-xs font-bold">AI 95%</div>
+</div>
+<div class="absolute bottom-3 right-3 left-3">
+<p class="text-text-primary font-semibold text-xs mb-1 bg-white/80 backdrop-blur-sm rounded px-2 py-0.5 inline-block">فيديو توضيحي - Inwi</p>
+<div class="flex gap-2 text-text-secondary text-xs">
+<span class="bg-white/70 backdrop-blur-sm rounded px-1.5 py-0.5">85K 👁</span>
+<span class="bg-white/70 backdrop-blur-sm rounded px-1.5 py-0.5">6.2% 📈</span>
+</div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+<div class="w-14 h-14 bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50 shadow-lg">
+<span class="material-symbols-outlined text-3xl text-white">play_arrow</span>
+</div>
+</div>
+</div>
+
+<!-- Vidéo moyenne 2 -->
+<div class="col-span-12 md:col-span-4 group relative overflow-hidden rounded-2xl shadow-xl border border-gray-200">
+<video class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuAuE5jEUzZPv2yoo1UTaaEAJguZ7KISq_6KCsLLW6Zl0I21XCxcqe8p4_1_baiubgqUDGdrqNxXfcvaPQrJYdhqS2MUZwKzzJ5AK3gxB2qtXoLLNW7zp9KE2Mu5UXP01oor_3Yhy8lI6brauxNQ8CEVfRsG95hv8N7J1DDNHw_1A0_MrpV04J9jl5Hx9s4jO1lAXU8NKbMewxJQZ2p1futE_48dyJ87DU9hv1aLtApB6w9EXwF-ffEiZ5BS7K14ksB5BYHoBnu3T80" src="#"></video>
+<div class="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent opacity-60 group-hover:opacity-75 transition-opacity"></div>
+<div class="absolute top-3 right-3 flex gap-2">
+<div class="px-2.5 py-1 bg-purple-500/90 backdrop-blur-md rounded-full text-white text-xs font-bold">AI 92%</div>
+<div class="px-2.5 py-1 bg-yellow-500/90 backdrop-blur-md rounded-full text-white text-xs font-bold">🔥 Trending</div>
+</div>
+<div class="absolute bottom-3 right-3 left-3">
+<p class="text-text-primary font-semibold text-xs mb-1 bg-white/80 backdrop-blur-sm rounded px-2 py-0.5 inline-block">مراجعة منتج - Jumia</p>
+<div class="flex gap-2 text-text-secondary text-xs">
+<span class="bg-white/70 backdrop-blur-sm rounded px-1.5 py-0.5">52K 👁</span>
+<span class="bg-white/70 backdrop-blur-sm rounded px-1.5 py-0.5">7.1% 📈</span>
+</div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+<div class="w-14 h-14 bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50 shadow-lg">
+<span class="material-symbols-outlined text-3xl text-white">play_arrow</span>
+</div>
+</div>
+</div>
+
+<!-- Petites vidéos -->
+<div class="col-span-6 md:col-span-4 group relative overflow-hidden rounded-2xl shadow-lg border border-gray-200">
+<video class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuDX781aa6dv0QId_-Num7TdVkfvIMRN99Xsdg20OR7RoH6JzsrWjGM-iobBoEpjIFGbTEe3Bv-ZYb5v-hrS1q4D4W3-xBvb0TnqfMjc0_DcrMiPOxZrlzfRelOc1wEXoaCwj5jMwj-79Jbrd2EVUz8fN2HfVxIjrMoKqSdxgZyZs3i6BfXEwTA0onkxXFcD3osJRNIAfGLfhaaWm8-RhYSuLH7G5PI8WwbV2VUt774F1jUcximjL9A6i5o4JsGsjC8vAlAICZKdLFE" src="#"></video>
+<div class="absolute inset-0 bg-white/60 group-hover:bg-white/40 transition-colors"></div>
+<div class="absolute top-2 right-2">
+<div class="px-2 py-0.5 bg-green-500/90 backdrop-blur-md rounded-full text-white text-[10px] font-bold">✓ Vérifié</div>
+</div>
+<div class="absolute bottom-2 right-2 left-2">
+<p class="text-text-primary font-semibold text-[11px] bg-white/80 backdrop-blur-sm rounded px-1.5 py-0.5 inline-block">UGC Story</p>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+<div class="w-12 h-12 bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50">
+<span class="material-symbols-outlined text-2xl text-white">play_arrow</span>
+</div>
+</div>
+</div>
+
+<div class="col-span-6 md:col-span-4 group relative overflow-hidden rounded-2xl shadow-lg border border-gray-200">
+<video class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuCOKjcsbw0A-N8fP2xBAQXaOJHvHy4dn3J4r_oYFWipQqxhPRQdS66DpKL2Whfr7B0DxQzsOVIj-71WIQwSleqV9IMrH8OhYNA3lRr-xm01okcyf9w4aPJL5TrIx5whUCEbkDsl3fpehMcOIEHV2S6WdfbEM06xnXJNAtY-N_UgNzgHIoJFcrUr48XUQg8knOVLFjmI6KtuTz4NjQcL_5XqlXF7VfBFcjG07jjdeokgHSHywGY0qN2ZmNx_keMGEHm8nXQQHm12jpE" src="#"></video>
+<div class="absolute inset-0 bg-white/60 group-hover:bg-white/40 transition-colors"></div>
+<div class="absolute top-2 right-2">
+<div class="px-2 py-0.5 bg-primary/90 backdrop-blur-md rounded-full text-white text-[10px] font-bold">AI 89%</div>
+</div>
+<div class="absolute bottom-2 right-2 left-2">
+<p class="text-text-primary font-semibold text-[11px] bg-white/80 backdrop-blur-sm rounded px-1.5 py-0.5 inline-block">Short Reel</p>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+<div class="w-12 h-12 bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50">
+<span class="material-symbols-outlined text-2xl text-white">play_arrow</span>
+</div>
+</div>
+</div>
+
+<div class="col-span-12 md:col-span-4 group relative overflow-hidden rounded-2xl shadow-lg border border-gray-200">
+<video class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuAmBPelwUz6azhBpd8sOHBfsxPF6MehH0m7AiTb5Wkw7wi2R38Va07Hf4VrREuo6CIQJ-4nH-dFFkABmmGHakv7Z9T5_TndFXbdMVqK_gO3Z0ANAZH0PxLAFVv2NWZOiQ9n0Y3hsKXAT_-0O7w8E1FXmYc9_BMDIJuKCNEe9RhubSrkUkUg5t6_K9mWKexxtqz2i42AkIobnH5TF0twL5NC99ZnbBk4HzQIv5QhHsi4wu2jQrX77mJI3pPSrTHIsoZ3rn6YnI5NXh8" src="#"></video>
+<div class="absolute inset-0 bg-white/60 group-hover:bg-white/40 transition-colors"></div>
+<div class="absolute top-2 right-2">
+<div class="px-2 py-0.5 bg-orange-500/90 backdrop-blur-md rounded-full text-white text-[10px] font-bold">⭐ Featured</div>
+</div>
+<div class="absolute bottom-2 right-2 left-2">
+<p class="text-text-primary font-semibold text-[11px] bg-white/80 backdrop-blur-sm rounded px-1.5 py-0.5 inline-block">Tutorial Video</p>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+<div class="w-12 h-12 bg-primary/90 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50">
+<span class="material-symbols-outlined text-2xl text-white">play_arrow</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CTA Voir Plus -->
+<div class="mt-12 text-center">
+<a href="#" class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+<span>استكشف المزيد من الحملات الناجحة</span>
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+</div>
+</div>
+</section>
+<section class="py-16 sm:py-24">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="mb-12 text-center sm:mb-16">
+<h2 class="text-3xl font-bold text-text-primary sm:text-4xl">تعرف على مبدعينا</h2>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">نخبة من أفضل صانعي المحتوى في المغرب، مستعدون لإطلاق العنان لإبداعاتهم.</p>
+</div>
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 sm:gap-8">
+<div class="group relative flex flex-col items-center rounded-xl border border-gray-200/80 bg-white p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+<div class="relative mb-4">
+<img alt="Creator Photo" class="h-28 w-28 rounded-full object-cover shadow-md sm:h-32 sm:w-32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClY8WQZkDCh5rzejc4fXnsHLYcRfIZEer0hUEtfmweGO-eFK-tdz2M9LOKRTow3rtGCOjwGlUT2loWUUgJVGgacZ5phsXOedad0by7Zk_vERs0PqtNEVzwKqxAuEAlhgm_zh4OHr1l_2wLmFcH31WWY1mBO04I8893D0p1iiwtBokhvm_qBUKxTm7K6d934ksBzRmMjCGr2DufC7jbaVicaD9xlJNm0iRafhYEsChBKw0Im5TOiBD7vMezRhwKwxPGRzOk7ZJ8Nq8"/>
+<div class="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-500 text-white sm:h-8 sm:w-8">
+<svg class="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+</div>
+</div>
+<h3 class="text-lg font-bold text-text-primary sm:text-xl">ليلى العلوي</h3>
+<p class="mb-2 text-sm text-primary">خبيرة تجميل وموضة</p>
+<p class="mb-4 text-sm text-text-secondary">"أحب مشاركة شغفي بالجمال المغربي الأصيل مع العالم."</p>
+<div class="flex items-center gap-4 text-text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg text-yellow-500">star</span>
+<span class="text-sm font-semibold">4.9</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">groups</span>
+<span class="text-sm font-semibold">150K</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col items-center rounded-xl border border-gray-200/80 bg-white p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+<div class="relative mb-4">
+<img alt="Creator Photo" class="h-28 w-28 rounded-full object-cover shadow-md sm:h-32 sm:w-32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClY8WQZkDCh5rzejc4fXnsHLYcRfIZEer0hUEtfmweGO-eFK-tdz2M9LOKRTow3rtGCOjwGlUT2loWUUgJVGgacZ5phsXOedad0by7Zk_vERs0PqtNEVzwKqxAuEAlhgm_zh4OHr1l_2wLmFcH31WWY1mBO04I8893D0p1iiwtBokhvm_qBUKxTm7K6d934ksBzRmMjCGr2DufC7jbaVicaD9xlJNm0iRafhYEsChBKw0Im5TOiBD7vMezRhwKwxPGRzOk7ZJ8Nq8"/>
+<div class="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-500 text-white sm:h-8 sm:w-8">
+<svg class="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+</div>
+</div>
+<h3 class="text-lg font-bold text-text-primary sm:text-xl">أمين بنجلون</h3>
+<p class="mb-2 text-sm text-primary">مغامر وصانع أفلام</p>
+<p class="mb-4 text-sm text-text-secondary">"استكشاف طبيعة المغرب الخلابة وتوثيقها هو رسالتي."</p>
+<div class="flex items-center gap-4 text-text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg text-yellow-500">star</span>
+<span class="text-sm font-semibold">5.0</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">groups</span>
+<span class="text-sm font-semibold">250K</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col items-center rounded-xl border border-gray-200/80 bg-white p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+<div class="relative mb-4">
+<img alt="Creator Photo" class="h-28 w-28 rounded-full object-cover shadow-md sm:h-32 sm:w-32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6HkMgOVjgCf8XHX1LpHJRCEek6lUrwiuhU4uWkZbFWW-n9waW4CDrIeceRXuENszFg_TLHNVTIa_ly3dIniiYmqGDceRpXZEqehkHVtEMLTYq_VkhOW2yDMOho253V7gXYfR6tjFlFxVSvAzlP2L3FSQiwyBodR0M0KhtWeFk3lOXJy10Z_--XQBnwSeMRVmIHH5nlOXQjMSE_7lKw8-X3e7OAyeJt6F9i-diP_PXtIa9s6x7FEHp26zMkZaw0K0LCeRgEzW8fjA"/>
+<div class="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-500 text-white sm:h-8 sm:w-8">
+<svg class="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+</div>
+</div>
+<h3 class="text-lg font-bold text-text-primary sm:text-xl">نورة الفاسي</h3>
+<p class="mb-2 text-sm text-primary">طاهية وخبيرة طعام</p>
+<p class="mb-4 text-sm text-text-secondary">"من خلال مطبخي، أشارك قصص ونكهات المغرب الغنية."</p>
+<div class="flex items-center gap-4 text-text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg text-yellow-500">star</span>
+<span class="text-sm font-semibold">4.8</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">groups</span>
+<span class="text-sm font-semibold">120K</span>
+</div>
+</div>
+</div>
+<div class="group relative flex flex-col items-center rounded-xl border border-gray-200/80 bg-white p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+<div class="relative mb-4">
+<img alt="Creator Photo" class="h-28 w-28 rounded-full object-cover shadow-md sm:h-32 sm:w-32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ3TWEyCdLY6eihZXavGCPEoUBj3hlnFB5j2TJYVs1eG3dScDABbvk95jO1Otie86JlegnJ2tmidW0B0N6BomI5mQEsYcIQR5Upk060UwyiJu7Ai9-6V8ylKceDK8Zzx3A-MAC-UbXhnHzMPq1MqskwoN4J2svSFYAEDt_Z9DuleU-MwdS9ahV8izcOIBaulM4O8pgbWGJWD1ktEGFk_JF2nK2x5wtApaGTfN7Mu498fWop2Cegi4CyRtuLcXo65sv4wLBQ5yuXyg"/>
+<div class="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-500 text-white sm:h-8 sm:w-8">
+<svg class="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+</div>
+</div>
+<h3 class="text-lg font-bold text-text-primary sm:text-xl">ياسين الراضي</h3>
+<p class="mb-2 text-sm text-primary">خبير تقني ومراجع</p>
+<p class="mb-4 text-sm text-text-secondary">"أبسط عالم التكنولوجيا وأقدم أحدث المراجعات لمتابعيني."</p>
+<div class="flex items-center gap-4 text-text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg text-yellow-500">star</span>
+<span class="text-sm font-semibold">4.9</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">groups</span>
+<span class="text-sm font-semibold">180K</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center">
+<button class="flex-shrink-0 transform cursor-pointer rounded-lg bg-primary px-6 py-3 font-bold text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-primary/50 sm:px-8">
+          تصفح جميع المبدعين
+        </button>
+</div>
+</div>
+</section>
+
+<!-- 🏆 SECTION MARQUES PARTENAIRES -->
+<section class="py-16 sm:py-20 bg-white">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="text-center mb-12">
+<h2 class="text-3xl font-bold text-text-primary sm:text-4xl">العلامات التجارية التي تثق بنا</h2>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">شركات رائدة تعتمد على UGC Maroc لإنشاء محتوى أصيل</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center opacity-70">
+<div class="flex items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all hover:scale-110 h-24">
+<div class="text-2xl font-black text-gray-400">MARJANE</div>
+</div>
+<div class="flex items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all hover:scale-110 h-24">
+<div class="text-2xl font-black text-gray-400">INWI</div>
+</div>
+<div class="flex items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all hover:scale-110 h-24">
+<div class="text-2xl font-black text-gray-400">ASWAK</div>
+</div>
+<div class="flex items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all hover:scale-110 h-24">
+<div class="text-2xl font-black text-gray-400">RIAD</div>
+</div>
+<div class="flex items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all hover:scale-110 h-24">
+<div class="text-2xl font-black text-gray-400">ATTIJARIWAFA</div>
+</div>
+<div class="flex items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all hover:scale-110 h-24">
+<div class="text-2xl font-black text-gray-400">BMCE</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Success Stories Carousel - TikTok Style -->
+<section class="relative bg-gradient-to-br from-white via-primary/5 to-gray-50 py-16 sm:py-24 overflow-hidden">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(91,19,236,0.08),transparent_50%)]"></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(0,183,255,0.05),transparent_50%)]"></div>
+
+<div class="container relative mx-auto px-4 sm:px-6">
+<div class="mb-12 text-center sm:mb-16">
+<div class="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-primary/10 backdrop-blur-sm rounded-full border border-primary/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-sm font-bold text-primary">قصص حقيقية</span>
+</div>
+<h2 class="text-3xl font-black text-text-primary sm:text-5xl">قصص نجاح ملهمة</h2>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">شاهد كيف غيرت UGC Maroc حياة المبدعين - بفيديوهاتهم الخاصة</p>
+</div>
+<!-- Carrousel Vidéo TikTok Style -->
+<div class="relative">
+<!-- Navigation Arrows Desktop -->
+<button id="prevVideo" class="absolute right-4 top-1/2 -translate-y-1/2 z-10 hidden lg:flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-xl hover:bg-white transition-all hover:scale-110">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</button>
+<button id="nextVideo" class="absolute left-4 top-1/2 -translate-y-1/2 z-10 hidden lg:flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-xl hover:bg-white transition-all hover:scale-110">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+
+<!-- Carrousel Container -->
+<div id="videoCarousel" class="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth pb-4">
+<div class="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
+<div class="group transform overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+<a class="block" href="#">
+<div class="flex flex-col">
+<div class="w-full">
+<img alt="حملة مستحضرات تجميل" class="h-48 w-full object-cover sm:h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgbf4r66cBx0R17eZc98f05U1BXI-0lqu8wbRaCaXQIz91HvT2r36H7fVN9JmfLV_4igVjQtm96tU1IIP4x9cAzfWZuPCZaykrXnXc0o2ajQORIQZNutI4wRxtu7Rv4QWWhNf8w2DrN9KYgy6D4NPbisgxfGrOtDhktA-ycIMhmLieNPcDjOvZqNDQuw_5GA-URNikKRbcUrUaTmEBg5Cnw4cQ9WBLvuK1O-4aO4oo9Zh2Wj-nFrlkstt5Q2-lbxTN_bFX_oV2C04"/>
+</div>
+<div class="p-6 sm:p-8">
+<span class="text-sm font-semibold uppercase tracking-wider text-primary">العناية بالبشرة - قصة علامة تجارية</span>
+<h3 class="mt-2 text-xl font-bold text-text-primary sm:text-2xl">إطلاق مجموعة "نضارة الصحراء"</h3>
+<p class="mt-4 text-sm text-text-secondary sm:text-base">تعاونت علامة تجارية محلية لمستحضرات التجميل مع 5 من صانعات المحتوى لإطلاق مجموعة جديدة للعناية بالبشرة. تضمنت الحملة مراجعات صادقة وفيديوهات تعليمية جذابة.</p>
+<div class="mt-6 grid grid-cols-2 gap-4 text-center">
+<div>
+<p class="text-2xl font-bold text-secondary sm:text-3xl">+250%</p>
+<p class="text-xs text-text-secondary sm:text-sm">زيادة في التفاعل</p>
+</div>
+<div>
+<p class="text-2xl font-bold text-secondary sm:text-3xl">+1.2M</p>
+<p class="text-xs text-text-secondary sm:text-sm">إجمالي المشاهدات</p>
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
+<div class="group transform overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+<a class="block" href="#">
+<div class="flex flex-col">
+<div class="w-full">
+<img alt="حملة سياحية" class="h-48 w-full object-cover sm:h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpMcxAZ8oORy25rX4_G_76R36VkesHEAjmlh8YwdgRJj5ByEsbHsJTon9Xa6iHZSMAL8-rYYHxPptcBBiBtrWsRh3b8hawVhPOp88mcegFpckl08FNlzowlcLyTkJ40WMWr_r9umeaW6jiLo7GpfkOSNsz5C9Fip7dQOT2kDPSVjnUFpojAw5vhQ-NpN7OOGsFHN1U5WSvtOOpkn28naYAmUDkONS9LeYBNt--_q2RFVn56qNO19bZH5UecRb0CDSO5hNQ91w8658"/>
+</div>
+<div class="p-6 sm:p-8">
+<span class="text-sm font-semibold uppercase tracking-wider text-primary">السياحة والسفر - قصة علامة تجارية</span>
+<h3 class="mt-2 text-xl font-bold text-text-primary sm:text-2xl">اكتشف كنوز مراكش المخفية</h3>
+<p class="mt-4 text-sm text-text-secondary sm:text-base">شجعت حملة سياحية المبدعين على استكشاف أماكن غير معروفة في مراكش. أنتج المبدعون محتوى أصيلاً سلط الضوء على جمال المدينة وثقافتها بعيدًا عن المواقع السياحية التقليدية.</p>
+<div class="mt-6 grid grid-cols-2 gap-4 text-center">
+<div>
+<p class="text-2xl font-bold text-secondary sm:text-3xl">+500</p>
+<p class="text-xs text-text-secondary sm:text-sm">قطعة محتوى تم إنشاؤها</p>
+</div>
+<div>
+<p class="text-2xl font-bold text-secondary sm:text-3xl">+80%</p>
+<p class="text-xs text-text-secondary sm:text-sm">زيادة في حجوزات الجولات</p>
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
+</div>
+</div>
+<div class="rounded-xl bg-white p-6 shadow-lg sm:p-8 md:p-12">
+<div class="mb-12 text-center">
+<h3 class="text-2xl font-bold text-text-primary sm:text-3xl">من المبدعين، للمبدعين</h3>
+<p class="mt-3 text-base text-text-secondary sm:text-lg">قصص حقيقية تروي كيف غيرت UGC Maroc حياة المبدعين المهنية والمالية.</p>
+</div>
+<div class="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
+<div class="flex flex-col items-center rounded-xl bg-gray-50/50 p-6 text-center shadow-inner transition-all duration-300 hover:shadow-lg sm:p-8">
+<img alt="Creator" class="mb-4 h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7DwlEcgxI7reWEVv9xSHEl5I2zKFbLSziodBsaVmROxY_5Rkv6Y_jKvtiSP65pZsi280s6YqDp-DNOBht8zoIt0_XrN4SeGQ_hOqaDzCv6oF8ej6jJh2eQJR3awx-0uMX7072OSvV34P6TV_exWdOcoOwo1f5fOFFBeCsrTYSElwyFERi3riARqTx2SIo_nrsZ04UqnigDDid11q7N-zg0BjsEZJmeGnMjApfh_m68W9LCLXA0P51a1aTnf8YZIbdNLl2tLLYtiA"/>
+<h4 class="text-lg font-bold text-text-primary sm:text-xl">سارة الشاوي</h4>
+<p class="mb-4 text-primary">مبدعة محتوى أسلوب حياة</p>
+<blockquote class="text-sm text-text-secondary sm:text-base">
+<span class="text-4xl font-bold leading-none text-primary/30 sm:text-5xl">“</span>
+                    انضممت إلى UGC Maroc في يناير 2024 بدخل شهري 2,500 درهم فقط. بفضل نظام المطابقة الذكي بالذكاء الاصطناعي، حققت 23 تعاوناً ناجحاً في 6 أشهر مع علامات تجارية رائدة. دخلي الشهري الآن يتجاوز 35,000 درهم، وأملك حرية اختيار المشاريع التي تناسب قيمي ومحتواي. نظام الضمان المالي يضمن لي استلام أجري كاملاً في الوقت المحدد.
+                    <span class="text-4xl font-bold leading-none text-primary/30 sm:text-5xl">”</span>
+</blockquote>
+<div class="mt-4 grid grid-cols-2 gap-3 text-center">
+<div class="rounded-lg bg-green-50 p-3">
+<p class="text-2xl font-black text-green-600">35K</p>
+<p class="text-xs text-green-700 font-semibold">درهم/شهر</p>
+</div>
+<div class="rounded-lg bg-blue-50 p-3">
+<p class="text-2xl font-black text-blue-600">23</p>
+<p class="text-xs text-blue-700 font-semibold">تعاون ناجح</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-center rounded-xl bg-gray-50/50 p-6 text-center shadow-inner transition-all duration-300 hover:shadow-lg sm:p-8">
+<img alt="Creator" class="mb-4 h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ3TWEyCdLY6eihZXavGCPEoUBj3hlnFB5j2TJYVs1eG3dScDABbvk95jO1Otie86JlegnJ2tmidW0B0N6BomI5mQEsYcIQR5Upk060UwyiJu7Ai9-6V8ylKceDK8Zzx3A-MAC-UbXhnHzMPq1MqskwoN4J2svSFYAEDt_Z9DuleU-MwdS9ahV8izcOIBaulM4O8pgbWGJWD1ktEGFk_JF2nK2x5wtApaGTfN7Mu498fWop2Cegi4CyRtuLcXo65sv4wLBQ5yuXyg"/>
+<h4 class="text-lg font-bold text-text-primary sm:text-xl">يوسف الناصري</h4>
+<p class="mb-4 text-primary">مصور فوتوغرافي وفيديو</p>
+<blockquote class="text-sm text-text-secondary sm:text-base">
+<span class="text-4xl font-bold leading-none text-primary/30 sm:text-5xl">“</span>
+                    كمصور فوتوغرافي مستقل، كانت إيراداتي غير منتظمة. بعد 8 أشهر على UGC Maroc، تعاونت مع 18 علامة تجارية كبرى (Marjane، Inwi، وغيرها). متوسط دخلي السنوي ارتفع من 120,000 درهم إلى 480,000 درهم. نظام التوصية الذكي يربطني بالعلامات التي تقدّر أسلوبي الفني، والمنصة تضمن حقوقي الملكية الفكرية بالكامل.
+                    <span class="text-4xl font-bold leading-none text-primary/30 sm:text-5xl">”</span>
+</blockquote>
+<div class="mt-4 grid grid-cols-2 gap-3 text-center">
+<div class="rounded-lg bg-green-50 p-3">
+<p class="text-2xl font-black text-green-600">480K</p>
+<p class="text-xs text-green-700 font-semibold">درهم/سنة</p>
+</div>
+<div class="rounded-lg bg-blue-50 p-3">
+<p class="text-2xl font-black text-blue-600">18</p>
+<p class="text-xs text-blue-700 font-semibold">علامة كبرى</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center sm:mt-16">
+<h3 class="text-2xl font-bold text-text-primary sm:text-3xl">ابدأ رحلتك نحو النجاح المضمون</h3>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">انضم إلى 500+ محترف يحققون نتائج استثنائية بفضل تقنية الذكاء الاصطناعي المتطورة.</p>
+<div class="mt-8 flex flex-col items-center justify-center gap-4 sm:gap-6">
+<a href="/auth/brand-signup.html" class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-primary p-1 text-base font-bold transition-all duration-300 hover:shadow-primary-glow sm:w-auto sm:text-lg">
+<span class="relative flex w-full items-center gap-2 rounded-full bg-background px-6 py-3 text-text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white sm:px-8 sm:py-4">
+<span class="material-symbols-outlined">storefront</span>
+ابدأ حملتك الأولى - علامات تجارية
+</span>
+</a>
+<a href="/auth/creator-signup.html" class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-primary p-1 text-base font-bold transition-all duration-300 hover:shadow-primary-glow sm:w-auto sm:text-lg">
+<span class="relative flex w-full items-center gap-2 rounded-full bg-background px-6 py-3 text-text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white sm:px-8 sm:py-4">
+<span class="material-symbols-outlined">brush</span>
+احصل على تعاونات مربحة - مبدعون
+</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-white py-16 sm:py-24">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="mb-12 text-center sm:mb-16">
+<div class="flex items-center justify-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl sm:text-4xl">verified_user</span>
+<h2 class="text-3xl font-bold text-text-primary sm:text-4xl">أمان مالي مدعوم بالذكاء الاصطناعي</h2>
+</div>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">نظام دفع متطور بتشفير 256-bit SSL ومراقبة AI في الوقت الفعلي لحماية معاملاتك بنسبة 100%. شهادات عملائنا تؤكد موثوقيتنا المطلقة.</p>
+</div>
+<div class="swiper-container testimonial-carousel relative">
+<div class="swiper-wrapper pb-12">
+<div class="swiper-slide">
+<div class="mx-auto max-w-lg rounded-xl border border-gray-200/80 bg-gray-50/50 p-6 text-center shadow-sm sm:p-8">
+<img alt="Client Photo" class="mx-auto mb-4 h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmBPelwUz6azhBpd8sOHBfsxPF6MehH0m7AiTb5Wkw7wi2R38Va07Hf4VrREuo6CIQJ-4nH-dFFkABmmGHakv7Z9T5_TndFXbdMVqK_gO3Z0ANAZH0PxLAFVv2NWZOiQ9n0Y3hsKXAT_-0O7w8E1FXmYc9_BMDIJuKCNEe9RhubSrkUkUg5t6_K9mWKexxtqz2i42AkIobnH5TF0twL5NC99ZnbBk4HzQIv5QhHsi4wu2jQrX77mJI3pPSrTHIsoZ3rn6YnI5NXh8"/>
+<p class="text-sm text-text-secondary italic sm:text-base">"أنفقت 280,000 درهم على 12 حملة عبر المنصة دون أي مشكلة. نظام Escrow المدعوم بالذكاء الاصطناعي يحمي أموالي حتى استلام المحتوى النهائي. التشفير SSL 256-bit والمراقبة الآلية للاحتيال جعلت كل معاملة آمنة بنسبة 100%. لم أواجه أي تأخير أو خطأ في الدفع."</p>
+<p class="mt-4 text-base font-bold text-text-primary sm:text-lg">أحمد العلمي</p>
+<p class="text-xs text-gray-500 sm:text-sm">مدير تسويق - شركة Marjane</p>
+</div>
+</div>
+<div class="swiper-slide">
+<div class="mx-auto max-w-lg rounded-xl border border-gray-200/80 bg-gray-50/50 p-6 text-center shadow-sm sm:p-8">
+<img alt="Client Photo" class="mx-auto mb-4 h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7DwlEcgxI7reWEVv9xSHEl5I2zKFbLSziodBsaVmROxY_5Rkv6Y_jKvtiSP65pZsi280s6YqDp-DNOBht8zoIt0_XrN4SeGQ_hOqaDzCv6oF8ej6jJh2eQJR3awx-0uMX7072OSvV34P6TV_exWdOcoOwo1f5fOFFBeCsrTYSElwyFERi3riARqTx2SIo_nrsZ04UqnigDDid11q7N-zg0BjsEZJmeGnMjApfh_m68W9LCLXA0P51a1aTnf8YZIbdNLl2tLLYtiA"/>
+<p class="text-sm text-text-secondary italic sm:text-base">"كصاحبة علامة تجميل ناشئة، كنت قلقة من الاحتيال الإلكتروني. UGC Maroc يوفر ضمان استرجاع 100% + نظام مراجعة ثلاثي المستويات. دفعت 150,000 درهم لـ8 مبدعين، وكل معاملة تمت بشفافية كاملة مع تتبع مباشر. التقارير التلقائية AI تؤكد جودة المحتوى قبل إصدار الدفعة النهائية."</p>
+<p class="mt-4 text-base font-bold text-text-primary sm:text-lg">فاطمة الزهراء</p>
+<p class="text-xs text-gray-500 sm:text-sm">مؤسسة Sahara Glow Cosmetics</p>
+</div>
+</div>
+<div class="swiper-slide">
+<div class="mx-auto max-w-lg rounded-xl border border-gray-200/80 bg-gray-50/50 p-6 text-center shadow-sm sm:p-8">
+<img alt="Client Photo" class="mx-auto mb-4 h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX781aa6dv0QId_-Num7TdVkfvIMRN99Xsdg20OR7RoH6JzsrWjGM-iobBoEpjIFGbTEe3Bv-ZYb5v-hrS1q4D4W3-xBvb0TnqfMjc0_DcrMiPOxZrlzfRelOc1wEXoaCwj5jMwj-79Jbrd2EVUz8fN2HfVxIjrMoKqSdxgZyZs3i6BfXEwTA0onkxXFcD3osJRNIAfGLfhaaWm8-RhYSuLH7G5PI8WwbV2VUt774F1jUcximjL9A6i5o4JsGsjC8vAlAICZKdLFE"/>
+<p class="text-sm text-text-secondary italic sm:text-base">"كشركة ناشئة في التقنية المالية، أطلقنا حملة UGC بميزانية 420,000 درهم لـ25 مبدع. المنصة قسّمت المدفوعات تلقائياً حسب الإنجاز (30% عند البدء، 70% عند التسليم). نظام AI يكشف أي تلاعب بجودة المحتوى. حصلنا على فواتير ضريبية معتمدة لكل معاملة. الأمان والاحترافية لا مثيل لهما."</p>
+<p class="mt-4 text-base font-bold text-text-primary sm:text-lg">يوسف الإدريسي</p>
+<p class="text-xs text-gray-500 sm:text-sm">CEO - FinTech Solutions Maroc</p>
+</div>
+</div>
+<div class="swiper-slide">
+<div class="mx-auto max-w-lg rounded-xl border border-gray-200/80 bg-gray-50/50 p-6 text-center shadow-sm sm:p-8">
+<img alt="Client Photo" class="mx-auto mb-4 h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOKjcsbw0A-N8fP2xBAQXaOJHvHy4dn3J4r_oYFWipQqxhPRQdS66DpKL2Whfr7B0DxQzsOVIj-71WIQwSleqV9IMrH8OhYNA3lRr-xm01okcyf9w4aPJL5TrIx5whUCEbkDsl3fpehMcOIEHV2S6WdfbEM06xnXJNAtY-N_UgNzgHIoJFcrUr48XUQg8knOVLFjmI6KtuTz4NjQcL_5XqlXF7VfBFcjG07jjdeokgHSHywGY0qN2ZmNx_keMGEHm8nXQQHm12jpE"/>
+<p class="text-sm text-text-secondary italic sm:text-base">"أدير حملات لـ6 علامات تجارية دولية عبر UGC Maroc. أنفقنا +1.2 مليون درهم في السنة الماضية، ونسبة نجاح المعاملات 100%. نظام الدفع الذكي يدعم تحويلات دولية بدون رسوم مخفية. التتبع اللحظي للمدفوعات + التقارير التلقائية الشهرية وفّرت لي 40 ساعة عمل شهرياً. معيار جديد للاحترافية."</p>
+<p class="mt-4 text-base font-bold text-text-primary sm:text-lg">سارة بناني</p>
+<p class="text-xs text-gray-500 sm:text-sm">مديرة إبداعية - Inwi Marketing</p>
+</div>
+</div>
+</div>
+<div class="swiper-pagination"></div>
+<div class="swiper-button-next hidden sm:flex"></div>
+<div class="swiper-button-prev hidden sm:flex"></div>
+</div>
+</div>
+</section>
+<section class="bg-gray-50/50 py-16 sm:py-24">
+<div class="container mx-auto px-4 sm:px-6">
+<div class="mb-12 text-center sm:mb-16">
+<h2 class="text-3xl font-bold text-text-primary sm:text-4xl">أسئلة شائعة</h2>
+<p class="mt-4 text-base text-text-secondary sm:text-lg">هل لديك سؤال؟ لقد قمنا بتجميع قائمة بالأسئلة الأكثر شيوعًا.</p>
+</div>
+<div class="mx-auto max-w-3xl space-y-4">
+<div class="rounded-xl border border-gray-200/80 bg-white shadow-sm" x-data="{ id: 1, open: false }">
+<button @click="open = !open" class="flex w-full items-center justify-between p-5 text-right sm:p-6">
+<span class="text-base font-semibold text-text-primary sm:text-lg">ما هو محتوى UGC وكيف يختلف عن التسويق التقليدي؟</span>
+<span :class="{ 'rotate-180': open }" class="material-symbols-outlined text-primary transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content" x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100 max-h-screen" x-transition:enter-start="opacity-0 max-h-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0 max-h-0" x-transition:leave-start="opacity-100 max-h-screen">
+<div class="px-5 pb-5 text-text-secondary sm:px-6 sm:pb-6">
+<p class="text-sm sm:text-base">محتوى UGC (المحتوى الذي ينشئه المستخدم) هو أي محتوى - صور، فيديوهات، نصوص - تم إنشاؤه بواسطة الأفراد بدلاً من العلامات التجارية. يختلف عن التسويق التقليدي لأنه أكثر أصالة ومصداقية، مما يؤدي إلى زيادة الثقة والمشاركة.</p>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-gray-200/80 bg-white shadow-sm" x-data="{ id: 2, open: false }">
+<button @click="open = !open" class="flex w-full items-center justify-between p-5 text-right sm:p-6">
+<span class="text-base font-semibold text-text-primary sm:text-lg">كيف يمكنني التسجيل كصانع محتوى؟</span>
+<span :class="{ 'rotate-180': open }" class="material-symbols-outlined text-primary transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content" x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100 max-h-screen" x-transition:enter-start="opacity-0 max-h-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0 max-h-0" x-transition:leave-start="opacity-100 max-h-screen">
+<div class="px-5 pb-5 text-text-secondary sm:px-6 sm:pb-6">
+<p class="text-sm sm:text-base">للتسجيل كصانع محتوى، انقر فوق زر "انضم كصانع محتوى" في الصفحة الرئيسية. ستحتاج إلى إنشاء ملف تعريف، وإضافة روابط إلى حساباتك على وسائل التواصل الاجتماعي، وتحميل نماذج من أعمالك السابقة.</p>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-gray-200/80 bg-white shadow-sm" x-data="{ id: 3, open: false }">
+<button @click="open = !open" class="flex w-full items-center justify-between p-5 text-right sm:p-6">
+<span class="text-base font-semibold text-text-primary sm:text-lg">ما هي أنواع الحملات التي يمكنني إنشاؤها كعلامة تجارية؟</span>
+<span :class="{ 'rotate-180': open }" class="material-symbols-outlined text-primary transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content" x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100 max-h-screen" x-transition:enter-start="opacity-0 max-h-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0 max-h-0" x-transition:leave-start="opacity-100 max-h-screen">
+<div class="px-5 pb-5 text-text-secondary sm:px-6 sm:pb-6">
+<p class="text-sm sm:text-base">يمكن للعلامات التجارية إنشاء مجموعة متنوعة من الحملات، بما في ذلك مراجعات المنتجات، ومقاطع الفيديو الإعلانية القصيرة، والمحتوى لمنصات التواصل الاجتماعي مثل Instagram و TikTok. يمكنك تحديد متطلباتك وميزانيتك بوضوح عند إنشاء حملة.</p>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-gray-200/80 bg-white shadow-sm" x-data="{ id: 4, open: false }">
+<button @click="open = !open" class="flex w-full items-center justify-between p-5 text-right sm:p-6">
+<span class="text-base font-semibold text-text-primary sm:text-lg">كيف يتم ضمان جودة المحتوى؟</span>
+<span :class="{ 'rotate-180': open }" class="material-symbols-outlined text-primary transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content" x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-end="opacity-100 max-h-screen" x-transition:enter-start="opacity-0 max-h-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-end="opacity-0 max-h-0" x-transition:leave-start="opacity-100 max-h-screen">
+<div class="px-5 pb-5 text-text-secondary sm:px-6 sm:pb-6">
+<p class="text-sm sm:text-base">تتم مراجعة جميع ملفات المبدعين قبل الموافقة عليها. بالإضافة إلى ذلك، يمكن للعلامات التجارية مراجعة المحتوى قبل الدفع النهائي. نظام التقييم والتعليقات يساعد أيضًا في الحفاظ على مستوى عالٍ من الجودة.</p>
+</div>
+</div>
+</div>
+</div>
+</div></section>
+<section class="relative overflow-hidden bg-gradient-to-br from-secondary via-primary to-accent py-16 text-white sm:py-24">
+<div class="container mx-auto px-4 text-center sm:px-6">
+<h2 class="text-3xl font-bold sm:text-4xl">حقق عائد استثمار يفوق 300% اليوم</h2>
+<p class="mx-auto mt-4 max-w-2xl text-base opacity-90 sm:text-lg">انضم إلى المنصة الوحيدة في المغرب التي تضمن لك نتائج قابلة للقياس من اليوم الأول. نظام ذكاء اصطناعي متطور + ضمان استرجاع الأموال + دعم فني مستمر.</p>
+<div class="mt-8 flex flex-col justify-center gap-4 sm:mt-10 sm:flex-row">
+<a href="/auth/creator-signup.html" class="flex w-full min-w-[200px] transform cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-white px-6 py-3 text-base font-bold text-primary shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:bg-gray-100 sm:w-auto sm:px-8 sm:py-4 sm:text-lg">
+<span class="truncate">للمبدعين: ابدأ الربح مجاناً 💰</span>
+</a>
+<a href="/auth/brand-signup.html" class="flex w-full min-w-[200px] transform cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-white/50 bg-transparent px-6 py-3 text-base font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white hover:bg-white/10 sm:w-auto sm:px-8 sm:py-4 sm:text-lg">
+<span class="truncate">للعلامات: ضاعف أرباحك 16 مرة 🚀</span>
+</a>
+</div>
+</div>
+</section>
+</main>
+<footer class="border-t border-gray-200/50 bg-gradient-to-br from-gray-50 to-white py-16">
+<div class="container mx-auto px-4 sm:px-6">
+<!-- Newsletter -->
+<div class="bg-gradient-to-br from-primary to-secondary rounded-2xl p-8 md:p-12 mb-12 text-white text-center">
+<h3 class="text-2xl md:text-3xl font-bold mb-4">اشترك في نشرتنا الإخبارية</h3>
+<p class="text-white/90 mb-6 max-w-2xl mx-auto">احصل على آخر الأخبار، النصائح، والفرص الحصرية مباشرة في بريدك الإلكتروني</p>
+<form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+<input type="email" placeholder="أدخل بريدك الإلكتروني" class="flex-1 px-4 py-3 rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-white" required>
+<button type="submit" class="px-6 py-3 bg-white text-primary font-bold rounded-lg hover:bg-gray-100 transition-colors">اشترك الآن</button>
+</form>
+</div>
+
+<div class="grid grid-cols-2 gap-8 text-right sm:grid-cols-4 lg:grid-cols-5">
+<div class="col-span-2 sm:col-span-4 lg:col-span-1">
+<div class="flex items-center gap-2">
+<div class="h-8 w-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<span class="text-xl font-bold text-text-primary">UGC Maroc</span>
+</div>
+<p class="mt-4 text-sm text-text-secondary">منصة رائدة تربط بين العلامات التجارية والمبدعين في المغرب.</p>
+</div>
+<div class="col-span-1">
+<h3 class="text-base font-bold text-text-primary sm:text-lg">الشركة</h3>
+<ul class="mt-4 space-y-3">
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">من نحن</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">الوظائف</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">الصحافة</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">الشركاء</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h3 class="text-base font-bold text-text-primary sm:text-lg">المنتج</h3>
+<ul class="mt-4 space-y-3">
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">للعلامات التجارية</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">للمبدعين</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">الأسعار</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">خريطة الموقع</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h3 class="text-base font-bold text-text-primary sm:text-lg">الموارد</h3>
+<ul class="mt-4 space-y-3">
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">المدونة</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">مركز المساعدة</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">اتصل بنا</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">الخصوصية</a></li>
+<li><a class="text-sm text-text-secondary transition-colors hover:text-primary" href="#">الشروط</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h3 class="text-base font-bold text-text-primary sm:text-lg">تابعنا</h3>
+<div class="mt-4 flex gap-4">
+<a class="text-text-secondary transition-colors hover:text-primary" href="#">
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.67.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98-3.56-.18-6.73-1.89-8.84-4.48-.37.63-.58 1.37-.58 2.15 0 1.49.76 2.8 1.9 3.57-.71-.02-1.37-.22-1.95-.54v.05c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.52 8.52 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.21 0-.42-.02-.63.84-.6 1.56-1.36 2.15-2.22z"></path></svg>
+</a>
+<a class="text-text-secondary transition-colors hover:text-primary" href="#">
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163m0-2.163C8.74 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.74 0 12c0 3.26.014 3.667.072 4.947.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.74 24 12 24c3.26 0 3.667-.014 4.947-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.687.073-4.947s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98C15.667.014 15.26 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"></path></svg>
+</a>
+<a class="text-text-secondary transition-colors hover:text-primary" href="#">
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
+</a>
+</div>
+</div>
+</div>
+<div class="mt-8 border-t border-gray-200/50 pt-8 text-center text-sm text-text-secondary">
+<p>© 2024 UGC Maroc. جميع الحقوق محفوظة.</p>
+</div>
+</div>
+</footer>
+</div>
+<script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var swiper = new Swiper('.testimonial-carousel', {
+        slidesPerView: 1,
+        spaceBetween: 20,
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+        breakpoints: {
+          640: {
+            slidesPerView: 1,
+            spaceBetween: 20,
+          },
+          768: {
+            slidesPerView: 2,
+            spaceBetween: 30,
+          },
+          1024: {
+            slidesPerView: 2,
+            spaceBetween: 40,
+          },
+        }
+      });
+    });
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('accordion', () => ({
+        open: null,
+        toggle(id) {
+            this.open = this.open === id ? null : id
+        }
+      }));
+    });
+
+    // ✨ Animation des compteurs (avec support décimales)
+    function animateCounter(element) {
+      const target = parseFloat(element.getAttribute('data-count'));
+      const duration = 2000;
+      const hasDecimal = target % 1 !== 0;
+      const step = target / (duration / 16);
+      let current = 0;
+      
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          element.textContent = hasDecimal ? target.toFixed(1) : Math.round(target);
+          clearInterval(timer);
+        } else {
+          element.textContent = hasDecimal ? current.toFixed(1) : Math.floor(current);
+        }
+      }, 16);
+    }
+
+    // Observer pour détecter quand les stats sont visibles
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.target.textContent === '0') {
+          animateCounter(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    // Observer tous les éléments avec data-count
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-count]').forEach(el => observer.observe(el));
+    });
+  </script>
+  <script src="./js/main.js"></script>
+</body></html>

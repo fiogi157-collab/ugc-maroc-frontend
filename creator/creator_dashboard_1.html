@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - لوحة تحكم المبدعين المحسنة</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5020df",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151121",
+                        "foreground-light": "#110e1b",
+                        "foreground-dark": "#f9f8fb",
+                        "muted-light": "#625095",
+                        "muted-dark": "#a094c7",
+                        "border-light": "#d6d1e6",
+                        "border-dark": "#2a2243",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1a1629",
+                    },
+                    fontFamily: {
+                        "display": ["Tajawal", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-foreground-light dark:text-foreground-dark">
+<div class="flex min-h-screen">
+<aside class="w-64 flex-shrink-0 bg-background-light dark:bg-background-dark p-6 hidden lg:flex flex-col justify-between border-l border-border-light dark:border-border-dark">
+<div class="flex flex-col gap-8">
+<h1 class="text-xl font-bold text-foreground-light dark:text-foreground-dark text-right">UGC Maroc</h1>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>الرئيسية</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span>الحملات</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>المشاركات</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span>الأرباح</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span>الملف الشخصي</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors relative" href="#">
+<span class="material-symbols-outlined">message</span>
+<span>الرسائل</span>
+<span class="absolute top-2 right-3 flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+</a>
+</nav>
+<div class="flex flex-col gap-4">
+<h3 class="text-sm font-semibold text-muted-light dark:text-muted-dark px-4">موارد</h3>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors text-sm" href="#">
+<span class="material-symbols-outlined">school</span>
+<span>مركز التعلم</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors text-sm" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span>مجتمع المبدعين</span>
+</a>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span>الدعم</span>
+</a>
+<a class="text-xs text-muted-light dark:text-muted-dark hover:text-primary text-center mt-2" href="#">الشروط القانونية/الأحكام</a>
+</div>
+</aside>
+<main class="flex-1 p-6 lg:p-10 overflow-y-auto">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+<div>
+<h1 class="text-3xl font-bold text-foreground-light dark:text-foreground-dark">لوحة تحكم المبدعين المحسنة</h1>
+<p class="text-muted-light dark:text-muted-dark mt-1">مرحباً بعودتك! لنبدع شيئًا مذهلاً اليوم.</p>
+<p class="text-sm text-primary mt-2 font-medium">الرصيد: <span id="wallet-balance">0 MAD</span></p>
+</div>
+<div class="flex items-center gap-4 mt-4 sm:mt-0">
+<button class="relative p-2 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 justify-center items-center text-white text-[8px] font-bold">3</span>
+</span>
+</button>
+<img alt="User profile" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_f-grDMnpeX_yGYCT-507LyId-DgVKRu30Wth7hjl3nv0CG12uAbxL6qXETLfiMTPVxDWNhNKtJMlwSvhgFqwZGquRi0xpAgFGNO7h3jZfEhsZfZLHcui6XzQsQPxljRhT9os-NceJ95Bw5oU4sg6gK9VNeUsuqZhktWwV7YjJ8SvrXIUkEtUDYtYYEgC0O0ok56ejId5nlTmiJhoOIf8M6D13GUY29-AJyoTgIfcz8TTla5DzezzEiKXh8K9nUQvRtPYXbr19JM"/>
+</div>
+</div>
+<section class="mb-8">
+<h2 class="text-2xl font-bold mb-4">موجز أداء الحملات النشطة</h2>
+<div id="campaigns-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
+<h3 class="font-bold text-lg">حملة العناية بالبشرة</h3>
+<p class="text-sm text-muted-light dark:text-muted-dark">المهمة: فيديو مراجعة للمنتج</p>
+<div>
+<p class="text-xs text-muted-light dark:text-muted-dark mb-1">التقدم</p>
+<div class="w-full bg-primary/10 rounded-full h-2.5">
+<div class="bg-primary h-2.5 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="flex items-center gap-1 text-yellow-600 dark:text-yellow-400"><span class="material-symbols-outlined text-base">hourglass_top</span> باقي 3 أيام</span>
+<a class="text-primary font-bold hover:underline" href="#">عرض التفاصيل</a>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
+<h3 class="font-bold text-lg">مستحضرات التجميل</h3>
+<p class="text-sm text-muted-light dark:text-muted-dark">المهمة: 3 صور على انستغرام</p>
+<div>
+<p class="text-xs text-muted-light dark:text-muted-dark mb-1">التقدم</p>
+<div class="w-full bg-primary/10 rounded-full h-2.5">
+<div class="bg-primary h-2.5 rounded-full" style="width: 25%"></div>
+</div>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="flex items-center gap-1 text-red-600 dark:text-red-400"><span class="material-symbols-outlined text-base">error_outline</span> متأخر يومان</span>
+<a class="text-primary font-bold hover:underline" href="#">عرض التفاصيل</a>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
+<h3 class="font-bold text-lg">ملابس رياضية</h3>
+<p class="text-sm text-muted-light dark:text-muted-dark">المهمة: فيديو TikTok</p>
+<div>
+<p class="text-xs text-muted-light dark:text-muted-dark mb-1">التقدم</p>
+<div class="w-full bg-primary/10 rounded-full h-2.5">
+<div class="bg-green-500 h-2.5 rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="flex items-center gap-1 text-green-600 dark:text-green-400"><span class="material-symbols-outlined text-base">check_circle</span> في انتظار الموافقة</span>
+<a class="text-primary font-bold hover:underline" href="#">عرض التفاصيل</a>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2">
+<section class="mb-8">
+<h2 class="text-2xl font-bold mb-4">خطواتي التالية</h2>
+<div class="space-y-4">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-border-light dark:border-border-dark flex items-center gap-4">
+<div class="bg-primary/10 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">campaign</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold">تقديم عرض لحملة "مشروب الطاقة"</h3>
+<p class="text-sm text-muted-light dark:text-muted-dark">تطابق مهاراتك الحملة بنسبة 95%. الموعد النهائي للتقديم غدًا.</p>
+</div>
+<button class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm whitespace-nowrap hover:bg-primary/90 transition-colors">تقديم الآن</button>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-border-light dark:border-border-dark flex items-center gap-4">
+<div class="bg-primary/10 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">upload</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold">رفع المحتوى لحملة "العناية بالبشرة"</h3>
+<p class="text-sm text-muted-light dark:text-muted-dark">الموعد النهائي للتسليم قريب، لا تفوت الفرصة.</p>
+</div>
+<button class="px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm whitespace-nowrap hover:bg-primary/20 transition-colors">رفع المحتوى</button>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-border-light dark:border-border-dark flex items-center gap-4">
+<div class="bg-primary/10 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold">تحديث ملفك الشخصي</h3>
+<p class="text-sm text-muted-light dark:text-muted-dark">أضف فيديو تقديمي لزيادة فرصك في الحصول على حملات مميزة.</p>
+</div>
+<button class="px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm whitespace-nowrap hover:bg-primary/20 transition-colors">تحديث الآن</button>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-2xl font-bold mb-4">سجل الأرباح والمدفوعات</h2>
+<div id="recent-submissions" class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+<p class="text-muted-light dark:text-muted-dark">إجمالي الأرباح: <span id="total-earned" class="font-bold text-foreground-light dark:text-foreground-dark">0 MAD</span></p>
+<div class="flex items-center gap-2 mt-2 sm:mt-0">
+<select class="block w-full sm:w-auto rounded-md border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
+<option>تصفية حسب الحالة</option>
+<option>مدفوع</option>
+<option>معلق</option>
+<option>قيد المراجعة</option>
+</select>
+<button class="p-2 rounded-lg hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="border-b border-border-light dark:border-border-dark">
+<tr>
+<th class="py-2 px-4 font-semibold">الحملة</th>
+<th class="py-2 px-4 font-semibold">المبلغ</th>
+<th class="py-2 px-4 font-semibold">التاريخ</th>
+<th class="py-2 px-4 font-semibold">الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="py-3 px-4">حملة الساعات الفاخرة</td>
+<td class="py-3 px-4">10,000 درهم</td>
+<td class="py-3 px-4">15 مارس 2024</td>
+<td class="py-3 px-4"><span class="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">مدفوع</span></td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="py-3 px-4">حملة العناية بالبشرة</td>
+<td class="py-3 px-4">2,500 درهم</td>
+<td class="py-3 px-4">10 أبريل 2024</td>
+<td class="py-3 px-4"><span class="px-3 py-1 text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">معلق</span></td>
+</tr>
+<tr>
+<td class="py-3 px-4">مستحضرات التجميل</td>
+<td class="py-3 px-4">3,500 درهم</td>
+<td class="py-3 px-4">25 أبريل 2024</td>
+<td class="py-3 px-4"><span class="px-3 py-1 text-sm rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">قيد المراجعة</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+<div class="lg:col-span-1 flex flex-col gap-8">
+<section>
+<h2 class="text-2xl font-bold mb-4">تنبيهات فورية</h2>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
+<div class="flex items-start gap-3 pb-4 border-b border-border-light dark:border-border-dark">
+<span class="material-symbols-outlined text-green-500 mt-1">check_circle</span>
+<div>
+<p class="font-semibold">تمت الموافقة على محتواك!</p>
+<p class="text-sm text-muted-light dark:text-muted-dark">تمت الموافقة على الفيديو الخاص بحملة "الساعات الفاخرة".</p>
+<span class="text-xs text-muted-light dark:text-muted-dark">قبل 10 دقائق</span>
+</div>
+</div>
+<div class="flex items-start gap-3 pb-4 border-b border-border-light dark:border-border-dark">
+<span class="material-symbols-outlined text-primary mt-1">chat</span>
+<div>
+<p class="font-semibold">رسالة جديدة من "ماركة X"</p>
+<p class="text-sm text-muted-light dark:text-muted-dark">"مرحباً فاطمة، لدينا بعض الملاحظات..."</p>
+<span class="text-xs text-muted-light dark:text-muted-dark">قبل ساعة</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary self-center ml-auto"></span>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-yellow-500 mt-1">campaign</span>
+<div>
+<p class="font-semibold">دعوة جديدة لحملة</p>
+<p class="text-sm text-muted-light dark:text-muted-dark">تمت دعوتك للانضمام إلى حملة "أزياء الصيف".</p>
+<span class="text-xs text-muted-light dark:text-muted-dark">قبل 3 ساعات</span>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-2xl font-bold mb-4">الشارات والإنجازات</h2>
+<div id="badges-container" class="grid grid-cols-2 gap-4 mb-6"></div>
+<h2 class="text-2xl font-bold mb-4 mt-6">أكثر المبدعين نشاطاً</h2>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-bold text-muted-light dark:text-muted-dark">1</span>
+<img alt="User 1" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKRSde5WRp89-YadL8vDXwzoII8rciXbu3sGWTcoElAVPToWoHAWh6RUH7_-lWmCJABata73durpXR0lNKj9y3NCCWaZJuDBrmsbFlzX7IByMOjQBIHvJTiBIs3x9kDxXiIAi0u8BjEaVuIZV08vNUKWnh5GDa0wPunFE9XYCpAOTviRmkcviDrKESeH8a28uCE1500iLE4VkjLOU1clK86K8m_7cV2PEEUyotb0bK-qTVL4LjENdJGTEAQ4GaKdVyn2HMiAMh2zk"/>
+<div class="flex-1">
+<p class="font-bold">أمينة العلوي</p>
+<p class="text-sm text-muted-light dark:text-muted-dark">25,000 درهم</p>
+</div>
+<span class="material-symbols-outlined text-yellow-400">military_tech</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-2xl font-bold text-muted-light dark:text-muted-dark">2</span>
+<img alt="User 2" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_f-grDMnpeX_yGYCT-507LyId-DgVKRu30Wth7hjl3nv0CG12uAbxL6qXETLfiMTPVxDWNhNKtJMlwSvhgFqwZGquRi0xpAgFGNO7h3jZfEhsZfZLHcui6XzQsQPxljRhT9os-NceJ95Bw5oU4sg6gK9VNeUsuqZhktWwV7YjJ8SvrXIUkEtUDYtYYEgC0O0ok56ejId5nlTmiJhoOIf8M6D13GUY29-AJyoTgIfcz8TTla5DzezzEiKXh8K9nUQvRtPYXbr19JM"/>
+<div class="flex-1">
+<p class="font-bold">فاطمة الزهراء (أنت)</p>
+<p class="text-sm text-muted-light dark:text-muted-dark">12,500 درهم</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">military_tech</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-2xl font-bold text-muted-light dark:text-muted-dark">3</span>
+<img alt="User 3" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg7p34ZjRv6iQ7DbtTPKqqL7bCxrYEebT7zdQ1mvpbsE7UyMPbFiZzQkEDWT7T_9ouPWcAJVZ-cmqIKZMNaE27xVXucvrTJWhSJj4hpQ9L9BSu_Bl-Cilmud8537mX6xF6T7ooxRB3jYc5msEoZtfpWfUqCjTGfC31z7kF81YHMD2m6ZjYjKDFULy1sVrWQ9iAMBW1K22cqEqu_cKCXy3wUdfSYd2UAbN2fH1Qnj3Gion2OMdvJOdXM8hF58jmnwr1V7Jpzdji-mg"/>
+<div class="flex-1">
+<p class="font-bold">يوسف النصيري</p>
+<p class="text-sm text-muted-light dark:text-muted-dark">9,800 درهم</p>
+</div>
+<span class="material-symbols-outlined text-orange-400">military_tech</span>
+</div>
+<button class="mt-2 w-full h-11 px-4 rounded-lg border border-primary text-primary font-bold tracking-wide hover:bg-primary/10 transition-colors">عرض لوحة المتصدرين كاملة</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Scripts Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts UGC Maroc -->
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard-creator.js"></script>
+
+</body></html>

@@ -1,0 +1,7 @@
+run = "npx serve ./UGC_MAROC_FINAL"
+
+[interpreter]
+command = ["bash"]
+
+[env]
+PORT = "3000"

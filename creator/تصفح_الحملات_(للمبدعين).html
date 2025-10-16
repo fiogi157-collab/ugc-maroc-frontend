@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - تصفح الحملات</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1d4dc9",
+              "background-light": "#f6f6f8",
+              "background-dark": "#111621",
+            },
+            fontFamily: {
+              display: ["Manrope"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+      .group:hover .quick-preview {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+      }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111621] dark:text-background-light">
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-lg border-b border-primary/20 dark:border-primary/30">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2 text-primary">
+<svg class="h-8 w-8" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z"></path>
+</svg>
+<h1 class="text-xl font-bold">UGC Maroc</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">الرئيسية</a>
+<a class="text-sm font-medium text-primary font-bold" href="#">الحملات</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">العلامات التجارية</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">المبدعون</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined"> notifications </span>
+</button>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWJN6fDJi_fDg3tTSoDm0MCfK4oiuefu1pLrt5z-Avdbw4pMGlbKKtF3RauomQvSqYfOCkvyklyMzMq4nmFy5Q-iGaijnkpiegRYeo3LMyzADNo6cxq__kij6U6i5sxTPk8w2Y0YtF9cA-pk8zF3XS1H1I2f0j3E4LA0cWh5JQc5sX1BO2K22jZNDc9A4HNJX9lheoNzL2Qb8rigOhPKPtprQQmZaTSF2UWU1s9stX5kOPTsb-LljY9vBKwYVHEUBKjYhnJJ-4NGQ");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="flex flex-col lg:flex-row gap-8">
+<aside class="lg:w-1/4 space-y-6">
+<div class="bg-white dark:bg-background-dark p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+<button class="w-full flex items-center justify-between p-2 mb-4 text-lg font-bold text-right text-[#111621] dark:text-white">
+<span>التصفية الذكية</span>
+<span class="material-symbols-outlined transition-transform">keyboard_arrow_down</span>
+</button>
+<div class="space-y-4">
+<div>
+<label class="font-medium text-sm text-gray-700 dark:text-gray-300">مجال الصناعة</label>
+<select class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 focus:ring-primary focus:border-primary">
+<option>الكل</option>
+<option>تجميل</option>
+<option>أزياء</option>
+<option>طعام</option>
+<option>سفر</option>
+</select>
+</div>
+<div>
+<label class="font-medium text-sm text-gray-700 dark:text-gray-300">نوع المحتوى</label>
+<div class="mt-2 space-y-2">
+<label class="flex items-center">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/>
+<span class="mr-2 text-sm">فيديو TikTok</span>
+</label>
+<label class="flex items-center">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/>
+<span class="mr-2 text-sm">Instagram Reel</span>
+</label>
+<label class="flex items-center">
+<input class="rounded text-primary focus:ring-primary" type="checkbox"/>
+<span class="mr-2 text-sm">صور</span>
+</label>
+</div>
+</div>
+<div>
+<label class="font-medium text-sm text-gray-700 dark:text-gray-300">الميزانية (بالدولار)</label>
+<input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary" max="5000" min="0" type="range" value="1000"/>
+<div class="flex justify-between text-xs mt-1">
+<span>$0</span>
+<span>$5000+</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-xl border border-yellow-200 dark:border-yellow-800">
+<h4 class="font-bold flex items-center gap-2 text-yellow-800 dark:text-yellow-200"><span class="material-symbols-outlined">lightbulb</span> دليل المبتدئين</h4>
+<p class="text-sm mt-2 text-yellow-700 dark:text-yellow-300">جديد في UGC؟ تعلم كيف تختار الحملة المناسبة وتقدم عرضًا لا يمكن رفضه. <a class="font-bold underline" href="#">ابدأ من هنا</a>.</p>
+</div>
+<div class="bg-white dark:bg-background-dark p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+<h4 class="font-bold mb-3">سجل نشاطك</h4>
+<ul class="space-y-3 text-sm">
+<li class="flex items-center gap-3 text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined">check_circle</span>
+<div>
+<p>تم قبول طلبك في حملة <span class="font-semibold">"تجميل الصيف"</span>.</p>
+<span class="text-xs text-gray-500">منذ يومين</span>
+</div>
+</li>
+<li class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined">bookmark</span>
+<div>
+<p>لقد حفظت حملة <span class="font-semibold">"مغامرات السفر"</span>.</p>
+<span class="text-xs text-gray-500">منذ 4 أيام</span>
+</div>
+</li>
+</ul>
+</div>
+</aside>
+<div class="flex-1">
+<div class="mb-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<h2 class="text-3xl md:text-4xl font-extrabold text-[#111621] dark:text-white">اكتشف الحملات</h2>
+<p class="mt-2 text-base text-gray-500 dark:text-gray-400">ابحث عن فرصتك التالية للتعاون مع أفضل العلامات التجارية.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm">الترتيب حسب:</span>
+<select class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-primary focus:border-primary">
+<option>الأحدث</option>
+<option>الأعلى ميزانية</option>
+<option>الأقرب للموعد النهائي</option>
+</select>
+</div>
+</div>
+<div class="relative mt-6">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"> search </span>
+<input class="w-full h-12 pr-12 pl-4 rounded-lg bg-white dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-shadow" placeholder="ابحث عن حملة، علامة تجارية، إلخ..." type="text"/>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary"> recommend </span>
+<span>موصى به لك</span>
+</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="group relative bg-white dark:bg-gray-800/50 rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:border-primary transition-all duration-300 border border-gray-200 dark:border-gray-700">
+<div class="w-full h-40 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA7Yev4xHe748h80VhL-mDjccNIhk9Kh-5uGEdBSQUaIUpgigxNVEytKT9FLFs5buiXPa-M49hI4KQGK-vwe67IqRJlglsHkAhQCDtHSjAN_AEvAUG3qo_SLxZEbFAb4wdK5AqGHU8TEKdnmlKDGQQq2Pdcg6uQGXp35k5ojbKV7bbAE-e4CUqh3Kn-VaMzObGEhI6q69JT85s-Vp_v1w3mEhaAeCFe60na4HQUmhS8q3VLPtaT6XCpa_Kq20CHRGjSY6AbhXF4a2c");'></div>
+<div class="p-4">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2">
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-1">عالمة تجميل الأطفال</p>
+<div class="flex items-center text-yellow-500 text-xs">
+<span class="material-symbols-outlined text-base">star</span>
+<span>4.8</span>
+</div>
+</div>
+<h4 class="font-bold text-lg text-[#111621] dark:text-white mb-2">حملة ترويج لمنتجات تجميل للأطفال</h4>
+</div>
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+<div class="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4 gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> schedule </span>
+<span>ينتهي في 10 أيام</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> paid </span>
+<span>$750</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-lg p-2 mb-4">
+<span class="material-symbols-outlined">task_alt</span>
+<span>سهولة التقديم: مرتفعة</span>
+</div>
+<button class="w-full h-10 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">قدم الآن</button>
+</div>
+<div class="quick-preview absolute inset-0 bg-black/50 backdrop-blur-sm p-4 rounded-xl flex flex-col justify-center items-center text-white opacity-0 invisible transform transition-all duration-300">
+<h5 class="font-bold text-xl">معاينة سريعة</h5>
+<p class="text-center mt-2">مطلوب: 2 فيديو TikTok، 1 Instagram Reel. يجب أن يكون المحتوى عائلي ومناسب للأطفال.</p>
+<button class="mt-4 px-4 py-2 bg-white text-primary font-bold rounded-lg">عرض التفاصيل</button>
+</div>
+</div>
+<div class="group relative bg-white dark:bg-gray-800/50 rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:border-primary transition-all duration-300 border border-gray-200 dark:border-gray-700">
+<div class="w-full h-40 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDFLgZnBgoe6yQNDftvu9rLPFMbo1mAodfjdTbvOshkpiv4GtKK8k0iXskVtM6mVtfbrttFXBgNASky-OEKjtCeAjYD5ytAt5oSVC-yc_9eW0B-V9IuU0arcLCFQNjoidGh6dRNl60AYW_atya5Gou4Jdve-KmAdpPXZCbCJqzcVEn8K9_Su2LKI2kY6xPGvSh2HelMqvwSAFIhdaA7Y-5GJNSD8Vozt5wlucKQpE7F66QRPmE-zmLDyasG5kYXNnFBogjcRJ9ANIc");'></div>
+<div class="p-4">
+<div class="flex justify-between items-start">
+<div>
+<a class="text-sm text-gray-500 dark:text-gray-400 mb-1 hover:underline" href="#">شركة التجميل والأزياء</a>
+<h4 class="font-bold text-lg text-[#111621] dark:text-white mb-2">حملة تسويق منتجات تجميل</h4>
+</div>
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark_added</span>
+</button>
+</div>
+<div class="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4 gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> schedule </span>
+<span>ينتهي في 30 يوم</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> paid </span>
+<span>$1200</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 rounded-lg p-2 mb-4">
+<span class="material-symbols-outlined">hourglass_top</span>
+<span>سهولة التقديم: متوسطة</span>
+</div>
+<button class="w-full h-10 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">قدم الآن</button>
+</div>
+<div class="quick-preview absolute inset-0 bg-black/50 backdrop-blur-sm p-4 rounded-xl flex flex-col justify-center items-center text-white opacity-0 invisible transform transition-all duration-300">
+<h5 class="font-bold text-xl">معاينة سريعة</h5>
+<p class="text-center mt-2">مطلوب: 1 فيديو احترافي، 5 صور عالية الجودة. خبرة سابقة في مجال التجميل مطلوبة.</p>
+<button class="mt-4 px-4 py-2 bg-white text-primary font-bold rounded-lg">عرض التفاصيل</button>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary"> campaign </span>
+<span>جميع الحملات</span>
+</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="group relative bg-white dark:bg-gray-800/50 rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:border-primary transition-all duration-300 border border-gray-200 dark:border-gray-700">
+<div class="w-full h-40 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAovuLF0IVaqTdh04hhQfLYNErpUZPuEVIyyvZzvWYRlgvD-kCSEN-xqFhMkunMNRFpMmg7zRztOWiDEcxqlpkrhmbwGjvD1Okxx_D16E8-QalgOE0tgDbb87dSp_nEc-5vc5j8KNx9zM2ICh5aQMxwD8azqdXp54QLNjQ7fXeittV1U6CGiyFzWs5l4iA7WPDF-Y7z95nerIaayJN5PQW01nnkgvj87XU5j7dYdCwSbw2dmB8WV5ynReXLXXRRhDGTDh1qipl4bVI");'></div>
+<div class="p-4">
+<div class="flex justify-between items-start">
+<div>
+<a class="text-sm text-gray-500 dark:text-gray-400 mb-1 hover:underline" href="#">شركة التجميل والأزياء</a>
+<h4 class="font-bold text-lg text-[#111621] dark:text-white mb-2">حملة تسويق منتجات تجميل</h4>
+</div>
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+<div class="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4 gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> schedule </span>
+<span>ينتهي في 15 يوم</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> paid </span>
+<span>$500 - $1000</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-lg p-2 mb-4">
+<span class="material-symbols-outlined">task_alt</span>
+<span>سهولة التقديم: مرتفعة</span>
+</div>
+<button class="w-full h-10 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">قدم الآن</button>
+</div>
+<div class="quick-preview absolute inset-0 bg-black/50 backdrop-blur-sm p-4 rounded-xl flex flex-col justify-center items-center text-white opacity-0 invisible transform transition-all duration-300">
+<h5 class="font-bold text-xl">معاينة سريعة</h5>
+<p class="text-center mt-2">مطلوب فيديو قصير واحد يعرض استخدام المنتج. <strong>0 متابعين مطلوب - الجودة فقط تهم!</strong></p>
+<button class="mt-4 px-4 py-2 bg-white text-primary font-bold rounded-lg">عرض التفاصيل</button>
+</div>
+</div>
+<div class="group relative bg-white dark:bg-gray-800/50 rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:border-primary transition-all duration-300 border border-gray-200 dark:border-gray-700">
+<div class="w-full h-40 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbRGh6I89mK99cmgGB4M7aZBim4idHcapx0GosL1BGW6nHLCs-py3O7z7oOeay23SAW1pU0-parDfbEbK7Xn9vEj5FHOyYV1XenHU4k5yjPiwlqkdHY2aC5cKnyRbcEMnE8GJJNIyfRLxx80Qfm7l5w38jKyWbhHgVRZ0H7nTK1nu2f0ANMX_-scy3jgdIdGe3i9i2NmDRQksSIZUtOMtvjAJSFXDT_JcJeqF8Tm8TU_B89phWC2Ocvl32dUZk4Djp2i_NGImly7E");'></div>
+<div class="p-4">
+<div class="flex justify-between items-start">
+<div>
+<a class="text-sm text-gray-500 dark:text-gray-400 mb-1 hover:underline" href="#">عالمة ترفيهية</a>
+<h4 class="font-bold text-lg text-[#111621] dark:text-white mb-2">حملة ترويج لمطعم ترفيهي</h4>
+</div>
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+<div class="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4 gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> schedule </span>
+<span>ينتهي في 22 يوم</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base"> paid </span>
+<span>$300</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 rounded-lg p-2 mb-4">
+<span class="material-symbols-outlined">report</span>
+<span>سهولة التقديم: منخفضة</span>
+</div>
+<button class="w-full h-10 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">قدم الآن</button>
+</div>
+<div class="quick-preview absolute inset-0 bg-black/50 backdrop-blur-sm p-4 rounded-xl flex flex-col justify-center items-center text-white opacity-0 invisible transform transition-all duration-300">
+<h5 class="font-bold text-xl">معاينة سريعة</h5>
+<p class="text-center mt-2">يتطلب تقديم ملف أعمال (portfolio) كامل ومقابلة فيديو. الأولوية للمبدعين في نفس المدينة.</p>
+<button class="mt-4 px-4 py-2 bg-white text-primary font-bold rounded-lg">عرض التفاصيل</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 flex justify-center">
+<button class="h-10 px-6 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary font-bold text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">تحميل المزيد</button>
+</div>
+</div>
+</div>
+</main>
+
+<!-- Scripts Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts UGC Maroc -->
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard-creator.js"></script>
+
+</body></html>

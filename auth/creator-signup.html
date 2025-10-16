@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تسجيل مبدع جديد - UGC Maroc</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#5b13ec",
+          "background-light": "#f6f6f8",
+          "background-dark": "#111621",
+        },
+        fontFamily: {
+          "display": ["Manrope"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans+Arabic:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      body {
+        font-family: 'Manrope', 'Noto Sans Arabic', sans-serif;
+      }
+      
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .glass-morphism {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .dark .glass-morphism {
+        background: rgba(17, 22, 33, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .code-input {
+        width: 45px;
+        height: 50px;
+        font-size: 20px;
+        text-align: center;
+        font-weight: bold;
+      }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-primary/5 via-background-light to-primary/10 dark:from-background-dark dark:via-background-dark dark:to-primary/5 font-display text-gray-800 dark:text-gray-200">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-20 w-full glass-morphism">
+<div class="container mx-auto px-4">
+<div class="flex items-center justify-between whitespace-nowrap py-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">UGC Maroc</h2>
+</div>
+<a class="inline-flex items-center justify-center rounded-lg h-10 px-5 text-sm font-bold bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" href="/auth/creator-login.html">
+تسجيل الدخول
+</a>
+</div>
+</div>
+</header>
+
+<main class="flex-grow flex items-center justify-center py-12 px-4">
+<div class="w-full max-w-3xl">
+<div class="text-center mb-8 fade-in">
+<h1 class="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl mb-4">انضم كـ مبدع محتوى!</h1>
+<p class="text-lg text-gray-600 dark:text-gray-400">ابدأ رحلتك مع UGC Maroc وحقق دخلاً من شغفك</p>
+</div>
+
+<div class="glass-morphism shadow-2xl rounded-2xl p-8 fade-in">
+<form id="signup-form" class="space-y-6">
+<!-- Email Verification Section -->
+<div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">التحقق من البريد الإلكتروني <span class="text-red-500">*</span></h3>
+
+<!-- Email Input with Verify Button (inline) -->
+<div class="flex gap-3 items-start">
+<div class="flex-1">
+<input 
+  type="email" 
+  id="email-input" 
+  class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" 
+  placeholder="example@email.com" 
+  required
+  autofocus
+/>
+<p id="email-error" class="hidden text-red-500 text-sm mt-1"></p>
+</div>
+<button 
+  type="button"
+  id="verify-email-btn" 
+  class="flex items-center justify-center gap-2 py-2.5 px-6 border border-transparent rounded-lg text-sm font-bold text-white bg-primary hover:bg-primary/90 transition-all whitespace-nowrap"
+>
+<span class="material-symbols-outlined text-lg">verified</span>
+تحقق
+</button>
+</div>
+
+<!-- Code Verification (appears below email) -->
+<div id="code-section" class="hidden mt-4 fade-in">
+<div class="flex justify-center gap-2 mb-3">
+<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="0"/>
+<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="1"/>
+<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="2"/>
+<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="3"/>
+<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="4"/>
+<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="5"/>
+</div>
+<div class="flex gap-3 justify-center">
+<button 
+  type="button"
+  id="verify-code-btn" 
+  class="flex items-center justify-center gap-2 py-2 px-6 border border-transparent rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition-all"
+>
+<span class="material-symbols-outlined text-lg">check_circle</span>
+تأكيد الرمز
+</button>
+<button 
+  type="button"
+  id="resend-code-btn" 
+  class="flex items-center justify-center gap-2 py-2 px-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+>
+<span class="material-symbols-outlined text-sm">refresh</span>
+إعادة إرسال
+</button>
+</div>
+<p id="code-error" class="hidden text-red-500 text-sm text-center mt-2"></p>
+<div id="verification-success" class="hidden mt-3 p-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm text-center flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+<span>تم التحقق من البريد الإلكتروني بنجاح ✓</span>
+</div>
+</div>
+</div>
+
+<!-- Profile Picture -->
+<div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">صورة الملف الشخصي (اختياري)</h3>
+<div class="flex flex-col sm:flex-row items-center gap-6">
+<div class="relative">
+<img alt="معاينة الصورة" class="h-24 w-24 rounded-full object-cover bg-gray-200 dark:bg-gray-700" id="image-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect fill='%23e5e7eb' width='96' height='96'/%3E%3Ctext x='50%25' y='50%25' font-size='40' text-anchor='middle' dy='.3em' fill='%239ca3af'%3E👤%3C/text%3E%3C/svg%3E"/>
+</div>
+<div class="flex-grow w-full">
+<label class="block w-full cursor-pointer rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 p-6 text-center hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-4xl text-gray-400 dark:text-gray-500">cloud_upload</span>
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+<span class="font-medium text-primary">اختر صورة</span> أو قم بإسقاطها هنا
+</p>
+<input class="hidden" id="profile-picture" name="profile-picture" type="file" accept="image/*"/>
+<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF حتى 5 ميجابايت</p>
+</label>
+</div>
+</div>
+</div>
+
+<!-- Full Name & Username -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="fullname">الاسم الكامل <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="fullname" name="fullname" placeholder="أدخل اسمك الكامل" required type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="username">اسم المستخدم <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="username" name="username" placeholder="@username" required type="text"/>
+<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">سيظهر في ملفك الشخصي</p>
+</div>
+</div>
+
+<!-- Phone & CIN -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="phone">رقم الهاتف <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="phone" name="phone" placeholder="+212 6 12 34 56 78" required type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="cin">رقم بطاقة التعريف الوطنية (CIN) <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="cin" placeholder="AB123456" required type="text"/>
+</div>
+</div>
+
+<!-- Birth Date & Ville -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="birth-date">تاريخ الميلاد <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="birth-date" required type="text" placeholder="jj/mm/aaaa" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"/>
+<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">مثال: 15/03/1995</p>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ville">المدينة <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="ville" name="ville" placeholder="الدار البيضاء، الرباط، مراكش..." required type="text"/>
+</div>
+</div>
+
+<!-- Languages -->
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="languages">اللغات المتحدث بها <span class="text-red-500">*</span></label>
+<select class="form-multiselect block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="languages" multiple required>
+<option>العربية</option>
+<option>الفرنسية</option>
+<option>الإنجليزية</option>
+<option>الإسبانية</option>
+</select>
+<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">اختر لغة واحدة أو أكثر</p>
+</div>
+
+<!-- Interests -->
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">مجالات الاهتمام <span class="text-red-500">*</span></label>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+<label class="flex items-center space-x-2 space-x-reverse cursor-pointer text-sm">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" name="interests" type="checkbox" value="beauty"/>
+<span class="text-gray-700 dark:text-gray-300">الجمال والموضة</span>
+</label>
+<label class="flex items-center space-x-2 space-x-reverse cursor-pointer text-sm">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" name="interests" type="checkbox" value="tech"/>
+<span class="text-gray-700 dark:text-gray-300">التكنولوجيا</span>
+</label>
+<label class="flex items-center space-x-2 space-x-reverse cursor-pointer text-sm">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" name="interests" type="checkbox" value="gaming"/>
+<span class="text-gray-700 dark:text-gray-300">الألعاب</span>
+</label>
+<label class="flex items-center space-x-2 space-x-reverse cursor-pointer text-sm">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" name="interests" type="checkbox" value="food"/>
+<span class="text-gray-700 dark:text-gray-300">الطعام</span>
+</label>
+<label class="flex items-center space-x-2 space-x-reverse cursor-pointer text-sm">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" name="interests" type="checkbox" value="travel"/>
+<span class="text-gray-700 dark:text-gray-300">السفر</span>
+</label>
+<label class="flex items-center space-x-2 space-x-reverse cursor-pointer text-sm">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" name="interests" type="checkbox" value="lifestyle"/>
+<span class="text-gray-700 dark:text-gray-300">أسلوب الحياة</span>
+</label>
+</div>
+</div>
+
+<!-- Bio -->
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="bio">نبذة عنك (اختياري)</label>
+<textarea class="form-textarea w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="bio" name="bio" rows="3" maxlength="500" placeholder="أخبرنا عن نفسك وما الذي يميز محتواك..."></textarea>
+<p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-left"><span id="bio-count">0</span>/500</p>
+</div>
+
+<!-- Banking Info -->
+<div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">المعلومات المالية</h3>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="bank-name">اسم البنك <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="bank-name" placeholder="أدخل اسم البنك" required type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="rib">رقم الحساب البنكي (RIB) <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="rib" placeholder="24 رقمًا" required type="text" maxlength="24"/>
+<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">يُستخدم لاستلام المدفوعات</p>
+</div>
+</div>
+</div>
+
+<!-- Password -->
+<div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">كلمة المرور</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="password">كلمة المرور <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="password" name="password" placeholder="8 أحرف على الأقل" required type="password" minlength="8"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="confirm_password">تأكيد كلمة المرور <span class="text-red-500">*</span></label>
+<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="confirm_password" name="confirm_password" placeholder="أعد كتابة كلمة المرور" required type="password"/>
+</div>
+</div>
+</div>
+
+<!-- Security Badge -->
+<div class="flex items-center gap-2 p-4 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary text-sm">
+<span class="material-symbols-outlined">security</span>
+<p>بياناتك آمنة ومحمية بالكامل.</p>
+</div>
+
+<!-- Terms -->
+<div class="flex items-start">
+<div class="flex items-center h-5">
+<input class="form-checkbox h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary" id="terms" name="terms" required type="checkbox"/>
+</div>
+<div class="mr-3 text-sm">
+<label class="text-gray-600 dark:text-gray-400" for="terms">أوافق على <a class="font-medium text-primary hover:underline" href="#">الشروط والأحكام</a> و <a class="font-medium text-primary hover:underline" href="#">سياسة الخصوصية</a></label>
+</div>
+</div>
+
+<!-- Submit Button (DISABLED until email verified) -->
+<div>
+<button 
+  id="submit-btn" 
+  disabled
+  class="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" 
+  type="submit"
+>
+<span class="material-symbols-outlined">rocket_launch</span>
+إرسال
+</button>
+<p id="submit-warning" class="text-yellow-600 dark:text-yellow-500 text-sm text-center mt-2">
+⚠️ يرجى التحقق من البريد الإلكتروني أولاً
+</p>
+</div>
+</form>
+
+<!-- Success Message -->
+<div id="success-message" class="hidden text-center py-12">
+<div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 mb-6">
+<span class="material-symbols-outlined text-5xl">check_circle</span>
+</div>
+<h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">تم إنشاء حسابك بنجاح!</h2>
+<p class="text-gray-600 dark:text-gray-400 mb-4">جاري تحويلك إلى لوحة التحكم...</p>
+<div class="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+</div>
+</div>
+
+<p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+لديك حساب بالفعل؟ <a class="font-medium text-primary hover:underline" href="/auth/creator-login.html">تسجيل الدخول</a>
+</p>
+</div>
+</main>
+
+<footer class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700/50 py-6">
+<div class="container mx-auto px-4">
+<p class="text-sm text-gray-600 dark:text-gray-400 text-center">© 2025 UGC Maroc. جميع الحقوق محفوظة.</p>
+</div>
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+
+<script>
+let appState = {
+  email: '',
+  emailVerified: false,
+  verificationToken: '',
+  profilePictureUrl: null
+};
+
+const emailInput = document.getElementById('email-input');
+const verifyEmailBtn = document.getElementById('verify-email-btn');
+const emailError = document.getElementById('email-error');
+const codeSection = document.getElementById('code-section');
+const codeInputs = document.querySelectorAll('.code-input');
+const verifyCodeBtn = document.getElementById('verify-code-btn');
+const resendCodeBtn = document.getElementById('resend-code-btn');
+const codeError = document.getElementById('code-error');
+const verificationSuccess = document.getElementById('verification-success');
+const signupForm = document.getElementById('signup-form');
+const submitBtn = document.getElementById('submit-btn');
+const submitWarning = document.getElementById('submit-warning');
+const successMessage = document.getElementById('success-message');
+
+let verificationToken = null;
+const profilePictureInput = document.getElementById('profile-picture');
+const imagePreview = document.getElementById('image-preview');
+const bioTextarea = document.getElementById('bio');
+const bioCount = document.getElementById('bio-count');
+
+verifyEmailBtn.addEventListener('click', async () => {
+  const email = emailInput.value.trim();
+  
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    emailError.textContent = 'البريد الإلكتروني غير صالح';
+    emailError.classList.remove('hidden');
+    return;
+  }
+  
+  emailError.classList.add('hidden');
+  verifyEmailBtn.disabled = true;
+  verifyEmailBtn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>';
+  
+  try {
+    const response = await fetch(`${window.API_BASE_URL}/auth/send-verification-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'فشل إرسال الرمز');
+    }
+    
+    appState.email = email;
+    codeSection.classList.remove('hidden');
+    codeInputs[0].focus();
+    emailInput.disabled = true;
+    verifyEmailBtn.style.display = 'none';
+    
+    if (data.simulated) {
+      console.log('📧 [DEV MODE] Check console for verification code');
+    }
+  } catch (error) {
+    emailError.textContent = error.message;
+    emailError.classList.remove('hidden');
+    verifyEmailBtn.disabled = false;
+    verifyEmailBtn.innerHTML = '<span class="material-symbols-outlined text-lg">verified</span> تحقق';
+  }
+});
+
+codeInputs.forEach((input, index) => {
+  input.addEventListener('input', (e) => {
+    const value = e.target.value;
+    if (value.length === 1 && index < codeInputs.length - 1) {
+      codeInputs[index + 1].focus();
+    }
+  });
+  
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      codeInputs[index - 1].focus();
+    }
+  });
+});
+
+verifyCodeBtn.addEventListener('click', async () => {
+  const code = Array.from(codeInputs).map(input => input.value).join('');
+  
+  if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+    codeError.textContent = 'الرجاء إدخال رمز مكون من 6 أرقام';
+    codeError.classList.remove('hidden');
+    return;
+  }
+  
+  codeError.classList.add('hidden');
+  verifyCodeBtn.disabled = true;
+  verifyCodeBtn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>';
+  
+  try {
+    const response = await fetch(`${window.API_BASE_URL}/auth/verify-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: appState.email, code })
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'الرمز غير صحيح');
+    }
+    
+    appState.emailVerified = true;
+    appState.verificationToken = data.verificationToken;
+    
+    codeInputs.forEach(input => input.disabled = true);
+    verifyCodeBtn.style.display = 'none';
+    resendCodeBtn.style.display = 'none';
+    verificationSuccess.classList.remove('hidden');
+    
+    submitBtn.disabled = false;
+    submitWarning.classList.add('hidden');
+  } catch (error) {
+    codeError.textContent = error.message;
+    codeError.classList.remove('hidden');
+    verifyCodeBtn.disabled = false;
+    verifyCodeBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> تأكيد الرمز';
+  }
+});
+
+resendCodeBtn.addEventListener('click', async () => {
+  resendCodeBtn.disabled = true;
+  resendCodeBtn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></span>';
+  
+  try {
+    const response = await fetch(`${window.API_BASE_URL}/auth/send-verification-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: appState.email })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      codeInputs.forEach(input => input.value = '');
+      codeInputs[0].focus();
+      alert('✅ تم إرسال رمز جديد');
+    }
+  } catch (error) {
+    alert('❌ فشل إعادة الإرسال');
+  } finally {
+    resendCodeBtn.disabled = false;
+    resendCodeBtn.innerHTML = '<span class="material-symbols-outlined text-sm">refresh</span> إعادة إرسال';
+  }
+});
+
+if (profilePictureInput && imagePreview) {
+  profilePictureInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      alert('نوع الملف غير مدعوم. استخدم PNG, JPG أو GIF');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      alert('حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      imagePreview.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    try {
+      if (window.utils && window.utils.uploadFile) {
+        const result = await window.utils.uploadFile(file, 'profile-pictures');
+        if (result.success) {
+          appState.profilePictureUrl = result.url;
+          console.log('✅ Photo uploadée:', result.url);
+        }
+      }
+    } catch (error) {
+      console.warn('Upload error:', error);
+    }
+  });
+}
+
+if (bioTextarea && bioCount) {
+  bioTextarea.addEventListener('input', () => {
+    bioCount.textContent = bioTextarea.value.length;
+  });
+}
+
+signupForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  if (!appState.emailVerified) {
+    alert('⚠️ يرجى التحقق من البريد الإلكتروني أولاً');
+    return;
+  }
+  
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirm_password').value;
+  
+  if (password !== confirmPassword) {
+    alert('❌ كلمات المرور غير متطابقة');
+    return;
+  }
+  
+  const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked'))
+    .map(cb => cb.value);
+  
+  if (interests.length === 0) {
+    alert('⚠️ الرجاء اختيار مجال اهتمام واحد على الأقل');
+    return;
+  }
+  
+  const languages = Array.from(document.getElementById('languages').selectedOptions)
+    .map(opt => opt.value);
+  
+  if (languages.length === 0) {
+    alert('⚠️ الرجاء اختيار لغة واحدة على الأقل');
+    return;
+  }
+  
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> جارٍ الإرسال...';
+  
+  try {
+    const formData = {
+      email: appState.email,
+      verificationToken: appState.verificationToken,
+      fullname: document.getElementById('fullname').value,
+      username: document.getElementById('username').value,
+      phone: document.getElementById('phone').value,
+      cin: document.getElementById('cin').value,
+      birthDate: document.getElementById('birth-date').value,
+      ville: document.getElementById('ville').value,
+      languages: languages,
+      interests: interests,
+      bio: document.getElementById('bio').value,
+      bankName: document.getElementById('bank-name').value,
+      rib: document.getElementById('rib').value,
+      password: password,
+      profilePicture: appState.profilePictureUrl,
+      userType: 'creator'
+    };
+    
+    const response = await fetch(`${window.API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'فشل التسجيل');
+    }
+    
+    // Si une session est retournée, sauvegarder et connecter automatiquement
+    if (data.session) {
+      // Sauvegarder la session Supabase
+      await window.supabaseClient.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
+      });
+      
+      // Sauvegarder les infos utilisateur
+      localStorage.setItem('user_role', data.role);
+      localStorage.setItem('user_id', data.userId);
+      localStorage.setItem('user_name', formData.fullname);
+      
+      // Redirection directe vers le dashboard
+      signupForm.classList.add('hidden');
+      successMessage.classList.remove('hidden');
+      
+      setTimeout(() => {
+        window.location.href = '/creator/creator_dashboard.html';
+      }, 2000);
+    } else if (data.requiresLogin) {
+      // Compte créé mais session non créée - rediriger vers login
+      alert('✅ تم إنشاء حسابك بنجاح! يرجى تسجيل الدخول.');
+      setTimeout(() => {
+        window.location.href = '/auth/creator-login.html';
+      }, 1000);
+    } else {
+      // Ancien flux (si pas de session retournée)
+      signupForm.classList.add('hidden');
+      successMessage.classList.remove('hidden');
+      
+      setTimeout(() => {
+        window.location.href = '/auth/creator-verified.html';
+      }, 2000);
+    }
+    
+  } catch (error) {
+    alert('❌ ' + error.message);
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined">rocket_launch</span> إرسال';
+  }
+});
+</script>
+</body>
+</html>

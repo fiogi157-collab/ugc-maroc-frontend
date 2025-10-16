@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - إنشاء حملة جديدة</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#5020df",
+            "background-light": "#f6f6f8",
+            "background-dark": "#151121",
+            "foreground-light": "#110e1b",
+            "foreground-dark": "#f6f6f8",
+            "card-light": "#ffffff",
+            "card-dark": "#201b2d",
+            "border-light": "#e5e7eb",
+            "border-dark": "#3a334a",
+            "muted-foreground-light": "#6b7280",
+            "muted-foreground-dark": "#9ca3af"
+          },
+          fontFamily: {
+            "display": ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .form-checkbox:checked {
+        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+    }
+    .step-active .step-circle {
+        background-color: #5020df;
+        color: white;
+    }
+    .step-active .step-line {
+        background-color: #5020df;
+    }
+    .step-complete .step-circle {
+        background-color: #5020df;
+        color: white;
+    }
+    .step-complete .step-line {
+        background-color: #5020df;
+    }
+    .summary-item:hover .edit-icon {
+        opacity: 1;
+    }
+  </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark">
+<div class="flex min-h-screen">
+<aside class="w-64 bg-card-light dark:bg-card-dark p-6 flex flex-col justify-between border-l border-border-light dark:border-border-dark">
+<div>
+<div class="flex items-center gap-3 mb-10">
+<div class="w-8 h-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold">UGC Maroc</h1>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground-light dark:text-muted-foreground-dark" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>الرئيسية</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span>الحملات</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground-light dark:text-muted-foreground-dark" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span>المبدعون</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground-light dark:text-muted-foreground-dark" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>التقارير</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground-light dark:text-muted-foreground-dark" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>المساعدة</span>
+</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmSV1w4WePRLsua1Hmv6_1sABAGMVzbpKNlvayZoiYq4REf49h9bqwemMKV_nSC_CdWRyDVhbH7Fk8COWijD-892SPKuojLjC5V32INRWi5nnnp6XqT2TPH04rDs-VBxg7SdU81mXZg5KLx06Q46XcBgz6krtJ_yPYHuByk05wfLnK3QBmmN3d-5N_N2h1s2R8HhVknOF8JUljGqyrfkWdU0Qq4Oap2yGRSj3oRx8mpizkCBuiaoxwTpCOCQoc98Uy--gJHM4y1Os");'></div>
+<div>
+<p class="font-bold">اسم العلامة</p>
+<p class="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">@brand_name</p>
+</div>
+</div>
+</aside>
+<main class="flex-1">
+<header class="flex items-center justify-between p-6 border-b border-border-light dark:border-border-dark">
+<div>
+<h2 class="text-2xl font-bold">إنشاء حملة جديدة</h2>
+<p class="text-muted-foreground-light dark:text-muted-foreground-dark">اتبع الخطوات لإنشاء حملتك التسويقية الجديدة</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-primary"></span>
+</button>
+</div>
+</header>
+<div class="flex">
+<div class="flex-1 p-8">
+<div class="max-w-4xl mx-auto">
+<div class="mb-12">
+<div class="flex items-center">
+<div class="step-complete flex-1 flex items-center">
+<div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"><span class="material-symbols-outlined">check</span></div>
+<div class="step-line flex-1 h-1 bg-primary"></div>
+</div>
+<div class="step-complete flex-1 flex items-center">
+<div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"><span class="material-symbols-outlined">check</span></div>
+<div class="step-line flex-1 h-1 bg-primary"></div>
+</div>
+<div class="step-complete flex-1 flex items-center">
+<div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"><span class="material-symbols-outlined">check</span></div>
+<div class="step-line flex-1 h-1 bg-primary"></div>
+</div>
+<div class="step-active flex items-center">
+<div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg bg-primary text-white">4</div>
+</div>
+</div>
+<div class="flex justify-between mt-2 text-sm font-medium text-muted-foreground-light dark:text-muted-foreground-dark">
+<div class="text-center w-1/4">تفاصيل الحملة</div>
+<div class="text-center w-1/4">متطلبات المحتوى</div>
+<div class="text-center w-1/4">شروط المبدعين</div>
+<div class="text-center text-primary font-bold">المراجعة والإطلاق</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-8 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+<div class="mb-6">
+<h3 class="text-xl font-bold mb-2">الخطوة 4: المراجعة والإطلاق</h3>
+<p class="text-muted-foreground-light dark:text-muted-foreground-dark">راجع جميع تفاصيل حملتك قبل إطلاقها. يمكنك تعديل أي قسم بالضغط عليه.</p>
+</div>
+<div class="space-y-6">
+<div class="border border-border-light dark:border-border-dark rounded-lg">
+<div class="flex justify-between items-center p-4 bg-background-light dark:bg-background-dark/50 rounded-t-lg">
+<h4 class="text-lg font-bold">تفاصيل الحملة الأساسية</h4>
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="#">
+<span class="material-symbols-outlined text-base">edit</span>
+<span>تعديل القسم</span>
+</a>
+</div>
+<div class="p-6 space-y-4">
+<div class="summary-item group grid grid-cols-3 gap-4 items-start">
+<span class="font-medium text-muted-foreground-light dark:text-muted-foreground-dark">عنوان الحملة:</span>
+<span class="col-span-2 font-semibold">إطلاق مجموعة مستحضرات التجميل الجديدة "نور الصحراء"</span>
+</div>
+<div class="summary-item group grid grid-cols-3 gap-4 items-start">
+<span class="font-medium text-muted-foreground-light dark:text-muted-foreground-dark">ملخص الحملة:</span>
+<p class="col-span-2 text-sm">حملة تهدف إلى الترويج لمجموعتنا الجديدة من مستحضرات التجميل المستوحاة من جمال الصحراء المغربية. نسعى للحصول على محتوى UGC يبرز جودة المنتجات وتنوعها.</p>
+</div>
+<div class="summary-item group grid grid-cols-3 gap-4 items-center">
+<span class="font-medium text-muted-foreground-light dark:text-muted-foreground-dark">الميزانية:</span>
+<span class="col-span-2 font-semibold text-lg">15,000 درهم مغربي</span>
+</div>
+<div class="summary-item group grid grid-cols-3 gap-4 items-center">
+<span class="font-medium text-muted-foreground-light dark:text-muted-foreground-dark">الموعد النهائي:</span>
+<span class="col-span-2 font-semibold">31 أغسطس 2024</span>
+</div>
+</div>
+</div>
+<div class="border border-border-light dark:border-border-dark rounded-lg">
+<div class="flex justify-between items-center p-4 bg-background-light dark:bg-background-dark/50 rounded-t-lg">
+<h4 class="text-lg font-bold">متطلبات المحتوى والمنصات</h4>
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="#">
+<span class="material-symbols-outlined text-base">edit</span>
+<span>تعديل القسم</span>
+</a>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<h5 class="font-semibold mb-3">أنواع المحتوى المطلوبة</h5>
+<div class="flex flex-wrap gap-2">
+<span class="py-1 px-3 bg-primary/10 text-primary rounded-full text-sm">فيديو UGC</span>
+<span class="py-1 px-3 bg-primary/10 text-primary rounded-full text-sm">صور</span>
+<span class="py-1 px-3 bg-primary/10 text-primary rounded-full text-sm">قصص (Stories)</span>
+</div>
+</div>
+<div>
+<h5 class="font-semibold mb-3">المنصات المطلوبة</h5>
+<div class="flex flex-wrap gap-2">
+<span class="py-1 px-3 bg-indigo-100 text-indigo-800 rounded-full text-sm">Instagram</span>
+<span class="py-1 px-3 bg-indigo-100 text-indigo-800 rounded-full text-sm">TikTok</span>
+</div>
+</div>
+</div>
+</div>
+<div class="border border-border-light dark:border-border-dark rounded-lg">
+<div class="flex justify-between items-center p-4 bg-background-light dark:bg-background-dark/50 rounded-t-lg">
+<h4 class="text-lg font-bold">متطلبات المبدعين</h4>
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="#">
+<span class="material-symbols-outlined text-base">edit</span>
+<span>تعديل القسم</span>
+</a>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<h5 class="font-semibold mb-2 text-muted-foreground-light dark:text-muted-foreground-dark">مجال الإبداع</h5>
+<p class="font-medium">جمال وموضة</p>
+</div>
+<div>
+<h5 class="font-semibold mb-2 text-muted-foreground-light dark:text-muted-foreground-dark">اللغات</h5>
+<p class="font-medium">العربية (دارجة), الفرنسية</p>
+</div>
+</div>
+</div>
+<div class="border border-border-light dark:border-border-dark rounded-lg">
+<div class="p-4 bg-background-light dark:bg-background-dark/50 rounded-t-lg flex justify-between items-center">
+<h4 class="text-lg font-bold">رسالة ترحيبية للمبدعين</h4>
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="#">
+<span class="material-symbols-outlined text-base">edit</span>
+<span>تعديل</span>
+</a>
+</div>
+<div class="p-6">
+<div class="relative group">
+<div class="w-full bg-background-light dark:bg-background-dark rounded-lg p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 min-h-[100px] border border-transparent hover:border-border-light dark:hover:border-border-dark" contenteditable="true">
+<p class="text-sm text-muted-foreground-light dark:text-muted-foreground-dark italic">مرحباً! سعداء جداً بانضمامك لحملة إطلاق مجموعة "نور الصحراء". نتطلع لرؤية إبداعك في إبراز جمال منتجاتنا. لا تتردد في التواصل معنا لأي استفسار.
+            </p>
+</div>
+<div class="absolute bottom-2 left-2 opacity-0 group-focus-within:opacity-100 transition-opacity">
+<button class="px-3 py-1 text-xs rounded bg-primary text-white font-semibold">حفظ التغييرات</button>
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-2 flex justify-between items-center gap-4 pt-8 mt-4 border-t border-border-light dark:border-border-dark">
+<div class="flex items-center gap-4">
+<button class="px-6 py-3 rounded-lg font-bold text-muted-foreground-light dark:text-muted-foreground-dark hover:bg-gray-100 dark:hover:bg-card-dark/60 transition-colors flex items-center gap-2" type="button">
+<span class="material-symbols-outlined">arrow_forward</span>
+<span>العودة للخطوة السابقة</span>
+</button>
+<button class="px-6 py-3 rounded-lg font-bold text-muted-foreground-light dark:text-muted-foreground-dark hover:bg-gray-100 dark:hover:bg-card-dark/60 transition-colors" type="button">حفظ كمسودة</button>
+</div>
+<button class="px-8 py-4 rounded-lg font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30 flex items-center gap-2 text-lg" type="button">
+<span class="material-symbols-outlined">rocket_launch</span>
+<span>إطلاق الحملة الآن</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<aside class="w-80 bg-background-light dark:bg-background-dark p-8 border-r border-border-light dark:border-border-dark hidden lg:block">
+<div class="sticky top-8">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-3xl text-primary">checklist</span>
+<h3 class="text-xl font-bold">قائمة المراجعة النهائية</h3>
+</div>
+<div class="space-y-4 text-muted-foreground-light dark:text-muted-foreground-dark">
+<p class="text-sm leading-relaxed">أنت على وشك إطلاق حملتك! تأكد من أن كل شيء يبدو مثالياً. هذه هي فرصتك الأخيرة للمراجعة.</p>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-lg text-green-500 mt-0.5">check_circle</span>
+<p class="text-sm flex-1"><span class="font-semibold text-foreground-light dark:text-foreground-dark">التفاصيل واضحة:</span> هل العنوان والوصف يعكسان أهدافك بوضوح؟</p>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-lg text-green-500 mt-0.5">check_circle</span>
+<p class="text-sm flex-1"><span class="font-semibold text-foreground-light dark:text-foreground-dark">الميزانية والمواعيد:</span> هل الميزانية والموعد النهائي واقعيان؟</p>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-lg text-green-500 mt-0.5">check_circle</span>
+<p class="text-sm flex-1"><span class="font-semibold text-foreground-light dark:text-foreground-dark">المتطلبات محددة:</span> هل حددت أنواع المحتوى والمنصات التي تهمك؟</p>
+</li>
+</ul>
+<div class="p-4 rounded-lg bg-primary/10 dark:bg-primary/20 border-r-4 border-primary mt-6">
+<h4 class="font-semibold text-primary mb-2">جاهز للإطلاق؟</h4>
+<p class="text-sm leading-relaxed">بمجرد الضغط على "إطلاق الحملة الآن"، ستصبح حملتك مرئية للمبدعين المؤهلين الذين يمكنهم البدء في تقديم طلبات الانضمام.</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+
+
+<!-- Scripts Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts UGC Maroc -->
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard-brand.js"></script>
+
+</body></html>
