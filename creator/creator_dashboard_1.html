@@ -37,6 +37,62 @@
     .glowing-shadow {
         box-shadow: 0 0 15px 5px rgba(124, 58, 237, 0.2);
     }
+    
+    /* Smooth animations */
+    * {
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    }
+    
+    /* Card hover effects */
+    .hover\:scale-105:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Fade in animation for content */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+    
+    /* Pulse animation for notifications */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    /* Loading skeleton */
+    @keyframes shimmer {
+      0% {
+        background-position: -1000px 0;
+      }
+      100% {
+        background-position: 1000px 0;
+      }
+    }
+    
+    .skeleton {
+      background: linear-gradient(to right, #f0f0f0 8%, #f8f8f8 18%, #f0f0f0 33%);
+      background-size: 1000px 100%;
+      animation: shimmer 2s infinite;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
@@ -59,7 +115,7 @@
 <span class="material-icons">work_outline</span>
 <span class="mr-4">فرص جديدة</span>
 </a>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 relative" href="#">
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 relative cursor-pointer" onclick="alert('قريباً! نعمل على إضافة نظام الرسائل 💬')">
 <span class="material-icons">email</span>
 <span class="mr-4">الرسائل</span>
 <span class="absolute top-2 right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
@@ -75,14 +131,18 @@
 </nav>
 </div>
 <div>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="#">
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onclick="alert('قريباً! نعمل على إضافة صفحة الإعدادات ⚙️')">
 <span class="material-icons">settings</span>
 <span class="mr-4">الإعدادات</span>
 </a>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="#">
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onclick="alert('قريباً! نعمل على إضافة نظام الدعم 💬')">
 <span class="material-icons">help_outline</span>
 <span class="mr-4">الدعم</span>
 </a>
+<button id="logout-btn" class="w-full flex items-center p-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors mt-2">
+<span class="material-icons">logout</span>
+<span class="mr-4">تسجيل الخروج</span>
+</button>
 <div class="flex items-center justify-between mt-4 p-3 rounded-lg bg-gray-200 dark:bg-gray-700/50">
 <span class="font-medium">الوضع الداكن</span>
 <label class="relative inline-flex items-center cursor-pointer">
@@ -389,12 +449,43 @@ async function loadDashboardData() {
   }
 }
 
+// Logout functionality
+async function handleLogout() {
+  try {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.disabled = true;
+      logoutBtn.innerHTML = '<span class="material-icons animate-spin">sync</span><span class="mr-4">جارٍ تسجيل الخروج...</span>';
+    }
+
+    // Logout from Supabase Auth
+    await window.supabaseClient.auth.signOut();
+    
+    // Clear local storage
+    localStorage.clear();
+    
+    // Redirect to home page
+    window.location.href = '/index.html';
+  } catch (error) {
+    console.error('❌ Error logging out:', error);
+    alert('حدث خطأ أثناء تسجيل الخروج');
+  }
+}
+
 // Initialize when Supabase is ready
 if (window.supabaseClient) {
   loadDashboardData();
 } else {
   window.addEventListener('supabaseReady', loadDashboardData);
 }
+
+// Attach logout handler when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+});
 </script>
 <script src="/js/nav-links.js"></script>
 </body>
