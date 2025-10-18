@@ -58,6 +58,16 @@ Fixed critical authentication bug and simplified architecture for better securit
 
 See `AUTH_FIX_COMPLETE.md` for detailed technical documentation.
 
+### Clickable Logo Navigation (October 18, 2025)
+
+Implemented universal clickable logo functionality across the platform:
+
+1. **Feature**: Logo "UGC Maroc" now redirects to `/index.html` from any page
+2. **Implementation**: JavaScript-based solution in `nav-links.js` (auto-wraps logo in anchor tag)
+3. **Scope**: Works on all pages where `nav-links.js` is loaded (auth, brand, creator pages)
+4. **Script Path Fix**: Corrected 9 pages from relative `./js/nav-links.js` to absolute `/js/nav-links.js`
+5. **Benefits**: Maintainable (single file), extensible (auto-applies to future pages), non-invasive
+
 ## Project Architecture
 
 ### Frontend
