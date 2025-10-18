@@ -99,70 +99,18 @@
 
 <div class="glass-morphism shadow-2xl rounded-2xl p-8 fade-in">
 <form id="signup-form" class="space-y-6">
-<!-- Email Verification Section -->
-<div class="border-b border-gray-200 dark:border-gray-700 pb-6">
-<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">التحقق من البريد الإلكتروني</h3>
+<!-- Email Field -->
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="email">
-البريد الإلكتروني <span class="text-red-500">*</span>
-</label>
-<div class="flex gap-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="email">البريد الإلكتروني <span class="text-red-500">*</span></label>
 <input 
   type="email" 
   id="email" 
-  class="form-input flex-1 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" 
+  name="email"
+  class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" 
   placeholder="company@example.com" 
   required
   autofocus
 />
-<button 
-  type="button"
-  id="verify-email-btn" 
-  class="inline-flex items-center justify-center gap-2 px-6 border border-transparent rounded-lg text-sm font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all whitespace-nowrap"
->
-  <span class="material-symbols-outlined text-lg">send</span>
-  تحقق
-</button>
-</div>
-<p id="email-error" class="hidden text-red-500 text-sm mt-2"></p>
-<div id="email-status" class="hidden mt-2"></div>
-</div>
-
-<!-- Code Verification Field (hidden by default) -->
-<div id="code-section" class="hidden mt-4 fade-in">
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-رمز التحقق (6 أرقام) <span class="text-red-500">*</span>
-</label>
-<div class="flex gap-2 items-center">
-<div class="flex gap-2">
-<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="0"/>
-<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="1"/>
-<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="2"/>
-<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="3"/>
-<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="4"/>
-<input type="text" maxlength="1" class="code-input form-input rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary" data-index="5"/>
-</div>
-<button 
-  type="button"
-  id="verify-code-btn" 
-  class="inline-flex items-center justify-center gap-2 px-6 py-3 border border-transparent rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition-all"
->
-  <span class="material-symbols-outlined text-lg">check_circle</span>
-  تحقق
-</button>
-</div>
-<div class="flex justify-between items-center mt-2">
-<p id="code-error" class="hidden text-red-500 text-sm"></p>
-<button 
-  type="button"
-  id="resend-code-btn" 
-  class="text-sm text-primary hover:underline"
->
-  إعادة إرسال الرمز
-</button>
-</div>
-<div id="code-status" class="hidden mt-2"></div>
-</div>
 </div>
 
 <!-- Logo Upload -->
@@ -293,16 +241,12 @@
 <div>
 <button 
   id="submit-btn" 
-  class="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-bold text-white bg-gray-400 cursor-not-allowed transition-all" 
+  class="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-md text-base font-bold text-white bg-primary hover:bg-primary/90 hover:scale-105 transition-all" 
   type="submit"
-  disabled
 >
 <span class="material-symbols-outlined">business</span>
 إرسال
 </button>
-<p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
-يرجى التحقق من البريد الإلكتروني أولاً
-</p>
 </div>
 </form>
 
@@ -332,26 +276,9 @@
 <script src="../js/config.js"></script>
 <script src="../js/auth.js"></script>
 <script>
-let userEmail = '';
-let isEmailVerified = false;
-
-const emailInput = document.getElementById('email');
-const verifyEmailBtn = document.getElementById('verify-email-btn');
-const emailError = document.getElementById('email-error');
-const emailStatus = document.getElementById('email-status');
-
-const codeSection = document.getElementById('code-section');
-const codeInputs = document.querySelectorAll('.code-input');
-const verifyCodeBtn = document.getElementById('verify-code-btn');
-const resendCodeBtn = document.getElementById('resend-code-btn');
-const codeError = document.getElementById('code-error');
-const codeStatus = document.getElementById('code-status');
-
 const signupForm = document.getElementById('signup-form');
 const submitBtn = document.getElementById('submit-btn');
 const successMessage = document.getElementById('success-message');
-
-let verificationToken = null;
 
 const logoInput = document.getElementById('brand-logo');
 const logoPreview = document.getElementById('logo-preview');
@@ -373,151 +300,10 @@ bioTextarea?.addEventListener('input', (e) => {
   bioCount.textContent = e.target.value.length;
 });
 
-codeInputs.forEach((input, index) => {
-  input.addEventListener('input', (e) => {
-    if (e.target.value.length === 1 && index < codeInputs.length - 1) {
-      codeInputs[index + 1].focus();
-    }
-  });
-  
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Backspace' && !e.target.value && index > 0) {
-      codeInputs[index - 1].focus();
-    }
-  });
-});
-
-verifyEmailBtn.addEventListener('click', async () => {
-  const email = emailInput.value.trim();
-  
-  if (!email || !email.includes('@')) {
-    showError(emailError, 'الرجاء إدخال بريد إلكتروني صالح');
-    return;
-  }
-
-  verifyEmailBtn.disabled = true;
-  verifyEmailBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> جارٍ الإرسال...';
-
-  try {
-    const response = await fetch('/api/auth/send-verification-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      userEmail = email;
-      emailInput.disabled = true;
-      verifyEmailBtn.disabled = true;
-      verifyEmailBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check</span> تم الإرسال';
-      
-      showStatus(emailStatus, 'تم إرسال رمز التحقق إلى بريدك الإلكتروني', 'info');
-      
-      codeSection.classList.remove('hidden');
-      codeInputs[0].focus();
-    } else {
-      showError(emailError, data.message || 'فشل إرسال رمز التحقق');
-      verifyEmailBtn.disabled = false;
-      verifyEmailBtn.innerHTML = '<span class="material-symbols-outlined text-lg">send</span> تحقق';
-    }
-  } catch (error) {
-    showError(emailError, 'حدث خطأ في الاتصال. حاول مرة أخرى.');
-    console.error('Error:', error);
-    verifyEmailBtn.disabled = false;
-    verifyEmailBtn.innerHTML = '<span class="material-symbols-outlined text-lg">send</span> تحقق';
-  }
-});
-
-verifyCodeBtn.addEventListener('click', async () => {
-  const code = Array.from(codeInputs).map(input => input.value).join('');
-  
-  if (code.length !== 6) {
-    showError(codeError, 'الرجاء إدخال الرمز المكون من 6 أرقام');
-    return;
-  }
-
-  verifyCodeBtn.disabled = true;
-  verifyCodeBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> جارٍ التحقق...';
-
-  try {
-    const response = await fetch('/api/auth/verify-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail, code })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      isEmailVerified = true;
-      verificationToken = data.verificationToken;
-      
-      codeInputs.forEach(input => input.disabled = true);
-      verifyCodeBtn.disabled = true;
-      verifyCodeBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check</span> تم التحقق';
-      
-      showStatus(codeStatus, '✓ تم التحقق من البريد الإلكتروني بنجاح', 'success');
-      
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-      submitBtn.classList.add('bg-primary', 'hover:bg-primary/90', 'hover:scale-105');
-      submitBtn.querySelector('p')?.remove();
-    } else {
-      showError(codeError, data.message || '✗ رمز التحقق غير صحيح');
-      verifyCodeBtn.disabled = false;
-      verifyCodeBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> تحقق';
-    }
-  } catch (error) {
-    showError(codeError, 'حدث خطأ في التحقق. حاول مرة أخرى.');
-    console.error('Error:', error);
-    verifyCodeBtn.disabled = false;
-    verifyCodeBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> تحقق';
-  }
-});
-
-resendCodeBtn.addEventListener('click', async () => {
-  resendCodeBtn.disabled = true;
-  const originalText = resendCodeBtn.textContent;
-  resendCodeBtn.textContent = 'جارٍ الإرسال...';
-
-  try {
-    const response = await fetch('/api/auth/send-verification-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      codeInputs.forEach(input => {
-        input.value = '';
-        input.disabled = false;
-      });
-      codeInputs[0].focus();
-      showStatus(codeStatus, 'تم إعادة إرسال الرمز بنجاح', 'success');
-      setTimeout(() => codeStatus.classList.add('hidden'), 3000);
-    } else {
-      showError(codeError, data.message || 'فشل إعادة الإرسال');
-    }
-  } catch (error) {
-    showError(codeError, 'حدث خطأ. حاول مرة أخرى.');
-  } finally {
-    resendCodeBtn.disabled = false;
-    resendCodeBtn.textContent = originalText;
-  }
-});
-
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  if (!isEmailVerified) {
-    alert('يجب التحقق من البريد الإلكتروني أولاً');
-    return;
-  }
-
+  const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirm-password').value;
 
@@ -552,7 +338,7 @@ signupForm.addEventListener('submit', async (e) => {
   try {
     // Utiliser la fonction signupUser() de auth.js (Supabase client-side)
     const result = await window.auth.signupUser(
-      userEmail,
+      email,
       password,
       'brand',
       companyName,
@@ -586,25 +372,6 @@ signupForm.addEventListener('submit', async (e) => {
     submitBtn.innerHTML = '<span class="material-symbols-outlined">business</span> إرسال';
   }
 });
-
-function showError(element, message) {
-  element.textContent = message;
-  element.classList.remove('hidden');
-  setTimeout(() => {
-    element.classList.add('hidden');
-  }, 5000);
-}
-
-function showStatus(element, message, type) {
-  const colors = {
-    success: 'text-green-600 dark:text-green-400',
-    error: 'text-red-600 dark:text-red-400',
-    info: 'text-blue-600 dark:text-blue-400'
-  };
-  
-  element.innerHTML = `<span class="verification-status ${colors[type]}">${message}</span>`;
-  element.classList.remove('hidden');
-}
 </script>
 <script src="/js/nav-links.js"></script>
 </body>
