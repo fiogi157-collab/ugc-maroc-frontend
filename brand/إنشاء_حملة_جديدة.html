@@ -322,20 +322,74 @@
 <script src="/js/ai-assistant.js"></script>
 
 <script>
+// Fonction pour récupérer les données de la campagne depuis la page
+function getCampaignDataFromPage() {
+  // Récupérer toutes les données affichées sur la page
+  const campaignTitle = document.querySelector('.summary-item:nth-child(1) .col-span-2')?.textContent?.trim() || '';
+  const campaignDescription = document.querySelector('.summary-item:nth-child(2) .col-span-2')?.textContent?.trim() || '';
+  const budget = document.querySelector('.summary-item:nth-child(3) .col-span-2')?.textContent?.trim() || '';
+  const deadline = document.querySelector('.summary-item:nth-child(4) .col-span-2')?.textContent?.trim() || '';
+  
+  // Récupérer le type de contenu
+  const contentTypes = Array.from(document.querySelectorAll('.bg-primary\\/10.text-primary'))
+    .map(el => el.textContent.trim())
+    .join(', ');
+  
+  // Récupérer les plateformes
+  const platforms = Array.from(document.querySelectorAll('.bg-indigo-100.text-indigo-800'))
+    .map(el => el.textContent.trim())
+    .join(', ');
+  
+  // Récupérer le secteur créatif
+  const creativeField = document.querySelector('h5:contains("مجال الإبداع") + p')?.textContent?.trim() || 
+                        document.evaluate("//h5[contains(text(), 'مجال الإبداع')]/following-sibling::p", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.textContent?.trim() || 
+                        'جمال وموضة';
+  
+  // Récupérer les langues
+  const languages = document.evaluate("//h5[contains(text(), 'اللغات')]/following-sibling::p", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.textContent?.trim() || 
+                    'العربية (دارجة)';
+  
+  return {
+    campaignName: campaignTitle,
+    description: campaignDescription,
+    budget: budget,
+    deadline: deadline,
+    contentTypes: contentTypes,
+    platforms: platforms,
+    creativeField: creativeField,
+    languages: languages
+  };
+}
+
 // Fonction pour générer un brief avec l'IA
 async function generateAIBrief() {
-  // Récupérer les données de la campagne depuis la page
-  const campaignInfo = {
-    campaignName: "إطلاق مجموعة مستحضرات التجميل الجديدة نور الصحراء",
-    brandName: "نور الصحراء",
-    productName: "مستحضرات التجميل المستوحاة من جمال الصحراء المغربية",
-    goal: "الحصول على محتوى UGC يبرز جودة المنتجات وتنوعها",
-    budget: "15000 درهم مغربي",
-    targetAudience: "نساء مهتمات بالجمال والعناية بالبشرة"
-  };
-  
-  // Appeler l'assistant IA
-  await AIAssistant.generateBrief(campaignInfo, 'ai-brief-result');
+  try {
+    // Récupérer les données de la campagne depuis la page
+    const pageData = getCampaignDataFromPage();
+    
+    // Préparer les données pour l'IA
+    const campaignInfo = {
+      campaignName: pageData.campaignName,
+      brandName: "علامتك التجارية", // Sera récupéré du profil utilisateur connecté
+      productName: pageData.description,
+      goal: `إنشاء ${pageData.contentTypes} على ${pageData.platforms}`,
+      budget: pageData.budget,
+      deadline: pageData.deadline,
+      targetAudience: `مهتمون ب${pageData.creativeField}، يتحدثون ${pageData.languages}`,
+      contentRequirements: pageData.contentTypes,
+      platforms: pageData.platforms
+    };
+    
+    // Appeler l'assistant IA
+    await AIAssistant.generateBrief(campaignInfo, 'ai-brief-result');
+  } catch (error) {
+    console.error('Erreur génération brief:', error);
+    document.getElementById('ai-brief-result').innerHTML = `
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p class="text-red-700">❌ حدث خطأ في توليد البريف. تأكد من ملء جميع البيانات.</p>
+      </div>
+    `;
+  }
 }
 
 console.log('✅ Campaign AI features loaded');

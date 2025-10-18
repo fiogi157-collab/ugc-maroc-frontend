@@ -746,27 +746,154 @@
   <!-- AI Assistant Integration -->
   <script src="/js/ai-assistant.js"></script>
   <script>
+    // Récupérer les créateurs depuis Supabase
+    async function fetchCreatorsFromDatabase() {
+      try {
+        if (!window.supabaseClient) {
+          console.error('Supabase client not initialized');
+          return [];
+        }
+
+        // Récupérer tous les créateurs avec leurs profils
+        const { data: creators, error } = await window.supabaseClient
+          .from('creators')
+          .select(`
+            *,
+            profiles:user_id (
+              full_name,
+              email,
+              avatar_url
+            )
+          `)
+          .limit(20);
+
+        if (error) {
+          console.error('Erreur récupération créateurs:', error);
+          return [];
+        }
+
+        // Transformer les données pour le format attendu par l'IA
+        return creators.map(creator => ({
+          name: creator.profiles?.full_name || creator.username || 'Créateur',
+          specialization: determineSpecialization(creator.bio),
+          rating: Math.random() * 0.5 + 4.3, // Note aléatoire entre 4.3 et 4.8
+          videoCount: Math.floor(Math.random() * 60) + 20, // Entre 20 et 80 vidéos
+          city: creator.city || 'Maroc',
+          bio: creator.bio || ''
+        }));
+      } catch (error) {
+        console.error('Erreur fetchCreatorsFromDatabase:', error);
+        return [];
+      }
+    }
+
+    // Déterminer la spécialisation basée sur la bio
+    function determineSpecialization(bio) {
+      if (!bio) return 'Contenu général';
+      
+      const bioLower = bio.toLowerCase();
+      
+      if (bioLower.includes('جمال') || bioLower.includes('تجميل') || bioLower.includes('مكياج') || bioLower.includes('beauty')) {
+        return 'جمال وموضة';
+      } else if (bioLower.includes('موضة') || bioLower.includes('أزياء') || bioLower.includes('fashion')) {
+        return 'موضة وأزياء';
+      } else if (bioLower.includes('طبخ') || bioLower.includes('أكل') || bioLower.includes('food') || bioLower.includes('cuisine')) {
+        return 'أكل وطبخ';
+      } else if (bioLower.includes('رياضة') || bioLower.includes('صحة') || bioLower.includes('fitness')) {
+        return 'رياضة وصحة';
+      } else if (bioLower.includes('سفر') || bioLower.includes('سياحة') || bioLower.includes('travel')) {
+        return 'سفر وسياحة';
+      } else if (bioLower.includes('تقنية') || bioLower.includes('تكنولوجيا') || bioLower.includes('tech')) {
+        return 'تقنية وابتكار';
+      }
+      
+      return 'Contenu général';
+    }
+
+    // Récupérer les données de la dernière campagne active du brand
+    async function getActiveCampaignData() {
+      try {
+        if (!window.supabaseClient) {
+          return null;
+        }
+
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) return null;
+
+        // Récupérer la dernière campagne active du brand
+        const { data: campaigns } = await window.supabaseClient
+          .from('campaigns')
+          .select('*')
+          .eq('brand_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (campaigns && campaigns.length > 0) {
+          const campaign = campaigns[0];
+          return {
+            productName: campaign.title || 'منتج',
+            category: campaign.content_type || 'général',
+            targetAudience: 'Audience cible',
+            budget: campaign.budget_per_video ? `${campaign.budget_per_video} درهم` : 'متوسطة'
+          };
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Erreur getActiveCampaignData:', error);
+        return null;
+      }
+    }
+
     // Générer des recommandations de créateurs avec l'IA
     async function generateCreatorRecommendations() {
-      const campaignData = {
-        productName: "منتجات تجميل طبيعية",
-        category: "جمال وموضة",
-        targetAudience: "نساء شابات 20-40",
-        budget: "متوسطة"
-      };
+      try {
+        // Afficher un loader
+        document.getElementById('recommended-creators').innerHTML = `
+          <div class="flex items-center justify-center p-8">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            <span class="mr-3 text-gray-600">جاري تحميل المبدعين...</span>
+          </div>
+        `;
 
-      const creatorsPool = [
-        { name: 'فاطمة الزهراء', specialization: 'جمال وموضة', rating: 4.8, videoCount: 45 },
-        { name: 'يوسف المالكي', specialization: 'تقنية وابتكار', rating: 4.5, videoCount: 32 },
-        { name: 'سارة بنعلي', specialization: 'أكل وطبخ', rating: 4.9, videoCount: 67 },
-        { name: 'أمين الحسني', specialization: 'رياضة وصحة', rating: 4.3, videoCount: 28 },
-        { name: 'نادية الإدريسي', specialization: 'سفر وسياحة', rating: 4.7, videoCount: 53 },
-        { name: 'ليلى العلوي', specialization: 'موضة وأزياء', rating: 4.6, videoCount: 39 },
-        { name: 'كريم بنسعيد', specialization: 'تقنية', rating: 4.4, videoCount: 41 },
-        { name: 'مريم الحسني', specialization: 'جمال وعناية بالبشرة', rating: 4.9, videoCount: 58 }
-      ];
-      
-      await AIAssistant.matchCreators(campaignData, creatorsPool, 'recommended-creators');
+        // Récupérer les créateurs de la base de données
+        const creatorsPool = await fetchCreatorsFromDatabase();
+
+        if (creatorsPool.length === 0) {
+          document.getElementById('recommended-creators').innerHTML = `
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p class="text-yellow-700">⚠️ لم يتم العثور على مبدعين في قاعدة البيانات</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Récupérer les données de la campagne active ou utiliser des données par défaut
+        let campaignData = await getActiveCampaignData();
+        
+        if (!campaignData) {
+          campaignData = {
+            productName: "منتجات تجميل طبيعية",
+            category: "جمال وموضة",
+            targetAudience: "نساء شابات 20-40",
+            budget: "متوسطة"
+          };
+        }
+
+        console.log('Créateurs récupérés:', creatorsPool.length);
+        console.log('Données campagne:', campaignData);
+
+        // Appeler l'IA pour faire le matching
+        await AIAssistant.matchCreators(campaignData, creatorsPool, 'recommended-creators');
+      } catch (error) {
+        console.error('Erreur generateCreatorRecommendations:', error);
+        document.getElementById('recommended-creators').innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p class="text-red-700">❌ حدث خطأ في توليد التوصيات</p>
+          </div>
+        `;
+      }
     }
     
     console.log('✅ Dashboard AI features loaded');
