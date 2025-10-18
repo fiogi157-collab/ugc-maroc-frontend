@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Resend } from "resend";
+import deepseekService from "../services/deepseek.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,6 +65,155 @@ app.get("/api/config", (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL || "",
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ""
   });
+});
+
+// =====================================================
+// 🤖 AI ENDPOINTS - DeepSeek Integration
+// =====================================================
+
+// 1. مولد السكريبت - Generate UGC Script
+app.post("/api/ai/generate-script", async (req, res) => {
+  try {
+    const { briefData } = req.body;
+    
+    if (!briefData) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "بيانات البريف مطلوبة" 
+      });
+    }
+
+    const script = await deepseekService.generateScript(briefData);
+    
+    return res.status(200).json({
+      success: true,
+      script: script,
+      message: "تم توليد السكريبت بنجاح ✨"
+    });
+  } catch (error) {
+    console.error("❌ Error generating script:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في توليد السكريبت. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
+});
+
+// 2. اقتراحات المحتوى - Content Suggestions
+app.post("/api/ai/suggest-content", async (req, res) => {
+  try {
+    const { campaignData } = req.body;
+    
+    if (!campaignData) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "بيانات الحملة مطلوبة" 
+      });
+    }
+
+    const suggestions = await deepseekService.suggestContent(campaignData);
+    
+    return res.status(200).json({
+      success: true,
+      suggestions: suggestions,
+      message: "تم توليد الاقتراحات بنجاح 💡"
+    });
+  } catch (error) {
+    console.error("❌ Error generating suggestions:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في توليد الاقتراحات. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
+});
+
+// 3. تحليل الأداء - Predict Performance
+app.post("/api/ai/predict-performance", async (req, res) => {
+  try {
+    const { videoData } = req.body;
+    
+    if (!videoData) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "بيانات الفيديو مطلوبة" 
+      });
+    }
+
+    const prediction = await deepseekService.predictPerformance(videoData);
+    
+    return res.status(200).json({
+      success: true,
+      prediction: prediction,
+      message: "تم تحليل الأداء بنجاح 📊"
+    });
+  } catch (error) {
+    console.error("❌ Error predicting performance:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحليل الأداء. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
+});
+
+// 4. مولد البريف - Generate Campaign Brief
+app.post("/api/ai/generate-brief", async (req, res) => {
+  try {
+    const { campaignInfo } = req.body;
+    
+    if (!campaignInfo) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "معلومات الحملة مطلوبة" 
+      });
+    }
+
+    const brief = await deepseekService.generateBrief(campaignInfo);
+    
+    return res.status(200).json({
+      success: true,
+      brief: brief,
+      message: "تم توليد البريف بنجاح 📝"
+    });
+  } catch (error) {
+    console.error("❌ Error generating brief:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في توليد البريف. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
+});
+
+// 5. توصيات المبدعين - Match Creators
+app.post("/api/ai/match-creators", async (req, res) => {
+  try {
+    const { campaignData, creatorsPool } = req.body;
+    
+    if (!campaignData || !creatorsPool) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "بيانات الحملة والمبدعين مطلوبة" 
+      });
+    }
+
+    const matches = await deepseekService.matchCreators(campaignData, creatorsPool);
+    
+    return res.status(200).json({
+      success: true,
+      matches: matches,
+      message: "تم إيجاد المبدعين المناسبين 🎯"
+    });
+  } catch (error) {
+    console.error("❌ Error matching creators:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إيجاد المبدعين. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
 });
 
 // Serve static files with proper cache control
