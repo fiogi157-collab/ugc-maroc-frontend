@@ -78,6 +78,8 @@ export const campaigns = pgTable("campaigns", {
   video_duration: integer("video_duration"), // in seconds
   deadline: timestamp("deadline").notNull(),
   status: varchar("status").default("active").notNull(), // 'draft', 'active', 'completed', 'cancelled'
+  category: varchar("category").default("other"), // 'beauty', 'fashion', 'tech', 'food', 'travel', 'other'
+  difficulty: varchar("difficulty").default("intermediate"), // 'beginner', 'intermediate', 'expert'
   requirements: text("requirements"),
   target_audience: text("target_audience"),
   max_creators: integer("max_creators").default(10),

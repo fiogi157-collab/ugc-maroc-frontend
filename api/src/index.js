@@ -315,6 +315,86 @@ app.get("/api/creator/dashboard-data/:userId", async (req, res) => {
   }
 });
 
+// Get all available campaigns
+app.get("/api/campaigns/available", async (req, res) => {
+  try {
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns, brands, profiles } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+
+    // Fetch all active campaigns with brand info
+    const allCampaigns = await db.select({
+      id: campaigns.id,
+      title: campaigns.title,
+      description: campaigns.description,
+      budget: campaigns.budget,
+      deadline: campaigns.deadline,
+      status: campaigns.status,
+      content_type: campaigns.content_type,
+      video_duration: campaigns.video_duration,
+      category: campaigns.category,
+      difficulty: campaigns.difficulty,
+      created_at: campaigns.created_at,
+      brand_id: campaigns.brand_id
+    })
+    .from(campaigns)
+    .where(eq(campaigns.status, 'active'))
+    .orderBy(campaigns.created_at);
+
+    // Get unique brand IDs
+    const brandIds = [...new Set(allCampaigns.map(c => c.brand_id).filter(Boolean))];
+    
+    // Fetch brand details
+    let brandDetails = {};
+    if (brandIds.length > 0) {
+      const { inArray } = await import("drizzle-orm");
+      const brandsData = await db.select({
+        user_id: brands.user_id,
+        company_name: brands.company_name
+      })
+      .from(brands)
+      .where(inArray(brands.user_id, brandIds));
+      
+      brandDetails = brandsData.reduce((acc, brand) => {
+        acc[brand.user_id] = brand.company_name;
+        return acc;
+      }, {});
+    }
+
+    // Format campaigns with brand names
+    const formattedCampaigns = allCampaigns.map(campaign => ({
+      id: campaign.id,
+      title: campaign.title,
+      description: campaign.description,
+      budget: parseFloat(campaign.budget || 0),
+      deadline: campaign.deadline,
+      status: campaign.status,
+      content_type: campaign.content_type,
+      video_duration: campaign.video_duration,
+      category: campaign.category || 'other',
+      difficulty: campaign.difficulty || 'intermediate',
+      created_at: campaign.created_at,
+      brand_id: campaign.brand_id,
+      brand_name: brandDetails[campaign.brand_id] || 'علامة تجارية',
+      image_url: null // Can be added later
+    }));
+
+    return res.status(200).json({
+      success: true,
+      campaigns: formattedCampaigns,
+      count: formattedCampaigns.length
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching available campaigns:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل الحملات المتاحة",
+      error: error.message
+    });
+  }
+});
+
 // =====================================================
 // 🎬 VIDEO UPLOAD ENDPOINT - R2 + Watermark
 // =====================================================
