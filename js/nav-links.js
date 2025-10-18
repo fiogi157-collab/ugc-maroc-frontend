@@ -19,12 +19,21 @@ async function performAuthCheck() {
     const role = user.user_metadata?.role || localStorage.getItem('user_role') || 'unknown';
     console.log(`👤 Utilisateur connecté : ${user.email} (${role})`);
 
-    // Redirection automatique selon le rôle
-    if (role === 'creator') {
+    // Redirection automatique selon le rôle (SEULEMENT si on n'est pas déjà sur le dashboard)
+    const currentPath = window.location.pathname;
+    const isOnCreatorDashboard = currentPath.includes('/creator/');
+    const isOnBrandDashboard = currentPath.includes('/brand/');
+    const isOnAdminDashboard = currentPath.includes('/admin/');
+    
+    // Ne pas rediriger si on est déjà sur le bon dashboard
+    if (role === 'creator' && !isOnCreatorDashboard) {
       window.location.href = '/creator/creator_dashboard_1.html';
       return;
-    } else if (role === 'brand') {
+    } else if (role === 'brand' && !isOnBrandDashboard) {
       window.location.href = '/brand/brand_dashboard_premium.html';
+      return;
+    } else if (role === 'admin' && !isOnAdminDashboard) {
+      window.location.href = '/admin/admin_dashboard.html';
       return;
     }
   } else {
