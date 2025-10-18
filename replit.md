@@ -48,13 +48,19 @@ Connected all AI features with Supabase database to use real data instead of sta
 
 ### Authentication Architecture Refactor (October 18, 2025)
 
-Fixed critical authentication bug and simplified architecture for better security:
+Fixed critical authentication bugs and unified all auth pages to use client-side Supabase Auth:
 
-1. **Problem Solved**: Eliminated "Unexpected token '<'" error caused by missing backend routes
-2. **Client-Side Auth**: Refactored `loginUser()` in `js/auth.js` to use Supabase Auth directly (no backend)
+1. **Problem Solved**: Eliminated "Unexpected token '<'" errors caused by:
+   - Missing backend routes (login pages)
+   - Obsolete ES6 module imports (signup pages)
+2. **Complete Client-Side Auth**: All 4 auth pages now use `js/auth.js` exclusively:
+   - `creator-login.html` → `window.auth.loginUser()`
+   - `brand-login.html` → `window.auth.loginUser()`
+   - `creator-signup.html` → `window.auth.signupUser()`
+   - `brand-signup.html` → `window.auth.signupUser()`
 3. **Security Fix**: Removed backend auth routes that had session leakage vulnerability
-4. **Consistency**: Login now uses same pattern as signup (both client-side via Supabase)
-5. **Benefits**: Simpler architecture, no shared sessions, faster performance, production-ready
+4. **Cleanup**: Deleted obsolete files (`signup_creator_supabase.js`, `signup_brand_supabase.js`)
+5. **Benefits**: Unified architecture, no shared sessions, faster performance, production-ready
 
 See `AUTH_FIX_COMPLETE.md` for detailed technical documentation.
 
@@ -162,4 +168,3 @@ Critical order in HTML pages:
 ## Known Considerations
 
 - Tailwind CSS loaded from CDN (development mode) - should migrate to PostCSS for production
-- Some legacy files with ES6 imports (`signup_creator_supabase.js`, `signup_brand_supabase.js`) not currently in use
