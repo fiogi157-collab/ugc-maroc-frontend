@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة التحكم - UGC Maroc</title>
   
-  <!-- Fonts -->
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
+  
+  <!-- Cairo Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   
   <script>
     tailwind.config = {
@@ -21,43 +21,15 @@
       theme: {
         extend: {
           colors: {
-            primary: '#5020df',
-            secondary: '#7c3aed',
-            accent: '#a78bfa',
-            'background-light': '#f6f6f8',
-            'background-dark': '#0f0b1a',
+            primary: '#6366f1',
+            'primary-dark': '#4f46e5',
+            'bg-light': '#f8fafc',
+            'bg-dark': '#0f172a',
+            'card-light': '#ffffff',
+            'card-dark': '#1e293b',
           },
           fontFamily: {
             sans: ['Cairo', 'system-ui', 'sans-serif'],
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.3s ease-out',
-            'slide-up': 'slideUp 0.4s ease-out',
-            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'shimmer': 'shimmer 2s infinite',
-            'count-up': 'countUp 1s ease-out',
-          },
-          keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0', transform: 'translateY(10px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            slideUp: {
-              '0%': { opacity: '0', transform: 'translateY(20px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            shimmer: {
-              '0%': { backgroundPosition: '-1000px 0' },
-              '100%': { backgroundPosition: '1000px 0' },
-            },
-          },
-          boxShadow: {
-            'glow-primary': '0 0 20px rgba(80, 32, 223, 0.4)',
-            'glow-success': '0 0 20px rgba(34, 197, 94, 0.4)',
-            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-          },
-          backdropBlur: {
-            xs: '2px',
           },
         },
       },
@@ -65,838 +37,769 @@
   </script>
 
   <style>
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Smooth Animations */
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
     }
     
-    .dark .glass-effect {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .gradient-border {
-      position: relative;
-      background: linear-gradient(135deg, #5020df 0%, #7c3aed 100%);
-      background-clip: padding-box;
-    }
-    
-    .gradient-border::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(135deg, #5020df, #7c3aed, #a78bfa);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
+    /* Hover Effects */
     .hover-lift {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .hover-lift:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 24px -10px rgba(99, 102, 241, 0.3);
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideDown 0.3s ease-out;
     }
 
-    .float-animation {
-      animation: float 3s ease-in-out infinite;
+    @keyframes slideDown {
+      from { transform: translate(-50%, -100px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .toast.success { border-right: 4px solid #10b981; }
+    .toast.error { border-right: 4px solid #ef4444; }
+    .toast.info { border-right: 4px solid #3b82f6; }
+
+    /* Skeleton Loader */
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
     }
   </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 transition-colors duration-300">
+<body class="bg-bg-light dark:bg-bg-dark text-gray-900 dark:text-gray-100 transition-colors min-h-screen">
 
-  <!-- Header avec Wallet Widget -->
-  <header class="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
-    <div class="flex items-center justify-between px-6 py-4">
-      <!-- Logo & Menu Toggle -->
-      <div class="flex items-center gap-4">
-        <button id="menu-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors lg:hidden">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/>
-          </svg>
-        </button>
-        <a href="/index.html" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-          <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-            </svg>
+  <!-- ===== HEADER ===== -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-card-dark/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo -->
+        <a href="/brand/brand_dashboard_premium.html" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span class="text-white font-bold text-xl">U</span>
           </div>
-          <h1 class="text-xl font-bold hidden sm:block">UGC Maroc</h1>
+          <span class="font-bold text-xl hidden sm:block">UGC Maroc</span>
         </a>
-      </div>
 
-      <!-- Search & Actions -->
-      <div class="flex items-center gap-3">
-        <!-- Command Palette Trigger -->
-        <button onclick="window.commandPalette?.open()" class="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/>
-          </svg>
-          <span class="text-sm text-gray-500">بحث سريع...</span>
-          <kbd class="px-2 py-0.5 text-xs bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded">⌘K</kbd>
-        </button>
-
-        <!-- Notifications -->
-        <button class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z"/>
-          </svg>
-          <span class="absolute top-1 left-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-        </button>
-
-        <!-- Wallet Widget -->
-        <div class="relative group">
-          <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-secondary rounded-lg hover:shadow-glow-primary transition-all">
-            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 256 256">
-              <path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm-36,80a12,12,0,1,1,12-12A12,12,0,0,1,180,144Z"/>
-            </svg>
-            <div class="hidden sm:block text-right">
-              <div class="text-xs text-white/80">المحفظة</div>
-              <div id="header-wallet-balance" class="text-sm font-bold text-white">12,450 د.م</div>
+        <!-- Wallet Widget + Profile -->
+        <div class="flex items-center gap-4">
+          <!-- Wallet -->
+          <div class="hidden md:flex items-center gap-3 bg-gradient-to-r from-primary/10 to-purple-500/10 dark:from-primary/20 dark:to-purple-500/20 px-4 py-2 rounded-full border border-primary/20">
+            <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+            <div class="text-left">
+              <div class="text-xs text-gray-500 dark:text-gray-400">الرصيد</div>
+              <div class="font-bold" id="header-balance">0 د.م</div>
             </div>
-            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 256 256">
-              <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
-            </svg>
+            <button onclick="openWalletModal()" class="text-primary hover:text-primary-dark">
+              <span class="material-symbols-outlined text-sm">add_circle</span>
+            </button>
+          </div>
+
+          <!-- Notifications -->
+          <button class="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="absolute top-1 left-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
-          
-          <!-- Dropdown Rapide -->
-          <div class="hidden group-hover:block absolute left-0 mt-2 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 p-4">
-            <div class="flex justify-between items-center mb-3">
-              <h3 class="font-semibold">نظرة سريعة</h3>
-              <a href="/brand/wallet.html" class="text-xs text-primary hover:underline">التفاصيل ←</a>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-500">المتاح</span>
-                <span class="font-semibold">12,450 د.م</span>
+
+          <!-- Profile Dropdown -->
+          <div class="relative" id="profile-dropdown">
+            <button onclick="toggleProfileMenu()" class="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+              <div class="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-sm">business</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-500">قيد الانتظار</span>
-                <span class="text-yellow-600">3,200 د.م</span>
+              <span class="material-symbols-outlined text-sm">expand_more</span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="profile-menu" class="hidden absolute left-0 mt-2 w-64 bg-white dark:bg-card-dark rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2">
+              <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <div class="font-semibold" id="brand-name">العلامة التجارية</div>
+                <div class="text-sm text-gray-500" id="brand-email">email@example.com</div>
               </div>
-              <div class="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
-              <button class="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-                إعادة شحن
+              <a href="#" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <span class="material-symbols-outlined text-gray-500">settings</span>
+                <span>الإعدادات</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <span class="material-symbols-outlined text-gray-500">help</span>
+                <span>المساعدة</span>
+              </a>
+              <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <span>تسجيل الخروج</span>
               </button>
             </div>
           </div>
         </div>
-
-        <!-- User Menu -->
-        <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <div class="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold">
-            ن
-          </div>
-        </button>
       </div>
     </div>
   </header>
 
-  <div class="flex">
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed lg:sticky top-16 lg:top-20 right-0 h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] w-64 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 transform lg:transform-none transition-transform duration-300 z-30 overflow-y-auto">
-      <nav class="p-4 space-y-2">
-        <a href="#" class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg font-medium">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M219.45,216.54l-45-45a92,92,0,1,1,11.31-11.31l45,45a8,8,0,0,1-11.31,11.31ZM40,116a76,76,0,1,0,76-76A76.08,76.08,0,0,0,40,116Z"/>
-          </svg>
-          <span>لوحة التحكم</span>
-        </a>
-        
-        <a href="/brand/campaigns.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H208a16,16,0,0,0,13.8-24.06Z"/>
-          </svg>
-          <span>الحملات</span>
-          <span class="mr-auto bg-primary text-white text-xs px-2 py-0.5 rounded-full">3</span>
-        </a>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <a href="/brand/creators.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z"/>
-          </svg>
-          <span>المبدعون</span>
-        </a>
+    <!-- Welcome Section -->
+    <div class="mb-8 fade-in">
+      <h1 class="text-3xl font-bold mb-2">مرحباً بعودتك 👋</h1>
+      <p class="text-gray-600 dark:text-gray-400">إليك ملخص نشاطك اليوم</p>
+    </div>
 
-        <a href="/brand/messages.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M216,48H40A16,16,0,0,0,24,64V224a15.85,15.85,0,0,0,9.24,14.5A16.13,16.13,0,0,0,40,240a15.89,15.89,0,0,0,10.25-3.78.69.69,0,0,0,.13-.11L82.5,208H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM40,224h0ZM216,192H82.5a16,16,0,0,0-10.3,3.75l-.12.11L40,224V64H216Z"/>
-          </svg>
-          <span>الرسائل</span>
-          <span class="mr-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">5</span>
-        </a>
-
-        <a href="/brand/wallet.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm-36,80a12,12,0,1,1,12-12A12,12,0,0,1,180,144Z"/>
-          </svg>
-          <span>المحفظة</span>
-        </a>
-
-        <a href="/brand/analytics.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16Z"/>
-          </svg>
-          <span>الإحصائيات</span>
-        </a>
-
-        <div class="h-px bg-gray-200 dark:bg-gray-700 my-4"></div>
-
-        <a href="/brand/settings.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3l-2.64-23.72a8,8,0,0,0-3.93-6,107.6,107.6,0,0,0-26.25-10.88,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.93,107.6,107.6,0,0,0-10.88,26.25,8,8,0,0,0,1.48,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.93,6,107.6,107.6,0,0,0,26.25,10.88,8,8,0,0,0,7.06-1.48L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.6,107.6,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3l23.72-2.64a8,8,0,0,0,6-3.93,107.6,107.6,0,0,0,10.88-26.25,8,8,0,0,0-1.48-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/>
-          </svg>
-          <span>الإعدادات</span>
-        </a>
-
-        <a href="/support.html" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/>
-          </svg>
-          <span>الدعم</span>
-        </a>
-      </nav>
-
-      <!-- Dark Mode Toggle -->
-      <div class="p-4 border-t border-gray-200 dark:border-gray-800">
-        <button onclick="toggleTheme()" class="flex items-center justify-between w-full px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <span class="text-sm">الوضع الداكن</span>
-          <div class="relative w-11 h-6 bg-gray-200 dark:bg-primary rounded-full transition-colors">
-            <div class="absolute top-1 right-1 dark:right-6 w-4 h-4 bg-white rounded-full transition-all"></div>
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <!-- Stat Card 1: Active Campaigns -->
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">campaign</span>
           </div>
+          <span class="text-xs text-gray-500">هذا الشهر</span>
+        </div>
+        <div class="text-3xl font-bold mb-1" id="stat-campaigns">0</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400">حملات نشطة</div>
+      </div>
+
+      <!-- Stat Card 2: Creators Engaged -->
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">group</span>
+          </div>
+          <span class="text-xs text-gray-500">الإجمالي</span>
+        </div>
+        <div class="text-3xl font-bold mb-1" id="stat-creators">0</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400">مبدعون متعاونون</div>
+      </div>
+
+      <!-- Stat Card 3: Budget Spent -->
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-green-600 dark:text-green-400">payments</span>
+          </div>
+          <span class="text-xs text-gray-500">هذا الشهر</span>
+        </div>
+        <div class="text-3xl font-bold mb-1" id="stat-budget">0</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400">ميزانية منفقة (د.م)</div>
+      </div>
+
+      <!-- Stat Card 4: ROI -->
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-amber-600 dark:text-amber-400">trending_up</span>
+          </div>
+          <span class="text-xs text-green-600">+12%</span>
+        </div>
+        <div class="text-3xl font-bold mb-1">156%</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400">العائد على الاستثمار</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold mb-4">الإجراءات السريعة</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- Action 1: Create Campaign with AI -->
+        <button onclick="openCreateCampaignModal()" class="group bg-gradient-to-br from-primary to-purple-600 text-white rounded-2xl p-6 text-right hover-lift">
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-3xl">auto_awesome</span>
+            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">AI</span>
+          </div>
+          <div class="font-bold text-lg mb-1">إنشاء حملة</div>
+          <div class="text-sm text-white/80">مع مساعد الذكاء الاصطناعي</div>
+        </button>
+
+        <!-- Action 2: Search Creators -->
+        <button onclick="scrollToCreatorsSearch()" class="group bg-white dark:bg-card-dark border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-right hover-lift hover:border-primary">
+          <span class="material-symbols-outlined text-3xl text-primary mb-3 block">search</span>
+          <div class="font-bold text-lg mb-1">بحث عن مبدعين</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">اكتشف المبدعين المناسبين</div>
+        </button>
+
+        <!-- Action 3: Manage Funds -->
+        <button onclick="openWalletModal()" class="group bg-white dark:bg-card-dark border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-right hover-lift hover:border-green-500">
+          <span class="material-symbols-outlined text-3xl text-green-600 mb-3 block">account_balance_wallet</span>
+          <div class="font-bold text-lg mb-1">إدارة الأموال</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">محفظتك والمعاملات</div>
+        </button>
+
+        <!-- Action 4: My Campaigns -->
+        <button onclick="scrollToMyCampaigns()" class="group bg-white dark:bg-card-dark border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-right hover-lift hover:border-blue-500">
+          <span class="material-symbols-outlined text-3xl text-blue-600 mb-3 block">campaign</span>
+          <div class="font-bold text-lg mb-1">حملاتي</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">إدارة الحملات الحالية</div>
+        </button>
+
+        <!-- Action 5: Messages -->
+        <button class="group bg-white dark:bg-card-dark border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-right hover-lift hover:border-purple-500">
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-3xl text-purple-600">mail</span>
+            <span class="text-xs bg-red-500 text-white px-2 py-1 rounded-full">3</span>
+          </div>
+          <div class="font-bold text-lg mb-1">الرسائل</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">تواصل مع المبدعين</div>
         </button>
       </div>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-6 lg:p-8 overflow-y-auto">
-      <!-- AI Insights Hero Section -->
-      <div id="ai-insights-hero" class="mb-8 bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800 glass-effect animate-slide-up">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-2xl float-animation">🤖</span>
-              <h2 class="text-lg font-bold">نصيحة من الذكاء الاصطناعي</h2>
-            </div>
-            <p class="text-gray-700 dark:text-gray-300 mb-4">
-              حملاتك التقنية تحقق <span class="font-bold text-primary">+45%</span> تفاعل مقارنة بالمتوسط. 
-              استثمار <span class="font-bold">5,000 د.م</span> إضافية قد يضاعف عائدك هذا الشهر.
-            </p>
-            <div class="flex gap-3">
-              <button class="px-4 py-2 bg-primary text-white rounded-lg hover:shadow-glow-primary transition-all">
-                عرض الاستراتيجية
-              </button>
-              <button class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                إخفاء
-              </button>
-            </div>
+    <!-- Search Creators Section -->
+    <div id="creators-search-section" class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">ابحث عن المبدعين المثاليين</h2>
+        <button class="text-sm text-primary hover:text-primary-dark flex items-center gap-1">
+          <span>بحث متقدم</span>
+          <span class="material-symbols-outlined text-sm">tune</span>
+        </button>
+      </div>
+
+      <!-- Search Bar with Filters -->
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 mb-4">
+        <div class="flex flex-col lg:flex-row gap-4">
+          <!-- Main Search -->
+          <div class="flex-1 relative">
+            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+            <input 
+              id="creators-search-input"
+              type="text" 
+              placeholder="ابحث بالاسم، الفئة، أو الموقع..." 
+              class="w-full h-12 pr-12 pl-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+            />
           </div>
-          <button class="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-black/20 transition-colors">
-            <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 256 256">
-              <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/>
-            </svg>
+
+          <!-- Category Filter -->
+          <select class="h-12 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">كل الفئات</option>
+            <option value="beauty">الجمال</option>
+            <option value="fashion">الموضة</option>
+            <option value="tech">التكنولوجيا</option>
+            <option value="food">الطعام</option>
+            <option value="travel">السفر</option>
+          </select>
+
+          <!-- AI Match Button -->
+          <button class="h-12 px-6 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <span>مطابقة بالذكاء الاصطناعي</span>
           </button>
         </div>
       </div>
 
-      <!-- Stats Grid -->
-      <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Wallet Card Hero - Plus grande -->
-        <div class="md:col-span-2 bg-gradient-to-br from-primary to-secondary rounded-2xl p-6 text-white shadow-glow-primary hover-lift animate-fade-in">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <p class="text-sm opacity-80">المحفظة</p>
-              <h3 id="wallet-amount" class="text-4xl font-bold mt-1">12,450 د.م</h3>
+      <!-- Creators Grid -->
+      <div id="creators-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Skeleton Loaders -->
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-full skeleton"></div>
+            <div class="flex-1">
+              <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2 w-3/4"></div>
+              <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-1/2"></div>
             </div>
-            <svg class="w-8 h-8 opacity-80" fill="currentColor" viewBox="0 0 256 256">
-              <path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm-36,80a12,12,0,1,1,12-12A12,12,0,0,1,180,144Z"/>
-            </svg>
+          </div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2"></div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-5/6"></div>
+        </div>
+        <!-- More skeleton cards... -->
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-full skeleton"></div>
+            <div class="flex-1">
+              <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2 w-3/4"></div>
+              <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-1/2"></div>
+            </div>
+          </div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2"></div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-5/6"></div>
+        </div>
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-full skeleton"></div>
+            <div class="flex-1">
+              <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2 w-3/4"></div>
+              <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-1/2"></div>
+            </div>
+          </div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2"></div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-5/6"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Campaigns Section -->
+    <div id="my-campaigns-section" class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">حملاتي</h2>
+        <div class="flex items-center gap-2">
+          <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" onclick="toggleCampaignsView('grid')">
+            <span class="material-symbols-outlined text-sm">grid_view</span>
+          </button>
+          <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" onclick="toggleCampaignsView('list')">
+            <span class="material-symbols-outlined text-sm">view_list</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Campaigns Grid/List -->
+      <div id="campaigns-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Campaign cards will be loaded here -->
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-4 w-3/4"></div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton mb-2"></div>
+          <div class="h-3 bg-gray-300 dark:bg-gray-700 rounded skeleton w-5/6"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Wallet Modal -->
+  <div id="wallet-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="if(event.target === this) closeWalletModal()">
+    <div class="bg-white dark:bg-card-dark rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="sticky top-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between">
+        <h3 class="text-xl font-bold">إدارة الأموال</h3>
+        <button onclick="closeWalletModal()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-6">
+        <!-- Wallet content here -->
+        <div class="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-6 text-white mb-6">
+          <div class="text-sm opacity-80 mb-2">الرصيد الحالي</div>
+          <div class="text-4xl font-bold mb-4" id="modal-balance">0 د.م</div>
+          <button class="bg-white text-primary px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
+            إضافة رصيد
+          </button>
+        </div>
+        
+        <h4 class="font-bold mb-4">آخر المعاملات</h4>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-red-600 text-sm">arrow_downward</span>
+              </div>
+              <div>
+                <div class="font-semibold">دفع لحملة "منتجات التجميل"</div>
+                <div class="text-sm text-gray-500">منذ يومين</div>
+              </div>
+            </div>
+            <div class="text-red-600 font-bold">-450 د.م</div>
           </div>
           
-          <div class="mb-4">
-            <div class="flex justify-between text-xs opacity-80 mb-1">
-              <span>مستخدم 80%</span>
-              <span>10K / 12.5K</span>
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-green-600 text-sm">arrow_upward</span>
+              </div>
+              <div>
+                <div class="font-semibold">إعادة شحن الرصيد</div>
+                <div class="text-sm text-gray-500">منذ 3 أيام</div>
+              </div>
             </div>
-            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
-              <div class="h-full bg-white rounded-full transition-all duration-1000" style="width: 80%"></div>
+            <div class="text-green-600 font-bold">+2000 د.م</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Campaign Modal -->
+  <div id="create-campaign-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="if(event.target === this) closeCreateCampaignModal()">
+    <div class="bg-white dark:bg-card-dark rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="sticky top-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-bold">إنشاء حملة جديدة</h3>
+          <p class="text-sm text-gray-500">استخدم الذكاء الاصطناعي لإنشاء حملة احترافية</p>
+        </div>
+        <button onclick="closeCreateCampaignModal()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-6">
+        <form id="create-campaign-form" class="space-y-6">
+          <!-- Step 1: Basic Info -->
+          <div>
+            <label class="block text-sm font-semibold mb-2">عنوان الحملة *</label>
+            <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="مثال: حملة ترويج منتجات العناية بالبشرة">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">وصف الحملة</label>
+            <textarea rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="صف ما تريد تحقيقه من هذه الحملة..."></textarea>
+            <button type="button" class="mt-2 text-sm text-primary hover:text-primary-dark flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">auto_awesome</span>
+              <span>توليد الوصف بالذكاء الاصطناعي</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-2">الفئة *</label>
+              <select required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
+                <option value="">اختر الفئة</option>
+                <option value="beauty">الجمال</option>
+                <option value="fashion">الموضة</option>
+                <option value="tech">التكنولوجيا</option>
+                <option value="food">الطعام</option>
+                <option value="travel">السفر</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">الميزانية (د.م) *</label>
+              <input type="number" required min="100" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="500">
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-sm mb-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="opacity-80">قيد الانتظار</p>
-              <p class="font-semibold">3,200 د.م</p>
+              <label class="block text-sm font-semibold mb-2">تاريخ الانتهاء *</label>
+              <input type="date" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
             </div>
-            <div class="text-left">
-              <p class="opacity-80">متوقع هذا الشهر</p>
-              <p class="font-semibold">-8,500 د.م</p>
+            <div>
+              <label class="block text-sm font-semibold mb-2">المستوى</label>
+              <select class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
+                <option value="beginner">للمبتدئين</option>
+                <option value="intermediate">متوسط</option>
+                <option value="expert">خبير</option>
+              </select>
             </div>
           </div>
 
           <div class="flex gap-3">
-            <button class="flex-1 py-2 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-              إعادة شحن
+            <button type="button" onclick="closeCreateCampaignModal()" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              إلغاء
             </button>
-            <button class="flex-1 py-2 bg-white/20 backdrop-blur-sm rounded-lg font-semibold hover:bg-white/30 transition-colors">
-              التفاصيل
-            </button>
-          </div>
-        </div>
-
-        <!-- Stat Card 1 -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift animate-fade-in" style="animation-delay: 0.1s">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <p class="text-sm text-gray-500">الحملات النشطة</p>
-              <h3 class="text-3xl font-bold text-primary mt-1">3</h3>
-            </div>
-            <div class="p-3 bg-primary/10 rounded-xl">
-              <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H208a16,16,0,0,0,13.8-24.06Z"/>
-              </svg>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 text-sm">
-            <span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs">
-              🟢 2 جارية
-            </span>
-            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded-full text-xs">
-              🟡 1 مراجعة
-            </span>
-          </div>
-        </div>
-
-        <!-- Stat Card 2 -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift animate-fade-in" style="animation-delay: 0.2s">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <p class="text-sm text-gray-500">إجمالي الوصول</p>
-              <h3 class="text-3xl font-bold text-secondary mt-1">3.2M</h3>
-            </div>
-            <div class="p-3 bg-secondary/10 rounded-xl">
-              <svg class="w-6 h-6 text-secondary" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/>
-              </svg>
-            </div>
-          </div>
-          <p class="text-sm text-gray-500">
-            <span class="text-green-600 font-semibold">+12%</span> مقارنة بالأسبوع الماضي
-          </p>
-        </div>
-      </div>
-
-      <!-- Performance Chart -->
-      <div id="chart-container" class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 mb-8 hover-lift">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-bold">أداء الحملات (30 يوم)</h3>
-          <select class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary">
-            <option>آخر 30 يوم</option>
-            <option>آخر 7 أيام</option>
-            <option>آخر 90 يوم</option>
-          </select>
-        </div>
-        <canvas id="performanceChart" class="w-full" height="100"></canvas>
-        <div class="mt-4 flex items-center justify-center gap-6 text-sm">
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-primary rounded-full"></div>
-            <span>ROI %</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-secondary rounded-full"></div>
-            <span>التفاعل</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Two Column Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- AI Recommended Creators -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold flex items-center gap-2">
-              <span class="text-xl">🤖</span>
-              المبدعون الموصى بهم بالذكاء الاصطناعي
-            </h3>
-            <button onclick="generateCreatorRecommendations()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs rounded-lg hover:shadow-lg transition-all">
-              ✨ توليد توصيات
+            <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+              إنشاء الحملة
             </button>
           </div>
-          
-          <div id="recommended-creators" class="space-y-4">
-            <!-- Creator Card 1 -->
-            <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-              <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold">
-                س
-              </div>
-              <div class="flex-1">
-                <h4 class="font-semibold">Sara M.</h4>
-                <p class="text-xs text-gray-500">محتوى تقني</p>
-              </div>
-              <div class="text-center">
-                <div class="flex items-center gap-1 text-sm font-bold text-primary">
-                  <span>96%</span>
-                  <span>🔥</span>
-                </div>
-                <p class="text-xs text-gray-500">تطابق</p>
-              </div>
-              <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                دعوة
-              </button>
-            </div>
-
-            <!-- Creator Card 2 -->
-            <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
-                ي
-              </div>
-              <div class="flex-1">
-                <h4 class="font-semibold">Youssef K.</h4>
-                <p class="text-xs text-gray-500">نمط حياة</p>
-              </div>
-              <div class="text-center">
-                <div class="flex items-center gap-1 text-sm font-bold text-primary">
-                  <span>94%</span>
-                  <span>⭐</span>
-                </div>
-                <p class="text-xs text-gray-500">تطابق</p>
-              </div>
-              <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                دعوة
-              </button>
-            </div>
-
-            <!-- Creator Card 3 -->
-            <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-              <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full flex items-center justify-center text-white font-bold">
-                ل
-              </div>
-              <div class="flex-1">
-                <h4 class="font-semibold">Leila A.</h4>
-                <p class="text-xs text-gray-500">موضة</p>
-              </div>
-              <div class="text-center">
-                <div class="flex items-center gap-1 text-sm font-bold text-primary">
-                  <span>91%</span>
-                  <span>✨</span>
-                </div>
-                <p class="text-xs text-gray-500">تطابق</p>
-              </div>
-              <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                دعوة
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent Transactions -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold">المعاملات الأخيرة</h3>
-            <button class="text-sm text-primary hover:underline">السجل الكامل ←</button>
-          </div>
-          
-          <div id="transactions-list" class="space-y-4">
-            <!-- Transaction 1 -->
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 256 256">
-                  <path d="M205.66,117.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L120,180.69V40a8,8,0,0,1,16,0V180.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="font-semibold text-sm">Tech Campaign</p>
-                <p class="text-xs text-gray-500">Sara M. • منذ ساعتين</p>
-              </div>
-              <p class="font-bold text-red-600">-2,500 د.م</p>
-            </div>
-
-            <!-- Transaction 2 -->
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 256 256">
-                  <path d="M205.66,138.34a8,8,0,0,1-11.32,0L120,64,45.66,138.34a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,205.66,138.34Z"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="font-semibold text-sm">إعادة شحن</p>
-                <p class="text-xs text-gray-500">Stripe • أمس</p>
-              </div>
-              <p class="font-bold text-green-600">+15,000 د.م</p>
-            </div>
-
-            <!-- Transaction 3 -->
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
-                <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 256 256">
-                  <path d="M205.66,117.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L120,180.69V40a8,8,0,0,1,16,0V180.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="font-semibold text-sm">إكرامية</p>
-                <p class="text-xs text-gray-500">Youssef K. • منذ يومين</p>
-              </div>
-              <p class="font-bold text-gray-700 dark:text-gray-300">-1,200 د.م</p>
-            </div>
-
-            <!-- Transaction 4 -->
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 256 256">
-                  <path d="M205.66,117.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L120,180.69V40a8,8,0,0,1,16,0V180.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="font-semibold text-sm">Summer Launch</p>
-                <p class="text-xs text-gray-500">Leila A. • منذ 3 أيام</p>
-              </div>
-              <p class="font-bold text-red-600">-3,800 د.م</p>
-            </div>
-          </div>
-        </div>
+        </form>
       </div>
-
-      <!-- Quick Actions -->
-      <div class="bg-gradient-to-br from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 rounded-2xl p-6 border border-primary/20">
-        <h3 class="text-lg font-bold mb-4">إجراءات سريعة</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-900 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M224,128a8,8,0,0,1-8,8H136v88a8,8,0,0,1-16,0V136H32a8,8,0,0,1,0-16h88V32a8,8,0,0,1,16,0v88h88A8,8,0,0,1,224,128Z"/>
-              </svg>
-            </div>
-            <span class="text-sm font-semibold">إنشاء حملة</span>
-          </button>
-
-          <button class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-900 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-            <div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-secondary" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/>
-              </svg>
-            </div>
-            <span class="text-sm font-semibold">تصفح المبدعين</span>
-          </button>
-
-          <button class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-900 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-            <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm-36,80a12,12,0,1,1,12-12A12,12,0,0,1,180,144Z"/>
-              </svg>
-            </div>
-            <span class="text-sm font-semibold">إعادة شحن</span>
-          </button>
-
-          <button class="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-900 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-            <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16Z"/>
-              </svg>
-            </div>
-            <span class="text-sm font-semibold">التحليلات</span>
-          </button>
-        </div>
-      </div>
-    </main>
+    </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/config.js"></script>
-  <script src="/js/utils.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/api.js"></script>
-  
-  <!-- UX Enhancement Scripts -->
-  <script src="/js/routes.js"></script>
-  <script src="/js/toast.js"></script>
-  <script src="/js/command-palette.js"></script>
-  <script src="/js/loading-states.js"></script>
-  <script src="/js/tooltips.js"></script>
-  <script src="/js/empty-states.js"></script>
-  <script src="/js/undo-redo.js"></script>
-  <script src="/js/keyboard-shortcuts.js"></script>
-
-  <script>
-    // Theme Toggle
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    }
-
-    // Load saved theme
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-
-    // Sidebar Toggle (Mobile)
-    const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.getElementById('menu-toggle');
-    menuToggle?.addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');
-    });
-
-    // Chart.js Configuration
-    const ctx = document.getElementById('performanceChart');
-    if (ctx) {
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['5 أيام', '10 أيام', '15 يوم', '20 يوم', '25 يوم', '30 يوم'],
-          datasets: [
-            {
-              label: 'ROI %',
-              data: [85, 110, 95, 145, 120, 135],
-              borderColor: '#5020df',
-              backgroundColor: 'rgba(80, 32, 223, 0.1)',
-              tension: 0.4,
-              fill: true,
-            },
-            {
-              label: 'التفاعل',
-              data: [60, 75, 70, 95, 85, 90],
-              borderColor: '#7c3aed',
-              backgroundColor: 'rgba(124, 58, 237, 0.1)',
-              tension: 0.4,
-              fill: true,
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              rtl: true,
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              padding: 12,
-              displayColors: false
-            }
-          },
-          scales: {
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                color: '#9CA3AF'
-              }
-            },
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(156, 163, 175, 0.1)'
-              },
-              ticks: {
-                color: '#9CA3AF',
-                callback: function(value) {
-                  return value + '%';
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Counter Animation
-    function animateCounter(element, target) {
-      let current = 0;
-      const increment = target / 50;
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          element.textContent = target.toLocaleString('ar-MA') + ' د.م';
-          clearInterval(timer);
-        } else {
-          element.textContent = Math.floor(current).toLocaleString('ar-MA') + ' د.م';
-        }
-      }, 20);
-    }
-
-    // Animate on load
-    window.addEventListener('load', () => {
-      const walletAmount = document.getElementById('wallet-amount');
-      if (walletAmount) {
-        animateCounter(walletAmount, 12450);
-      }
-    });
-
-    // Check authentication
-    window.auth?.checkAuth('brand');
-  </script>
-  
-  <!-- AI Assistant Integration -->
   <script src="/js/ai-assistant.js"></script>
+
   <script>
-    // Récupérer les créateurs depuis Supabase
-    async function fetchCreatorsFromDatabase() {
+    // Global State
+    let currentUser = null;
+    let brandProfile = null;
+    let wallet = null;
+
+    // Toast Notifications
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = {
+        success: 'check_circle',
+        error: 'error',
+        info: 'info'
+      };
+      
+      toast.innerHTML = `
+        <span class="material-symbols-outlined">${icons[type]}</span>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease-out reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Profile Dropdown
+    function toggleProfileMenu() {
+      const menu = document.getElementById('profile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('profile-dropdown');
+      if (!dropdown.contains(e.target)) {
+        document.getElementById('profile-menu').classList.add('hidden');
+      }
+    });
+
+    // Modal Functions
+    function openWalletModal() {
+      document.getElementById('wallet-modal').classList.remove('hidden');
+    }
+
+    function closeWalletModal() {
+      document.getElementById('wallet-modal').classList.add('hidden');
+    }
+
+    function openCreateCampaignModal() {
+      document.getElementById('create-campaign-modal').classList.remove('hidden');
+    }
+
+    function closeCreateCampaignModal() {
+      document.getElementById('create-campaign-modal').classList.add('hidden');
+    }
+
+    // Scroll Functions
+    function scrollToCreatorsSearch() {
+      document.getElementById('creators-search-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function scrollToMyCampaigns() {
+      document.getElementById('my-campaigns-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Toggle Campaigns View
+    function toggleCampaignsView(view) {
+      // Implementation for grid/list view toggle
+      console.log('Toggle view:', view);
+    }
+
+    // Logout
+    async function logout() {
       try {
-        if (!window.supabaseClient) {
-          console.error('Supabase client not initialized');
-          return [];
-        }
-
-        // Récupérer tous les créateurs avec leurs profils
-        const { data: creators, error } = await window.supabaseClient
-          .from('creators')
-          .select(`
-            *,
-            profiles:user_id (
-              full_name,
-              email,
-              avatar_url
-            )
-          `)
-          .limit(20);
-
-        if (error) {
-          console.error('Erreur récupération créateurs:', error);
-          return [];
-        }
-
-        // Transformer les données pour le format attendu par l'IA
-        return creators.map(creator => ({
-          name: creator.profiles?.full_name || creator.username || 'Créateur',
-          specialization: determineSpecialization(creator.bio),
-          rating: Math.random() * 0.5 + 4.3, // Note aléatoire entre 4.3 et 4.8
-          videoCount: Math.floor(Math.random() * 60) + 20, // Entre 20 et 80 vidéos
-          city: creator.city || 'Maroc',
-          bio: creator.bio || ''
-        }));
+        await window.auth.logoutUser();
+        window.location.href = '/auth/brand-login.html';
       } catch (error) {
-        console.error('Erreur fetchCreatorsFromDatabase:', error);
-        return [];
+        showToast('حدث خطأ أثناء تسجيل الخروج', 'error');
       }
     }
 
-    // Déterminer la spécialisation basée sur la bio
-    function determineSpecialization(bio) {
-      if (!bio) return 'Contenu général';
-      
-      const bioLower = bio.toLowerCase();
-      
-      if (bioLower.includes('جمال') || bioLower.includes('تجميل') || bioLower.includes('مكياج') || bioLower.includes('beauty')) {
-        return 'جمال وموضة';
-      } else if (bioLower.includes('موضة') || bioLower.includes('أزياء') || bioLower.includes('fashion')) {
-        return 'موضة وأزياء';
-      } else if (bioLower.includes('طبخ') || bioLower.includes('أكل') || bioLower.includes('food') || bioLower.includes('cuisine')) {
-        return 'أكل وطبخ';
-      } else if (bioLower.includes('رياضة') || bioLower.includes('صحة') || bioLower.includes('fitness')) {
-        return 'رياضة وصحة';
-      } else if (bioLower.includes('سفر') || bioLower.includes('سياحة') || bioLower.includes('travel')) {
-        return 'سفر وسياحة';
-      } else if (bioLower.includes('تقنية') || bioLower.includes('تكنولوجيا') || bioLower.includes('tech')) {
-        return 'تقنية وابتكار';
-      }
-      
-      return 'Contenu général';
-    }
-
-    // Récupérer les données de la dernière campagne active du brand
-    async function getActiveCampaignData() {
+    // Initialize Dashboard
+    async function initDashboard() {
       try {
-        if (!window.supabaseClient) {
-          return null;
-        }
-
+        // Get current user
         const { data: { user } } = await window.supabaseClient.auth.getUser();
-        if (!user) return null;
-
-        // Récupérer la dernière campagne active du brand
-        const { data: campaigns } = await window.supabaseClient
-          .from('campaigns')
-          .select('*')
-          .eq('brand_id', user.id)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (campaigns && campaigns.length > 0) {
-          const campaign = campaigns[0];
-          return {
-            productName: campaign.title || 'منتج',
-            category: campaign.content_type || 'général',
-            targetAudience: 'Audience cible',
-            budget: campaign.budget_per_video ? `${campaign.budget_per_video} درهم` : 'متوسطة'
-          };
-        }
-
-        return null;
-      } catch (error) {
-        console.error('Erreur getActiveCampaignData:', error);
-        return null;
-      }
-    }
-
-    // Générer des recommandations de créateurs avec l'IA
-    async function generateCreatorRecommendations() {
-      try {
-        // Afficher un loader
-        document.getElementById('recommended-creators').innerHTML = `
-          <div class="flex items-center justify-center p-8">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-            <span class="mr-3 text-gray-600">جاري تحميل المبدعين...</span>
-          </div>
-        `;
-
-        // Récupérer les créateurs de la base de données
-        const creatorsPool = await fetchCreatorsFromDatabase();
-
-        if (creatorsPool.length === 0) {
-          document.getElementById('recommended-creators').innerHTML = `
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p class="text-yellow-700">⚠️ لم يتم العثور على مبدعين في قاعدة البيانات</p>
-            </div>
-          `;
+        
+        if (!user) {
+          window.location.href = '/auth/brand-login.html';
           return;
         }
 
-        // Récupérer les données de la campagne active ou utiliser des données par défaut
-        let campaignData = await getActiveCampaignData();
+        currentUser = user;
+
+        // Load profile
+        const profileResponse = await fetch(`${window.API_BASE_URL}/api/profile/${user.id}`);
+        const profileData = await profileResponse.json();
         
-        if (!campaignData) {
-          campaignData = {
-            productName: "منتجات تجميل طبيعية",
-            category: "جمال وموضة",
-            targetAudience: "نساء شابات 20-40",
-            budget: "متوسطة"
-          };
+        if (profileData.success) {
+          brandProfile = profileData.profile;
+          
+          // Update UI
+          document.getElementById('brand-name').textContent = brandProfile.full_name || 'العلامة التجارية';
+          document.getElementById('brand-email').textContent = user.email;
         }
 
-        console.log('Créateurs récupérés:', creatorsPool.length);
-        console.log('Données campagne:', campaignData);
+        // Load wallet
+        await loadWallet();
 
-        // Appeler l'IA pour faire le matching
-        await AIAssistant.matchCreators(campaignData, creatorsPool, 'recommended-creators');
+        // Load campaigns
+        await loadCampaigns();
+
+        // Load creators
+        await loadCreators();
+
+        console.log('✅ Dashboard initialized');
       } catch (error) {
-        console.error('Erreur generateCreatorRecommendations:', error);
-        document.getElementById('recommended-creators').innerHTML = `
-          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p class="text-red-700">❌ حدث خطأ في توليد التوصيات</p>
-          </div>
-        `;
+        console.error('Error initializing dashboard:', error);
+        showToast('حدث خطأ أثناء تحميل لوحة التحكم', 'error');
       }
     }
-    
-    console.log('✅ Dashboard AI features loaded');
+
+    // Load Wallet
+    async function loadWallet() {
+      try {
+        const response = await fetch(`${window.API_BASE_URL}/api/wallet/${currentUser.id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          wallet = data.wallet;
+          const balance = parseFloat(wallet.balance || 0).toFixed(2);
+          document.getElementById('header-balance').textContent = `${balance} د.م`;
+          document.getElementById('modal-balance').textContent = `${balance} د.م`;
+        }
+      } catch (error) {
+        console.error('Error loading wallet:', error);
+      }
+    }
+
+    // Load Campaigns
+    async function loadCampaigns() {
+      try {
+        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/brand/${currentUser.id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          const campaigns = data.campaigns || [];
+          
+          // Update stats
+          const activeCampaigns = campaigns.filter(c => c.status === 'active');
+          document.getElementById('stat-campaigns').textContent = activeCampaigns.length;
+          
+          // Calculate total budget spent
+          const totalBudget = campaigns.reduce((sum, c) => sum + parseFloat(c.budget || 0), 0);
+          document.getElementById('stat-budget').textContent = totalBudget.toFixed(0);
+          
+          // Display campaigns
+          displayCampaigns(campaigns);
+        }
+      } catch (error) {
+        console.error('Error loading campaigns:', error);
+      }
+    }
+
+    // Display Campaigns
+    function displayCampaigns(campaigns) {
+      const container = document.getElementById('campaigns-container');
+      
+      if (campaigns.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">campaign</span>
+            <p class="text-gray-500">لا توجد حملات حتى الآن</p>
+            <button onclick="openCreateCampaignModal()" class="mt-4 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark">
+              إنشاء حملة جديدة
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = campaigns.map(campaign => `
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover-lift">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-lg mb-1">${campaign.title}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">${campaign.description || ''}</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+              campaign.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 
+              campaign.status === 'draft' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' :
+              'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+            }">
+              ${campaign.status === 'active' ? 'نشطة' : campaign.status === 'draft' ? 'مسودة' : 'منتهية'}
+            </span>
+          </div>
+          
+          <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">payments</span>
+              <span>${campaign.budget} د.م</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">schedule</span>
+              <span>${new Date(campaign.deadline).toLocaleDateString('ar-MA')}</span>
+            </div>
+          </div>
+          
+          <div class="flex gap-2">
+            <button class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+              عرض التفاصيل
+            </button>
+            <button class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+              <span class="material-symbols-outlined text-sm">more_vert</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load Creators
+    async function loadCreators() {
+      try {
+        // Placeholder for now - will implement API endpoint
+        const creatorsGrid = document.getElementById('creators-grid');
+        
+        // Show sample creator cards
+        creatorsGrid.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">group</span>
+            <p class="text-gray-500 mb-4">استخدم البحث أو الذكاء الاصطناعي للعثور على المبدعين المناسبين</p>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading creators:', error);
+      }
+    }
+
+    // Handle Create Campaign Form
+    document.getElementById('create-campaign-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showToast('جاري إنشاء الحملة...', 'info');
+      
+      // TODO: Implement campaign creation
+      setTimeout(() => {
+        showToast('تم إنشاء الحملة بنجاح!', 'success');
+        closeCreateCampaignModal();
+        loadCampaigns();
+      }, 1500);
+    });
+
+    // Initialize when Supabase is ready
+    if (window.supabaseClient) {
+      initDashboard();
+    } else {
+      window.addEventListener('supabaseReady', initDashboard);
+    }
   </script>
+
+  <script src="/js/nav-links.js"></script>
 </body>
 </html>

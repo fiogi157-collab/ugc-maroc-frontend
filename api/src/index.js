@@ -395,6 +395,95 @@ app.get("/api/campaigns/available", async (req, res) => {
   }
 });
 
+// Get campaigns by brand ID
+app.get("/api/campaigns/brand/:brandId", async (req, res) => {
+  try {
+    const { brandId } = req.params;
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+
+    const brandCampaigns = await db.select()
+      .from(campaigns)
+      .where(eq(campaigns.brand_id, brandId))
+      .orderBy(campaigns.created_at);
+
+    const formattedCampaigns = brandCampaigns.map(campaign => ({
+      id: campaign.id,
+      title: campaign.title,
+      description: campaign.description,
+      budget: parseFloat(campaign.budget || 0),
+      deadline: campaign.deadline,
+      status: campaign.status,
+      content_type: campaign.content_type,
+      video_duration: campaign.video_duration,
+      category: campaign.category || 'other',
+      difficulty: campaign.difficulty || 'intermediate',
+      created_at: campaign.created_at,
+      updated_at: campaign.updated_at,
+      brand_id: campaign.brand_id
+    }));
+
+    return res.status(200).json({
+      success: true,
+      campaigns: formattedCampaigns,
+      count: formattedCampaigns.length
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching brand campaigns:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل حملات العلامة التجارية",
+      error: error.message
+    });
+  }
+});
+
+// Get wallet by user ID
+app.get("/api/wallet/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const db = await import("../db/client.js").then(m => m.db);
+    const { wallets } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+
+    const walletData = await db.select()
+      .from(wallets)
+      .where(eq(wallets.user_id, userId))
+      .limit(1);
+
+    if (walletData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "المحفظة غير موجودة"
+      });
+    }
+
+    const wallet = walletData[0];
+
+    return res.status(200).json({
+      success: true,
+      wallet: {
+        user_id: wallet.user_id,
+        balance: parseFloat(wallet.balance || 0),
+        pending_balance: parseFloat(wallet.pending_balance || 0),
+        currency: wallet.currency || 'MAD',
+        created_at: wallet.created_at,
+        updated_at: wallet.updated_at
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching wallet:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل المحفظة",
+      error: error.message
+    });
+  }
+});
+
 // =====================================================
 // 🎬 VIDEO UPLOAD ENDPOINT - R2 + Watermark
 // =====================================================
