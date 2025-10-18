@@ -1,5 +1,5 @@
 run = "npx serve ./UGC_MAROC_FINAL"
-modules = ["web", "nodejs-20"]
+modules = ["web", "nodejs-20", "postgresql-16"]
 
 [interpreter]
 command = ["bash"]
@@ -44,6 +44,10 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 39975
+externalPort = 3002
 
 [deployment]
 deploymentTarget = "autoscale"

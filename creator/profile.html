@@ -41,9 +41,9 @@
 <!-- Mobile Header -->
 <header class="bg-card-dark p-4 sticky top-0 z-40 border-b border-primary/20">
 <div class="flex items-center justify-between">
-<button onclick="window.history.back()" class="p-2 rounded-lg hover:bg-gray-700">
+<a href="/creator/creator_dashboard_1.html" class="p-2 rounded-lg hover:bg-gray-700">
 <span class="material-icons">arrow_forward</span>
-</button>
+</a>
 <h1 class="text-xl font-bold text-white">ملفي الشخصي</h1>
 <button onclick="saveProfile()" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition text-sm">
 حفظ
@@ -62,15 +62,15 @@
 </button>
 <input type="file" id="photoUpload" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)"/>
 </div>
-<h2 class="text-2xl font-bold text-white mb-1">سارة أحمد</h2>
+<h2 id="displayName" class="text-2xl font-bold text-white mb-1">...</h2>
 <p class="text-gray-400 mb-3">منشئ محتوى</p>
 <div class="flex gap-2">
 <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-semibold flex items-center">
 <span class="material-icons text-xs ml-1">verified</span>
 موثق
 </span>
-<span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-semibold">
-⭐ 4.8
+<span id="displayRating" class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-semibold">
+⭐ --
 </span>
 </div>
 </div>
@@ -81,28 +81,28 @@
 <div class="stat-card p-4 rounded-lg border border-primary/30">
 <div class="flex items-center justify-between mb-2">
 <span class="material-icons text-primary">movie</span>
-<span class="text-2xl font-bold text-white">47</span>
+<span id="stat-videos" class="text-2xl font-bold text-white">--</span>
 </div>
 <p class="text-xs text-gray-400">عدد الفيديوهات</p>
 </div>
 <div class="stat-card p-4 rounded-lg border border-green-500/30">
 <div class="flex items-center justify-between mb-2">
 <span class="material-icons text-green-400">check_circle</span>
-<span class="text-2xl font-bold text-white">94%</span>
+<span id="stat-acceptance" class="text-2xl font-bold text-white">--</span>
 </div>
 <p class="text-xs text-gray-400">معدل القبول</p>
 </div>
 <div class="stat-card p-4 rounded-lg border border-yellow-500/30">
 <div class="flex items-center justify-between mb-2">
 <span class="material-icons text-yellow-400">star</span>
-<span class="text-2xl font-bold text-white">4.8</span>
+<span id="stat-rating" class="text-2xl font-bold text-white">--</span>
 </div>
 <p class="text-xs text-gray-400">التقييم المتوسط</p>
 </div>
 <div class="stat-card p-4 rounded-lg border border-blue-500/30">
 <div class="flex items-center justify-between mb-2">
 <span class="material-icons text-blue-400">schedule</span>
-<span class="text-2xl font-bold text-white">48h</span>
+<span id="stat-delivery" class="text-2xl font-bold text-white">--</span>
 </div>
 <p class="text-xs text-gray-400">متوسط التسليم</p>
 </div>
@@ -118,19 +118,19 @@
 <div class="space-y-4">
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">الاسم الكامل</label>
-<input type="text" id="fullName" value="سارة أحمد" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="text" id="fullName" value="" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">البريد الإلكتروني</label>
-<input type="email" id="email" value="sara.ahmed@example.com" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="email" id="email" value="" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">رقم الهاتف</label>
-<input type="tel" id="phone" value="+212 6 12 34 56 78" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="tel" id="phone" value="" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">نبذة عني</label>
-<textarea id="bio" rows="4" placeholder="اكتب نبذة قصيرة عنك وخبراتك..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">منشئة محتوى متخصصة في مجال الجمال والموضة. أعمل على إنشاء محتوى إبداعي وجذاب للعلامات التجارية.</textarea>
+<textarea id="bio" rows="4" placeholder="اكتب نبذة قصيرة عنك وخبراتك..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
 </div>
 </div>
 </div>
@@ -219,7 +219,7 @@
 <span class="text-white font-semibold">فيديو 30 ثانية</span>
 </div>
 <div class="flex items-center">
-<input type="number" value="500" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="number" id="price30s" value="500" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
 <span class="text-gray-400 mr-2">د.م</span>
 </div>
 </div>
@@ -231,7 +231,7 @@
 <span class="text-white font-semibold">فيديو 60 ثانية</span>
 </div>
 <div class="flex items-center">
-<input type="number" value="800" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="number" id="price60s" value="800" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
 <span class="text-gray-400 mr-2">د.م</span>
 </div>
 </div>
@@ -243,7 +243,7 @@
 <span class="text-white font-semibold">فيديو 90 ثانية</span>
 </div>
 <div class="flex items-center">
-<input type="number" value="1200" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="number" id="price90s" value="1200" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
 <span class="text-gray-400 mr-2">د.م</span>
 </div>
 </div>
@@ -264,13 +264,13 @@
 <div class="space-y-4">
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">اسم صاحب الحساب</label>
-<input type="text" value="سارة أحمد" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="text" id="bankAccountName" value="" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">اسم البنك</label>
-<select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+<select id="bankName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
 <option value="">اختر البنك</option>
-<option value="attijariwafa" selected>Attijariwafa Bank</option>
+<option value="attijariwafa">Attijariwafa Bank</option>
 <option value="bmce">BMCE Bank</option>
 <option value="bp">Banque Populaire</option>
 <option value="cih">CIH Bank</option>
@@ -281,7 +281,7 @@
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-400 mb-2">رقم RIB</label>
-<input type="text" value="123 456 7890 1234567890" maxlength="24" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input type="text" id="bankRIB" value="" maxlength="24" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:ring-2 focus:ring-primary"/>
 </div>
 </div>
 <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mt-4">
@@ -303,25 +303,25 @@
 <div class="flex items-center">
 <span class="text-white font-semibold">العربية</span>
 </div>
-<input type="checkbox" checked class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+<input type="checkbox" data-lang="العربية" class="lang-checkbox w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
 </label>
 <label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
 <div class="flex items-center">
 <span class="text-white font-semibold">الفرنسية</span>
 </div>
-<input type="checkbox" checked class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+<input type="checkbox" data-lang="الفرنسية" class="lang-checkbox w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
 </label>
 <label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
 <div class="flex items-center">
 <span class="text-white font-semibold">الدارجة المغربية</span>
 </div>
-<input type="checkbox" checked class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+<input type="checkbox" data-lang="الدارجة المغربية" class="lang-checkbox w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
 </label>
 <label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
 <div class="flex items-center">
 <span class="text-white font-semibold">الإنجليزية</span>
 </div>
-<input type="checkbox" class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+<input type="checkbox" data-lang="الإنجليزية" class="lang-checkbox w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
 </label>
 </div>
 </div>
@@ -336,15 +336,15 @@
 <div class="space-y-4">
 <div class="flex items-center bg-gray-800 rounded-lg p-4">
 <span class="material-icons text-pink-400 ml-3">camera_alt</span>
-<input type="text" placeholder="اسم المستخدم في Instagram" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
+<input type="text" id="socialInstagram" placeholder="اسم المستخدم في Instagram" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
 </div>
 <div class="flex items-center bg-gray-800 rounded-lg p-4">
 <span class="material-icons text-blue-400 ml-3">music_note</span>
-<input type="text" placeholder="اسم المستخدم في TikTok" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
+<input type="text" id="socialTikTok" placeholder="اسم المستخدم في TikTok" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
 </div>
 <div class="flex items-center bg-gray-800 rounded-lg p-4">
 <span class="material-icons text-red-400 ml-3">play_circle</span>
-<input type="text" placeholder="قناة YouTube" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
+<input type="text" id="socialYouTube" placeholder="قناة YouTube" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
 </div>
 </div>
 <p class="text-xs text-gray-500 mt-3 flex items-center">
@@ -381,19 +381,19 @@
 <!-- Bottom Navigation -->
 <nav class="fixed bottom-0 left-0 right-0 bg-card-dark border-t border-primary/20 px-4 py-3 z-40">
 <div class="flex items-center justify-around">
-<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<a href="/creator/creator_dashboard_1.html" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
 <span class="material-icons">dashboard</span>
 <span class="text-xs mt-1">الرئيسية</span>
 </a>
-<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<a href="/creator/تصفح_الحملات_(للمبدعين).html" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
 <span class="material-icons">work_outline</span>
 <span class="text-xs mt-1">الحملات</span>
 </a>
-<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<a href="/creator/سحب_وتاريخ_الأرباح_(للمبدعين).html" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
 <span class="material-icons">account_balance_wallet</span>
 <span class="text-xs mt-1">المحفظة</span>
 </a>
-<a href="#" class="flex flex-col items-center text-primary transition">
+<a href="/creator/profile.html" class="flex flex-col items-center text-primary transition">
 <span class="material-icons">person</span>
 <span class="text-xs mt-1">الملف</span>
 </a>
@@ -403,39 +403,357 @@
 <!-- Toast Notification -->
 <div id="toast" class="fixed top-6 left-6 hidden toast z-50"></div>
 
+<!-- Supabase Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/toast.js"></script>
+<script src="/js/nav-links.js"></script>
+
 <script>
-function handlePhotoUpload(event) {
+// =====================================================
+// 🔐 VARIABLES GLOBALES
+// =====================================================
+let currentUser = null;
+let creatorData = null;
+let portfolioVideos = [];
+
+// =====================================================
+// 🔐 AUTH CHECK
+// =====================================================
+async function checkAuth() {
+    try {
+        // Attendre que Supabase soit initialisé
+        if (!window.supabaseClient) {
+            await new Promise((resolve) => {
+                window.addEventListener('supabaseReady', resolve, { once: true });
+            });
+        }
+
+        const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+        
+        if (error || !user) {
+            console.log('❌ Utilisateur non connecté - redirection');
+            window.location.href = '/auth/creator-login.html';
+            return;
+        }
+
+        currentUser = user;
+        
+        // Vérifier le rôle
+        const { data: profile, error: profileError } = await window.supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+        if (profileError || !profile) {
+            console.error('❌ Erreur chargement profil:', profileError);
+            window.location.href = '/auth/creator-login.html';
+            return;
+        }
+
+        if (profile.role !== 'creator') {
+            console.log('❌ Utilisateur n\'est pas créateur - redirection');
+            const redirects = {
+                'brand': '/brand/brand_dashboard_premium.html',
+                'admin': '/admin/إدارة_المستخدمين_(للمسؤولين)_3.html'
+            };
+            window.location.href = redirects[profile.role] || '/index.html';
+            return;
+        }
+
+        console.log('✅ Authentification réussie');
+        await loadCreatorData();
+    } catch (err) {
+        console.error('❌ Erreur auth check:', err);
+        window.location.href = '/auth/creator-login.html';
+    }
+}
+
+// =====================================================
+// 📊 CHARGER DONNÉES CRÉATEUR
+// =====================================================
+async function loadCreatorData() {
+    try {
+        // 1. Charger profil
+        const { data: profile, error: profileError } = await window.supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (profileError) throw profileError;
+
+        // 2. Charger données créateur
+        const { data: creator, error: creatorError } = await window.supabaseClient
+            .from('creators')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (creatorError && creatorError.code !== 'PGRST116') {
+            console.error('Erreur chargement creator:', creatorError);
+        }
+
+        creatorData = creator;
+
+        // 3. Charger statistiques depuis submissions
+        await loadStats();
+
+        // 4. Pré-remplir le formulaire
+        fillForm(profile, creator);
+
+    } catch (err) {
+        console.error('❌ Erreur chargement données:', err);
+        window.toastManager.error('خطأ في تحميل البيانات');
+    }
+}
+
+// =====================================================
+// 📊 CHARGER STATISTIQUES
+// =====================================================
+async function loadStats() {
+    try {
+        const { data: submissions, error } = await window.supabaseClient
+            .from('submissions')
+            .select('*')
+            .eq('creator_id', currentUser.id);
+
+        if (error) throw error;
+
+        const totalVideos = submissions ? submissions.length : 0;
+        const approvedVideos = submissions ? submissions.filter(s => s.status === 'approved').length : 0;
+        const acceptanceRate = totalVideos > 0 ? Math.round((approvedVideos / totalVideos) * 100) : 0;
+        
+        // Calculer rating moyen
+        const ratingsData = submissions ? submissions.filter(s => s.rating).map(s => s.rating) : [];
+        const avgRating = ratingsData.length > 0 
+            ? (ratingsData.reduce((a, b) => a + b, 0) / ratingsData.length).toFixed(1) 
+            : '0.0';
+
+        // Calculer délai moyen (simplifié - en heures)
+        const avgDelivery = '48h'; // À calculer depuis les données réelles
+
+        // Afficher
+        document.getElementById('stat-videos').textContent = approvedVideos;
+        document.getElementById('stat-acceptance').textContent = acceptanceRate + '%';
+        document.getElementById('stat-rating').textContent = avgRating;
+        document.getElementById('stat-delivery').textContent = avgDelivery;
+        document.getElementById('displayRating').textContent = '⭐ ' + avgRating;
+
+    } catch (err) {
+        console.error('❌ Erreur chargement stats:', err);
+    }
+}
+
+// =====================================================
+// 📝 PRÉ-REMPLIR FORMULAIRE
+// =====================================================
+function fillForm(profile, creator) {
+    // Informations personnelles
+    document.getElementById('fullName').value = profile.full_name || '';
+    document.getElementById('email').value = profile.email || '';
+    document.getElementById('phone').value = profile.phone || '';
+    document.getElementById('bio').value = creator?.bio || profile.bio || '';
+    
+    document.getElementById('displayName').textContent = profile.full_name || 'Créateur';
+    
+    // Photo de profil
+    if (profile.avatar_url) {
+        document.getElementById('profileImage').src = profile.avatar_url;
+    }
+
+    // Pricing
+    if (creator?.pricing) {
+        const pricing = typeof creator.pricing === 'string' ? JSON.parse(creator.pricing) : creator.pricing;
+        document.getElementById('price30s').value = pricing['30s'] || 500;
+        document.getElementById('price60s').value = pricing['60s'] || 800;
+        document.getElementById('price90s').value = pricing['90s'] || 1200;
+    }
+
+    // Spécialisations
+    if (creator?.specializations) {
+        const specializations = Array.isArray(creator.specializations) 
+            ? creator.specializations 
+            : JSON.parse(creator.specializations || '[]');
+        
+        document.querySelectorAll('.tag-chip').forEach(tag => {
+            const tagText = tag.textContent.trim();
+            if (specializations.includes(tagText)) {
+                tag.classList.remove('bg-gray-700', 'text-gray-400', 'border-gray-600');
+                tag.classList.add('bg-primary/20', 'text-primary', 'border-primary/30');
+                tag.dataset.active = 'true';
+            }
+        });
+    }
+
+    // Informations bancaires
+    const metadata = profile.metadata || {};
+    document.getElementById('bankAccountName').value = metadata.bank_account_name || profile.full_name || '';
+    document.getElementById('bankName').value = metadata.bank_name || '';
+    document.getElementById('bankRIB').value = metadata.rib || '';
+
+    // Réseaux sociaux
+    document.getElementById('socialInstagram').value = metadata.social_instagram || '';
+    document.getElementById('socialTikTok').value = metadata.social_tiktok || '';
+    document.getElementById('socialYouTube').value = metadata.social_youtube || '';
+
+    // Langues
+    const languages = metadata.languages || [];
+    document.querySelectorAll('.lang-checkbox').forEach(checkbox => {
+        const lang = checkbox.dataset.lang;
+        checkbox.checked = languages.includes(lang);
+    });
+
+    // Portfolio vidéos
+    if (creator?.portfolio_videos) {
+        portfolioVideos = Array.isArray(creator.portfolio_videos) 
+            ? creator.portfolio_videos 
+            : JSON.parse(creator.portfolio_videos || '[]');
+        renderPortfolioVideos();
+    }
+}
+
+// =====================================================
+// 🎬 RENDER PORTFOLIO VIDEOS
+// =====================================================
+function renderPortfolioVideos() {
+    const grid = document.getElementById('portfolioGrid');
+    const uploadButton = grid.querySelector('.upload-zone').parentElement.innerHTML;
+    
+    let html = uploadButton;
+    
+    portfolioVideos.forEach((videoUrl, index) => {
+        html += `
+            <div class="relative rounded-lg overflow-hidden bg-gray-800 aspect-video">
+                <video class="w-full h-full object-cover" controls>
+                    <source src="${videoUrl}" type="video/mp4"/>
+                </video>
+                <button onclick="removeVideo(${index})" class="absolute top-2 left-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
+                    <span class="material-icons text-sm">close</span>
+                </button>
+            </div>
+        `;
+    });
+    
+    grid.innerHTML = html;
+}
+
+// =====================================================
+// 📸 UPLOAD PHOTO PROFIL
+// =====================================================
+async function handlePhotoUpload(event) {
     const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('profileImage').src = e.target.result;
-            showToast('✅ تم تحديث الصورة بنجاح', 'success');
-        };
-        reader.readAsDataURL(file);
+    if (!file) return;
+
+    try {
+        window.toastManager.info('📤 جاري رفع الصورة...');
+
+        // Upload vers Supabase Storage
+        const uploadResult = await window.utils.uploadFile(file, 'avatars');
+        
+        if (!uploadResult.success) {
+            throw new Error(uploadResult.error);
+        }
+
+        // Update profile
+        const { error } = await window.supabaseClient
+            .from('profiles')
+            .update({ avatar_url: uploadResult.url })
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        // Afficher preview
+        document.getElementById('profileImage').src = uploadResult.url;
+        window.toastManager.success('✅ تم تحديث الصورة بنجاح');
+
+    } catch (err) {
+        console.error('❌ Erreur upload photo:', err);
+        window.toastManager.error('❌ فشل رفع الصورة');
     }
 }
 
-function handleVideoUpload(event) {
-    const files = event.target.files;
-    if (files.length > 0) {
-        showToast(`✅ تم إضافة ${files.length} فيديو(هات)`, 'success');
+// =====================================================
+// 🎬 UPLOAD VIDÉOS PORTFOLIO
+// =====================================================
+async function handleVideoUpload(event) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    if (portfolioVideos.length + files.length > 6) {
+        window.toastManager.warning('⚠️ يمكنك إضافة 6 فيديوهات كحد أقصى');
+        return;
+    }
+
+    try {
+        window.toastManager.info(`📤 جاري رفع ${files.length} فيديو(هات)...`);
+
+        for (const file of files) {
+            const uploadResult = await window.utils.uploadFile(file, 'portfolio');
+            
+            if (uploadResult.success) {
+                portfolioVideos.push(uploadResult.url);
+            }
+        }
+
+        // Update database
+        const { error } = await window.supabaseClient
+            .from('creators')
+            .update({ portfolio_videos: portfolioVideos })
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        renderPortfolioVideos();
+        window.toastManager.success(`✅ تم إضافة ${files.length} فيديو(هات)`);
+
+        // Reset file input
+        event.target.value = '';
+
+    } catch (err) {
+        console.error('❌ Erreur upload vidéos:', err);
+        window.toastManager.error('❌ فشل رفع الفيديوهات');
     }
 }
 
-function removeVideo(button) {
-    if (confirm('هل تريد حذف هذا الفيديو؟')) {
-        button.parentElement.remove();
-        showToast('🗑️ تم حذف الفيديو', 'info');
+// =====================================================
+// 🗑️ SUPPRIMER VIDÉO
+// =====================================================
+async function removeVideo(index) {
+    if (!confirm('هل تريد حذف هذا الفيديو؟')) return;
+
+    try {
+        portfolioVideos.splice(index, 1);
+
+        // Update database
+        const { error } = await window.supabaseClient
+            .from('creators')
+            .update({ portfolio_videos: portfolioVideos })
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        renderPortfolioVideos();
+        window.toastManager.info('🗑️ تم حذف الفيديو');
+
+    } catch (err) {
+        console.error('❌ Erreur suppression vidéo:', err);
+        window.toastManager.error('❌ فشل حذف الفيديو');
     }
 }
 
+// =====================================================
+// 🏷️ TOGGLE TAG SPÉCIALITÉS
+// =====================================================
 function toggleTag(button) {
     const isActive = button.dataset.active === 'true';
     const activeCount = document.querySelectorAll('.tag-chip[data-active="true"]').length;
     
     if (!isActive && activeCount >= 5) {
-        showToast('⚠️ يمكنك اختيار 5 تخصصات كحد أقصى', 'warning');
+        window.toastManager.warning('⚠️ يمكنك اختيار 5 تخصصات كحد أقصى');
         return;
     }
     
@@ -450,18 +768,119 @@ function toggleTag(button) {
     }
 }
 
-function saveProfile() {
-    showToast('💾 جاري حفظ التغييرات...', 'info');
-    setTimeout(() => {
-        showToast('✅ تم حفظ التغييرات بنجاح!', 'success');
-    }, 1500);
+// =====================================================
+// 💾 SAUVEGARDER PROFIL
+// =====================================================
+async function saveProfile() {
+    try {
+        window.toastManager.info('💾 جاري حفظ التغييرات...');
+
+        // Récupérer toutes les données du formulaire
+        const fullName = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const bio = document.getElementById('bio').value;
+
+        // Pricing
+        const pricing = {
+            '30s': parseInt(document.getElementById('price30s').value),
+            '60s': parseInt(document.getElementById('price60s').value),
+            '90s': parseInt(document.getElementById('price90s').value)
+        };
+
+        // Spécialisations
+        const specializations = Array.from(document.querySelectorAll('.tag-chip[data-active="true"]'))
+            .map(tag => tag.textContent.trim());
+
+        // Langues
+        const languages = Array.from(document.querySelectorAll('.lang-checkbox:checked'))
+            .map(cb => cb.dataset.lang);
+
+        // Bank info & social media
+        const metadata = {
+            bank_account_name: document.getElementById('bankAccountName').value,
+            bank_name: document.getElementById('bankName').value,
+            rib: document.getElementById('bankRIB').value,
+            social_instagram: document.getElementById('socialInstagram').value,
+            social_tiktok: document.getElementById('socialTikTok').value,
+            social_youtube: document.getElementById('socialYouTube').value,
+            languages: languages
+        };
+
+        // Update profiles table
+        const { error: profileError } = await window.supabaseClient
+            .from('profiles')
+            .update({
+                full_name: fullName,
+                email: email,
+                phone: phone,
+                bio: bio,
+                metadata: metadata
+            })
+            .eq('user_id', currentUser.id);
+
+        if (profileError) throw profileError;
+
+        // Update creators table (upsert si n'existe pas)
+        const { error: creatorError } = await window.supabaseClient
+            .from('creators')
+            .upsert({
+                user_id: currentUser.id,
+                bio: bio,
+                specializations: specializations,
+                pricing: pricing,
+                portfolio_videos: portfolioVideos
+            }, {
+                onConflict: 'user_id'
+            });
+
+        if (creatorError) throw creatorError;
+
+        window.toastManager.success('✅ تم حفظ التغييرات بنجاح!');
+        
+        // Recharger les données
+        setTimeout(() => {
+            loadCreatorData();
+        }, 1000);
+
+    } catch (err) {
+        console.error('❌ Erreur sauvegarde:', err);
+        window.toastManager.error('❌ فشل حفظ التغييرات');
+    }
 }
 
+// =====================================================
+// 👁️ PREVIEW PROFIL
+// =====================================================
 function previewProfile() {
-    showToast('👁️ فتح معاينة الملف الشخصي...', 'info');
+    window.toastManager.info('👁️ معاينة الملف الشخصي قريباً...');
 }
 
+// =====================================================
+// ⚠️ SUPPRESSION COMPTE
+// =====================================================
 function confirmAccountDeletion() {
     if (confirm('⚠️ هل أنت متأكد من حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء!')) {
         if (confirm('⛔ تأكيد نهائي: سيتم حذف جميع بياناتك وفيديوهاتك بشكل دائم!')) {
-            showToast('
+            window.toastManager.error('⛔ ميزة حذف الحساب غير متاحة حالياً. يرجى التواصل مع الدعم.');
+        }
+    }
+}
+
+// Fallback showToast pour compatibilité
+function showToast(message, type) {
+    if (window.toastManager) {
+        window.toastManager.show(message, type);
+    }
+}
+
+// =====================================================
+// 🚀 INITIALISATION
+// =====================================================
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+});
+
+</script>
+</body>
+</html>

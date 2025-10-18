@@ -42,11 +42,11 @@
 <!-- Mobile Header -->
 <header class="bg-card-dark p-4 sticky top-0 z-40 border-b border-primary/20">
 <div class="flex items-center justify-between">
-<button onclick="window.history.back()" class="p-2 rounded-lg hover:bg-gray-700">
+<a href="/brand/brand_dashboard_premium.html" class="p-2 rounded-lg hover:bg-gray-700">
 <span class="material-icons">arrow_forward</span>
-</button>
+</a>
 <div class="flex items-center">
-<h1 class="text-xl font-bold text-white">الإشعارات</h1>
+<a href="/index.html" class="text-xl font-bold text-white hover:text-primary transition">الإشعارات</a>
 <span id="unreadBadge" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2 badge-pulse">8</span>
 </div>
 <button onclick="markAllAsRead()" class="text-primary text-sm font-semibold hover:text-primary/80 transition">
@@ -356,20 +356,20 @@
 <!-- Bottom Navigation -->
 <nav class="fixed bottom-0 left-0 right-0 bg-card-dark border-t border-primary/20 px-4 py-3 z-40">
 <div class="flex items-center justify-around">
-<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<a href="/brand/brand_dashboard_premium.html" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
 <span class="material-icons">dashboard</span>
 <span class="text-xs mt-1">الرئيسية</span>
 </a>
-<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<a href="/brand/تفاصيل_الحملة_(للعلامات_التجارية).html" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
 <span class="material-icons">campaign</span>
 <span class="text-xs mt-1">حملاتي</span>
 </a>
-<a href="#" class="flex flex-col items-center text-primary transition relative">
+<a href="/brand/notifications.html" class="flex flex-col items-center text-primary transition relative">
 <span class="material-icons">notifications</span>
 <span class="text-xs mt-1">الإشعارات</span>
-<span class="absolute -top-1 -right-2 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">8</span>
+<span id="navBadge" class="absolute -top-1 -right-2 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center" style="display: none;">0</span>
 </a>
-<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<a href="/brand/إعدادات_ملف_العلامة_التجارية_4.html" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
 <span class="material-icons">person</span>
 <span class="text-xs mt-1">الملف</span>
 </a>
@@ -379,9 +379,317 @@
 <!-- Toast Notification -->
 <div id="toast" class="fixed top-6 left-6 hidden toast z-50"></div>
 
-<script>
-let unreadCount = 8;
+<!-- Supabase Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav-links.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/api.js"></script>
 
+<script>
+// ===========================================================
+// 🔔 UGC Maroc - Notifications Marque avec Supabase
+// ===========================================================
+
+let unreadCount = 0;
+let allNotifications = [];
+
+// ===========================================================
+// AUTH CHECK - Vérifier que l'utilisateur est une marque
+// ===========================================================
+async function checkBrandAuth() {
+    if (!window.supabaseClient) {
+        console.log('⏳ Attente de Supabase...');
+        await new Promise(resolve => {
+            window.addEventListener('supabaseReady', resolve, { once: true });
+        });
+    }
+
+    try {
+        const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+
+        if (error || !user) {
+            console.log('❌ Non connecté, redirection...');
+            window.location.href = '/auth/brand-login.html';
+            return false;
+        }
+
+        const { data: profile } = await window.supabaseClient
+            .from('profiles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
+
+        if (!profile || profile.role !== 'brand') {
+            console.log('❌ Pas une marque, redirection...');
+            if (profile?.role === 'creator') {
+                window.location.href = '/creator/ugc-creator-dashboard.html';
+            } else if (profile?.role === 'admin') {
+                window.location.href = '/admin/إدارة_المستخدمين_(للمسؤولين)_3.html';
+            } else {
+                window.location.href = '/index.html';
+            }
+            return false;
+        }
+
+        console.log('✅ Marque authentifiée');
+        return user;
+    } catch (err) {
+        console.error('Erreur auth:', err);
+        window.location.href = '/auth/brand-login.html';
+        return false;
+    }
+}
+
+// ===========================================================
+// CHARGER NOTIFICATIONS DEPUIS SUPABASE
+// ===========================================================
+async function loadNotifications() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await window.supabaseClient
+            .from('profiles')
+            .select('user_id')
+            .eq('user_id', user.id)
+            .single();
+
+        if (!profile) return;
+
+        allNotifications = [];
+
+        const { data: campaigns } = await window.supabaseClient
+            .from('campaigns')
+            .select('*')
+            .eq('brand_id', profile.user_id)
+            .order('created_at', { ascending: false });
+
+        if (campaigns) {
+            campaigns.forEach(campaign => {
+                const deadline = new Date(campaign.deadline);
+                const now = new Date();
+                const hoursUntilDeadline = (deadline - now) / (1000 * 60 * 60);
+
+                if (campaign.status === 'active' && hoursUntilDeadline < 48 && hoursUntilDeadline > 0) {
+                    allNotifications.push({
+                        id: `campaign_${campaign.id}`,
+                        type: 'campaign',
+                        subtype: 'urgent',
+                        title: `حملة توشك على الانتهاء ⏰`,
+                        message: `حملة "${campaign.title}" تنتهي خلال ${Math.round(hoursUntilDeadline)} ساعة`,
+                        time: new Date(campaign.created_at),
+                        read: false,
+                        urgent: true,
+                        data: campaign
+                    });
+                }
+            });
+        }
+
+        const { data: submissions } = await window.supabaseClient
+            .from('submissions')
+            .select(`
+                *,
+                campaigns(title, brand_id),
+                profiles(full_name)
+            `)
+            .eq('campaigns.brand_id', profile.user_id)
+            .order('submitted_at', { ascending: false })
+            .limit(20);
+
+        if (submissions) {
+            submissions.forEach(sub => {
+                if (sub.campaigns && sub.campaigns.brand_id === profile.user_id) {
+                    const isUrgent = sub.status === 'pending' || sub.status === 'under_review';
+                    allNotifications.push({
+                        id: `submission_${sub.id}`,
+                        type: 'submission',
+                        title: sub.status === 'pending' ? 'تسليم فيديو جديد 📹' : 
+                               sub.status === 'revision_requested' ? 'تسليم معاد 🔄' : 'تسليم',
+                        message: `${sub.profiles?.full_name || 'منشئ محتوى'} قدم فيديو لحملة "${sub.campaigns?.title || 'حملة'}"`,
+                        time: new Date(sub.submitted_at),
+                        read: false,
+                        urgent: isUrgent,
+                        data: sub
+                    });
+                }
+            });
+        }
+
+        const { data: wallet } = await window.supabaseClient
+            .from('wallets')
+            .select('balance_mad')
+            .eq('user_id', profile.user_id)
+            .single();
+
+        if (wallet && wallet.balance_mad < 500) {
+            allNotifications.push({
+                id: 'low_balance',
+                type: 'urgent',
+                title: 'تحذير: رصيد منخفض ⚠️',
+                message: `رصيدك الحالي ${wallet.balance_mad} د.م - قد لا يكفي للحملات النشطة`,
+                time: new Date(),
+                read: false,
+                urgent: true,
+                data: wallet
+            });
+        }
+
+        allNotifications.sort((a, b) => b.time - a.time);
+        
+        renderNotifications();
+        updateStats();
+    } catch (err) {
+        console.error('Erreur chargement notifications:', err);
+        showToast('خطأ في تحميل الإشعارات', 'error');
+    }
+}
+
+// ===========================================================
+// AFFICHER LES NOTIFICATIONS
+// ===========================================================
+function renderNotifications() {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+
+    if (allNotifications.length === 0) {
+        container.innerHTML = `
+            <div class="p-8 text-center">
+                <span class="material-icons text-6xl text-gray-600 mb-4 block">notifications_off</span>
+                <h3 class="text-xl font-bold text-white mb-2">لا توجد إشعارات</h3>
+                <p class="text-gray-400">ستظهر هنا جميع تحديثات حملاتك وإشعاراتك</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = allNotifications.map(notif => createNotificationHTML(notif)).join('');
+}
+
+function createNotificationHTML(notif) {
+    const timeAgo = getTimeAgo(notif.time);
+    const readClass = notif.read ? 'notification-read' : 'notification-unread';
+    const urgentClass = notif.urgent ? 'notification-urgent' : '';
+    
+    let icon = 'notifications';
+    let iconColor = 'blue-500';
+    
+    if (notif.type === 'submission') {
+        icon = 'video_library';
+        iconColor = 'blue-500';
+    } else if (notif.type === 'campaign') {
+        icon = 'schedule';
+        iconColor = 'orange-500';
+    } else if (notif.type === 'urgent') {
+        icon = 'warning';
+        iconColor = 'red-500';
+    }
+
+    return `
+        <div class="notification-item ${readClass} ${urgentClass} bg-card-dark rounded-lg p-4 cursor-pointer" 
+             data-read="${notif.read}" 
+             data-type="${notif.type}" 
+             data-id="${notif.id}"
+             onclick="openNotification(this, '${notif.id}')">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-${iconColor}/20 flex items-center justify-center">
+                    <span class="material-icons text-${iconColor.replace('500', '400')} text-2xl">${icon}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between mb-1">
+                        <h3 class="font-bold text-white">${notif.title}</h3>
+                        <span class="text-xs text-gray-500 flex-shrink-0 mr-2">${timeAgo}</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-2">${notif.message}</p>
+                    ${getNotificationActions(notif)}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function getNotificationActions(notif) {
+    if (notif.type === 'submission') {
+        return `
+            <div class="flex items-center gap-2">
+                <button onclick="reviewSubmission(event, '${notif.data.id}')" 
+                        class="text-xs bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary/90 transition">
+                    مراجعة الآن
+                </button>
+                <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">تسليم</span>
+            </div>
+        `;
+    } else if (notif.type === 'campaign') {
+        return `
+            <div class="flex items-center gap-2">
+                <button onclick="viewCampaign(event, '${notif.data.id}')" 
+                        class="text-xs bg-orange-500 text-white px-3 py-1 rounded-lg hover:bg-orange-600 transition">
+                    عرض الحملة
+                </button>
+                <span class="text-xs text-orange-400">عاجل</span>
+            </div>
+        `;
+    } else if (notif.id === 'low_balance') {
+        return `
+            <div class="flex items-center gap-2">
+                <button onclick="rechargeBalance(event)" 
+                        class="text-xs bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition font-semibold">
+                    إعادة الشحن الآن
+                </button>
+                <span class="text-xs text-red-400">عاجل</span>
+            </div>
+        `;
+    }
+    return '';
+}
+
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    
+    if (seconds < 60) return 'الآن';
+    if (seconds < 3600) return `منذ ${Math.floor(seconds / 60)} دقيقة`;
+    if (seconds < 86400) return `منذ ${Math.floor(seconds / 3600)} ساعة`;
+    if (seconds < 604800) return `منذ ${Math.floor(seconds / 86400)} يوم`;
+    return new Date(date).toLocaleDateString('ar');
+}
+
+// ===========================================================
+// METTRE À JOUR LES STATISTIQUES
+// ===========================================================
+function updateStats() {
+    const unread = allNotifications.filter(n => !n.read).length;
+    const today = allNotifications.filter(n => {
+        const now = new Date();
+        const notifDate = new Date(n.time);
+        return notifDate.toDateString() === now.toDateString();
+    }).length;
+    const urgent = allNotifications.filter(n => n.urgent).length;
+    
+    document.querySelector('.grid.grid-cols-4 .text-2xl:nth-of-type(1)').textContent = unread;
+    document.querySelector('.grid.grid-cols-4 .text-2xl:nth-of-type(2)').textContent = today;
+    document.querySelector('.grid.grid-cols-4 .text-red-400').textContent = urgent;
+    document.querySelector('.grid.grid-cols-4 .text-2xl:nth-of-type(4)').textContent = allNotifications.length;
+    
+    const badge = document.getElementById('unreadBadge');
+    if (badge) {
+        badge.textContent = unread;
+        badge.style.display = unread > 0 ? 'inline-block' : 'none';
+    }
+    
+    const navBadge = document.getElementById('navBadge');
+    if (navBadge) {
+        navBadge.textContent = unread;
+        navBadge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    
+    unreadCount = unread;
+}
+
+// ===========================================================
+// FILTRES
+// ===========================================================
 function filterNotifications(type) {
     const notifications = document.querySelectorAll('.notification-item');
     const filterBtns = document.querySelectorAll('.filter-btn');
@@ -412,15 +720,34 @@ function filterNotifications(type) {
     checkEmptyState();
 }
 
+function checkEmptyState() {
+    const visibleNotifications = Array.from(document.querySelectorAll('.notification-item')).filter(n => n.style.display !== 'none');
+    const emptyState = document.getElementById('emptyState');
+    const notificationsList = document.getElementById('notificationsList');
+    
+    if (visibleNotifications.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (notificationsList) notificationsList.style.display = 'none';
+    } else {
+        if (emptyState) emptyState.classList.add('hidden');
+        if (notificationsList) notificationsList.style.display = 'block';
+    }
+}
+
+// ===========================================================
+// ACTIONS
+// ===========================================================
 function openNotification(element, id) {
+    const notif = allNotifications.find(n => n.id === id);
+    if (!notif) return;
+    
     if (element.dataset.read === 'false') {
         element.dataset.read = 'true';
         element.classList.remove('notification-unread');
         element.classList.add('notification-read');
-        updateUnreadCount(-1);
+        notif.read = true;
+        updateStats();
     }
-    
-    showToast('📱 فتح تفاصيل الإشعار...', 'info');
 }
 
 function markAllAsRead() {
@@ -431,71 +758,44 @@ function markAllAsRead() {
         notif.classList.add('notification-read');
     });
     
-    unreadCount = 0;
-    updateUnreadBadge();
+    allNotifications.forEach(n => n.read = true);
+    updateStats();
     showToast('✅ تم تعيين جميع الإشعارات كمقروءة', 'success');
 }
 
 function rechargeBalance(event) {
-    event.stopPropagation();
-    showToast('💳 فتح صفحة إعادة الشحن...', 'info');
+    event?.stopPropagation();
+    window.location.href = '/brand/Depot_de_Fonds_Marque.html';
 }
 
 function reviewSubmission(event, id) {
-    event.stopPropagation();
-    showToast('🎬 فتح الفيديو للمراجعة...', 'info');
+    event?.stopPropagation();
+    window.location.href = `/brand/Valider_Soumissions_Marque.html?submission=${id}`;
 }
 
 function viewCampaign(event, id) {
-    event.stopPropagation();
-    showToast('📋 فتح تفاصيل الحملة...', 'info');
+    event?.stopPropagation();
+    window.location.href = `/brand/تفاصيل_الحملة_(للعلامات_التجارية).html?id=${id}`;
 }
 
 function contactCreator(event, id) {
-    event.stopPropagation();
-    showToast('💬 فتح نافذة الرسائل...', 'info');
+    event?.stopPropagation();
+    showToast('💬 Fonctionnalité messages en développement', 'info');
 }
 
 function reviewAll(event) {
-    event.stopPropagation();
-    showToast('📦 فتح جميع التسليمات...', 'info');
+    event?.stopPropagation();
+    window.location.href = '/brand/Valider_Soumissions_Marque.html';
 }
 
 function viewCampaignResults(event, id) {
-    event.stopPropagation();
-    showToast('📊 عرض نتائج الحملة...', 'info');
+    event?.stopPropagation();
+    window.location.href = `/brand/تفاصيل_الحملة_(للعلامات_التجارية).html?id=${id}`;
 }
 
 function replyMessage(event, id) {
-    event.stopPropagation();
-    showToast('✉️ فتح نافذة الرد...', 'info');
-}
-
-function updateUnreadCount(change) {
-    unreadCount += change;
-    if (unreadCount < 0) unreadCount = 0;
-    updateUnreadBadge();
-}
-
-function updateUnreadBadge() {
-    const badge = document.getElementById('unreadBadge');
-    if (unreadCount > 0) {
-        badge.textContent = unreadCount;
-        badge.style.display = 'inline-block';
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
-function checkEmptyState() {
-    const visibleNotifications = Array.from(document.querySelectorAll('.notification-item')).filter(n => n.style.display !== 'none');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (visibleNotifications.length === 0) {
-        emptyState.classList.remove('hidden');
-    } else {
-        emptyState.classList.add('hidden');
-    }
+    event?.stopPropagation();
+    showToast('✉️ Fonctionnalité messages en développement', 'info');
 }
 
 function showToast(message, type) {
@@ -510,6 +810,30 @@ function showToast(message, type) {
     toast.textContent = message;
     toast.classList.remove('hidden');
     setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+// ===========================================================
+// INITIALISATION
+// ===========================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🔔 Initialisation notifications marque...');
+    
+    const user = await checkBrandAuth();
+    if (user) {
+        await loadNotifications();
+    }
+});
+
+if (window.supabaseClient) {
+    checkBrandAuth().then(user => {
+        if (user) loadNotifications();
+    });
+} else {
+    window.addEventListener('supabaseReady', () => {
+        checkBrandAuth().then(user => {
+            if (user) loadNotifications();
+        });
+    });
 }
 </script>
 </body>
