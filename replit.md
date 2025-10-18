@@ -24,6 +24,28 @@ Integrated AI-powered features using DeepSeek V3.1 with complete Arabic/Moroccan
 3. **Frontend Module**: `ai-assistant.js` provides easy-to-use functions with loading states
 4. **Test Interface**: `test-ai.html` demonstrates all AI capabilities in production-ready UI
 
+### Database Integration for AI Features (October 18, 2025)
+
+Connected all AI features with Supabase database to use real data instead of static placeholders:
+
+1. **Campaign Brief Generator** (`brand/إنشاء_حملة_جديدة.html`):
+   - Auto-loads latest brand campaign from Supabase on page load
+   - Stores in global variable `currentCampaign`
+   - AI brief generation uses real DB data (title, description, budget, deadline, content_type, video_duration)
+   - Falls back to DOM placeholder data if no campaigns exist
+   
+2. **Creator Recommendations** (`brand/brand_dashboard_premium.html`):
+   - Queries Supabase `creators` table with JOIN on `profiles`
+   - Intelligent bio analysis to determine creator specialization
+   - Fetches active campaign data for contextualized recommendations
+   - Handles empty DB with Arabic error messages
+   
+3. **Security & Performance**:
+   - All queries scoped to authenticated user (`brand_id = user.id`)
+   - LIMIT clauses to prevent overload (20 creators, 1 campaign)
+   - Try/catch error handling throughout
+   - Loading states and user feedback in Arabic
+
 ## Project Architecture
 
 ### Frontend
