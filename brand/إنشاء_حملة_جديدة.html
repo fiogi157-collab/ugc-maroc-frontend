@@ -287,6 +287,20 @@
 <h4 class="font-semibold text-primary mb-2">جاهز للإطلاق؟</h4>
 <p class="text-sm leading-relaxed">بمجرد الضغط على "إطلاق الحملة الآن"، ستصبح حملتك مرئية للمبدعين المؤهلين الذين يمكنهم البدء في تقديم طلبات الانضمام.</p>
 </div>
+
+<!-- مساعد الذكاء الاصطناعي -->
+<div class="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 mt-6">
+<div class="flex items-center gap-2 mb-3">
+<span class="text-2xl">🤖</span>
+<h4 class="font-semibold text-purple-900 dark:text-purple-300">مساعد الذكاء الاصطناعي</h4>
+</div>
+<p class="text-sm text-purple-800 dark:text-purple-400 mb-3">هل تحتاج مساعدة في إنشاء بريف احترافي لحملتك؟ استخدم الذكاء الاصطناعي لتوليد بريف مفصل تلقائياً!</p>
+<button onclick="generateAIBrief()" class="w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+<span>✨</span>
+<span>توليد البريف بالذكاء الاصطناعي</span>
+</button>
+<div id="ai-brief-result" class="mt-4"></div>
+</div>
 </div>
 </div>
 </aside>
@@ -305,5 +319,26 @@
 <script src="/js/api.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/dashboard-brand.js"></script>
+<script src="/js/ai-assistant.js"></script>
+
+<script>
+// Fonction pour générer un brief avec l'IA
+async function generateAIBrief() {
+  // Récupérer les données de la campagne depuis la page
+  const campaignInfo = {
+    campaignName: "إطلاق مجموعة مستحضرات التجميل الجديدة نور الصحراء",
+    brandName: "نور الصحراء",
+    productName: "مستحضرات التجميل المستوحاة من جمال الصحراء المغربية",
+    goal: "الحصول على محتوى UGC يبرز جودة المنتجات وتنوعها",
+    budget: "15000 درهم مغربي",
+    targetAudience: "نساء مهتمات بالجمال والعناية بالبشرة"
+  };
+  
+  // Appeler l'assistant IA
+  await AIAssistant.generateBrief(campaignInfo, 'ai-brief-result');
+}
+
+console.log('✅ Campaign AI features loaded');
+</script>
 
 </body></html>

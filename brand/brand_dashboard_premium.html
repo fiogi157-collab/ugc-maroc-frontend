@@ -428,9 +428,11 @@
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold flex items-center gap-2">
               <span class="text-xl">🤖</span>
-              مبدعون موصى بهم
+              المبدعون الموصى بهم بالذكاء الاصطناعي
             </h3>
-            <button class="text-sm text-primary hover:underline">عرض الكل ←</button>
+            <button onclick="generateCreatorRecommendations()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs rounded-lg hover:shadow-lg transition-all">
+              ✨ توليد توصيات
+            </button>
           </div>
           
           <div id="recommended-creators" class="space-y-4">
@@ -739,6 +741,35 @@
 
     // Check authentication
     window.auth?.checkAuth('brand');
+  </script>
+  
+  <!-- AI Assistant Integration -->
+  <script src="/js/ai-assistant.js"></script>
+  <script>
+    // Générer des recommandations de créateurs avec l'IA
+    async function generateCreatorRecommendations() {
+      const campaignData = {
+        productName: "منتجات تجميل طبيعية",
+        category: "جمال وموضة",
+        targetAudience: "نساء شابات 20-40",
+        budget: "متوسطة"
+      };
+
+      const creatorsPool = [
+        { name: 'فاطمة الزهراء', specialization: 'جمال وموضة', rating: 4.8, videoCount: 45 },
+        { name: 'يوسف المالكي', specialization: 'تقنية وابتكار', rating: 4.5, videoCount: 32 },
+        { name: 'سارة بنعلي', specialization: 'أكل وطبخ', rating: 4.9, videoCount: 67 },
+        { name: 'أمين الحسني', specialization: 'رياضة وصحة', rating: 4.3, videoCount: 28 },
+        { name: 'نادية الإدريسي', specialization: 'سفر وسياحة', rating: 4.7, videoCount: 53 },
+        { name: 'ليلى العلوي', specialization: 'موضة وأزياء', rating: 4.6, videoCount: 39 },
+        { name: 'كريم بنسعيد', specialization: 'تقنية', rating: 4.4, videoCount: 41 },
+        { name: 'مريم الحسني', specialization: 'جمال وعناية بالبشرة', rating: 4.9, videoCount: 58 }
+      ];
+      
+      await AIAssistant.matchCreators(campaignData, creatorsPool, 'recommended-creators');
+    }
+    
+    console.log('✅ Dashboard AI features loaded');
   </script>
 </body>
 </html>
