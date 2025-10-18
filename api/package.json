@@ -4,13 +4,15 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "resend": "^4.0.1"
   },
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   }
 }

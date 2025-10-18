@@ -5,7 +5,8 @@
 // -------------------------------
 // 🔹 BACKEND API CONFIGURATION
 // -------------------------------
-const API_BASE_URL = "https://ugc-maroc-backend-q7zna70gs-nabils-projects-e12f0a77.vercel.app"; // ton backend déployé
+// Use relative URL for API calls since everything runs on the same server
+const API_BASE_URL = window.location.origin;
 window.API_BASE_URL = API_BASE_URL;
 
 // Helper pour requêtes API (login, signup, etc.)
@@ -27,13 +28,35 @@ async function apiRequest(endpoint, options = {}) {
 // -------------------------------
 // 🔹 SUPABASE CONFIGURATION
 // -------------------------------
-const SUPABASE_URL = "https://arfmvtfxibjdaxwbnqjl.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZm12dGZ4aWJqZGF4d2JucWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkwODg4MDcsImV4cCI6MjA0NDY2NDgwN30.CI6brtCwaXOnzDN7IDy30GZ2U9TQ6tHVmA2GZ6zS41I";
+// Fetch Supabase configuration from backend API (secure approach)
+let supabaseClient = null;
 
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-window.supabaseClient = supabaseClient;
+async function initializeSupabase() {
+  try {
+    const config = await apiRequest('/api/config');
+    
+    if (!config.supabaseUrl || !config.supabaseAnonKey) {
+      console.error('❌ Supabase configuration missing');
+      return null;
+    }
 
-console.log("✅ Supabase client initialized");
-console.log("✅ API Backend connecté :", API_BASE_URL);
+    const { createClient } = supabase;
+    supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
+    window.supabaseClient = supabaseClient;
+    
+    console.log("✅ Supabase client initialized");
+    console.log("✅ API Backend connecté :", API_BASE_URL);
+    
+    return supabaseClient;
+  } catch (error) {
+    console.error("❌ Failed to initialize Supabase:", error);
+    return null;
+  }
+}
+
+// Initialize Supabase when the page loads
+if (typeof supabase !== 'undefined') {
+  initializeSupabase();
+} else {
+  console.warn('⚠️ Supabase library not loaded yet. Will initialize when available.');
+}
