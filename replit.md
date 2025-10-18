@@ -46,6 +46,18 @@ Connected all AI features with Supabase database to use real data instead of sta
    - Try/catch error handling throughout
    - Loading states and user feedback in Arabic
 
+### Authentication Architecture Refactor (October 18, 2025)
+
+Fixed critical authentication bug and simplified architecture for better security:
+
+1. **Problem Solved**: Eliminated "Unexpected token '<'" error caused by missing backend routes
+2. **Client-Side Auth**: Refactored `loginUser()` in `js/auth.js` to use Supabase Auth directly (no backend)
+3. **Security Fix**: Removed backend auth routes that had session leakage vulnerability
+4. **Consistency**: Login now uses same pattern as signup (both client-side via Supabase)
+5. **Benefits**: Simpler architecture, no shared sessions, faster performance, production-ready
+
+See `AUTH_FIX_COMPLETE.md` for detailed technical documentation.
+
 ## Project Architecture
 
 ### Frontend
@@ -78,6 +90,7 @@ Connected all AI features with Supabase database to use real data instead of sta
 - **Supabase**: PostgreSQL database with authentication
 - **Tables**: profiles, creators, brands, wallets, campaigns, submissions
 - **Authentication**: Email/password with role-based access (creator, brand, admin)
+- **Auth Architecture**: 100% client-side via Supabase Auth (no backend auth routes for security)
 
 ## Environment Variables
 

@@ -34,6 +34,25 @@ async function performAuthCheck() {
   setupNavigation();
 }
 
+function makeLogoClickable() {
+  const logoElements = document.querySelectorAll('h1');
+  
+  logoElements.forEach(el => {
+    if (el.textContent.trim() === 'UGC Maroc') {
+      const parent = el.parentElement;
+      
+      if (parent && !parent.closest('a')) {
+        const link = document.createElement('a');
+        link.href = '/index.html';
+        link.className = 'flex items-center gap-4 text-slate-800 dark:text-slate-200 hover:text-primary transition-colors cursor-pointer';
+        
+        parent.replaceWith(link);
+        link.appendChild(parent);
+      }
+    }
+  });
+}
+
 function setupNavigation() {
   // Navigation standard si non connecté
   const routes = {
@@ -80,6 +99,8 @@ function setupNavigation() {
 // Wait for both DOM and Supabase to be ready
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ nav-links.js chargé avec succès');
+  
+  makeLogoClickable();
   
   // If Supabase is already initialized, perform auth check immediately
   if (window.supabaseClient) {
