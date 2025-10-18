@@ -92,103 +92,64 @@ async function loginUser(email, password) {
 }
 
 // Créer profil complet (profil + wallet + creator/brand)
+// Utilise une fonction RPC SECURITY DEFINER pour contourner les problèmes de cache RLS
 async function createCompleteProfile(userId, email, fullName, phone, role, metadata = {}) {
   try {
-    console.log('📝 Création profil complet:', { userId, email, role });
+    console.log('📝 Création profil complet via RPC:', { userId, email, role });
 
-    // 1. Créer profil dans profiles table
-    const profileData = {
-      id: userId, // UUID from Supabase Auth
-      email: email,
-      full_name: fullName,
-      username: metadata.username || null,
-      role: role,
-      avatar_url: metadata.profilePictureUrl || metadata.avatar_url || null,
-      phone: phone || null,
-      bio: metadata.bio || null
+    // Préparer les paramètres selon le rôle
+    const rpcParams = {
+      p_user_id: userId,
+      p_email: email,
+      p_full_name: fullName,
+      p_role: role
     };
 
-    const { data: profile, error: profileError } = await window.supabaseClient
-      .from('profiles')
-      .insert([profileData])
-      .select()
-      .single();
-
-    if (profileError) {
-      console.error('❌ Erreur création profil:', profileError);
-      throw new Error('فشل في إنشاء الملف الشخصي: ' + profileError.message);
-    }
-
-    console.log('✅ Profil créé avec succès');
-
-    // 2. Créer wallet (OBLIGATOIRE)
-    const { error: walletError } = await window.supabaseClient
-      .from('wallets')
-      .insert([{
-        user_id: userId,
-        balance: 0,
-        pending_balance: 0,
-        currency: 'MAD'
-      }]);
-
-    if (walletError) {
-      console.error('❌ Erreur création wallet:', walletError);
-      throw new Error('فشل في إنشاء المحفظة: ' + walletError.message);
-    }
-    
-    console.log('✅ Wallet créé avec succès');
-
-    // 3. Créer profil étendu selon le rôle (OBLIGATOIRE)
+    // Paramètres spécifiques pour creator
     if (role === 'creator') {
-      const creatorData = {
-        user_id: userId,
-        specialization: metadata.specialization || null,
-        instagram_handle: metadata.instagram || metadata.instagramHandle || null,
-        tiktok_handle: metadata.tiktok || metadata.tiktokHandle || null,
-        youtube_handle: metadata.youtube || metadata.youtubeHandle || null,
-        followers_count: metadata.followersCount || 0,
-        portfolio_url: metadata.portfolioUrl || null,
-        is_verified: false,
-        rating: 0,
-        completed_campaigns: 0
-      };
-
-      const { error: creatorError } = await window.supabaseClient
-        .from('creators')
-        .insert([creatorData]);
-
-      if (creatorError) {
-        console.error('❌ Erreur création profil creator:', creatorError);
-        throw new Error('فشل في إنشاء ملف المبدع: ' + creatorError.message);
-      }
-      
-      console.log('✅ Profil creator créé');
-      
-    } else if (role === 'brand') {
-      const brandData = {
-        user_id: userId,
-        company_name: metadata.companyName || metadata.company_name || fullName,
-        industry: metadata.industry || null,
-        website: metadata.website || null,
-        logo_url: metadata.logo_url || metadata.logoUrl || null,
-        description: metadata.description || metadata.bio || null,
-        is_verified: false,
-        total_campaigns: 0
-      };
-
-      const { error: brandError } = await window.supabaseClient
-        .from('brands')
-        .insert([brandData]);
-
-      if (brandError) {
-        console.error('❌ Erreur création profil brand:', brandError);
-        throw new Error('فشل في إنشاء ملف العلامة التجارية: ' + brandError.message);
-      }
-      
-      console.log('✅ Profil brand créé');
+      rpcParams.p_username = metadata.username || null;
+      rpcParams.p_specialization = metadata.specialization || null;
+      rpcParams.p_bio = metadata.bio || null;
+      rpcParams.p_profile_picture_url = metadata.profilePictureUrl || null;
+      rpcParams.p_cin = metadata.cin || null;
+      rpcParams.p_birth_date = metadata.birthDate || null;
+      rpcParams.p_ville = metadata.ville || null;
+      rpcParams.p_languages = metadata.languages || null;
+      rpcParams.p_interests = metadata.interests || null;
+      rpcParams.p_bank_name = metadata.bankName || null;
+      rpcParams.p_rib = metadata.rib || null;
     }
 
-    return { success: true, profile };
+    // Paramètres spécifiques pour brand
+    if (role === 'brand') {
+      rpcParams.p_company_name = metadata.companyName || metadata.company_name || fullName;
+      rpcParams.p_company_description = metadata.description || metadata.bio || null;
+      rpcParams.p_profile_picture_url = metadata.profilePictureUrl || metadata.logo_url || null;
+      rpcParams.p_website = metadata.website || null;
+      rpcParams.p_industry = metadata.industry || null;
+      rpcParams.p_company_size = metadata.companySize || metadata.company_size || null;
+    }
+
+    console.log('🚀 Appel RPC create_complete_profile avec params:', rpcParams);
+
+    // Appeler la fonction RPC
+    const { data, error } = await window.supabaseClient
+      .rpc('create_complete_profile', rpcParams);
+
+    if (error) {
+      console.error('❌ Erreur RPC create_complete_profile:', error);
+      throw new Error('فشل في إنشاء الملف الشخصي: ' + error.message);
+    }
+
+    console.log('📊 Résultat RPC:', data);
+
+    // Vérifier le résultat
+    if (!data || !data.success) {
+      throw new Error('فشل في إنشاء الملف الشخصي: ' + (data?.error || 'خطأ غير معروف'));
+    }
+
+    console.log('✅ Profil complet créé avec succès via RPC');
+    return { success: true, profile: data };
   } catch (err) {
     console.error('❌ Erreur createCompleteProfile:', err);
     throw err;
