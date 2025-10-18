@@ -91,6 +91,107 @@ async function loginUser(email, password) {
   }
 }
 
+// Créer profil complet (profil + wallet + creator/brand)
+async function createCompleteProfile(userId, email, fullName, phone, role, metadata = {}) {
+  try {
+    console.log('📝 Création profil complet:', { userId, email, role });
+
+    // 1. Créer profil dans profiles table
+    const profileData = {
+      id: userId, // UUID from Supabase Auth
+      email: email,
+      full_name: fullName,
+      username: metadata.username || null,
+      role: role,
+      avatar_url: metadata.profilePictureUrl || metadata.avatar_url || null,
+      phone: phone || null,
+      bio: metadata.bio || null
+    };
+
+    const { data: profile, error: profileError } = await window.supabaseClient
+      .from('profiles')
+      .insert([profileData])
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error('❌ Erreur création profil:', profileError);
+      throw new Error('فشل في إنشاء الملف الشخصي: ' + profileError.message);
+    }
+
+    console.log('✅ Profil créé avec succès');
+
+    // 2. Créer wallet
+    const { error: walletError } = await window.supabaseClient
+      .from('wallets')
+      .insert([{
+        user_id: userId,
+        balance: 0,
+        pending_balance: 0,
+        currency: 'MAD'
+      }]);
+
+    if (walletError) {
+      console.error('❌ Erreur création wallet:', walletError);
+      // Continuer même si wallet échoue (sera créé plus tard)
+    } else {
+      console.log('✅ Wallet créé avec succès');
+    }
+
+    // 3. Créer profil étendu selon le rôle
+    if (role === 'creator') {
+      const creatorData = {
+        user_id: userId,
+        specialization: metadata.specialization || null,
+        instagram_handle: metadata.instagram || metadata.instagramHandle || null,
+        tiktok_handle: metadata.tiktok || metadata.tiktokHandle || null,
+        youtube_handle: metadata.youtube || metadata.youtubeHandle || null,
+        followers_count: metadata.followersCount || 0,
+        portfolio_url: metadata.portfolioUrl || null,
+        is_verified: false,
+        rating: 0,
+        completed_campaigns: 0
+      };
+
+      const { error: creatorError } = await window.supabaseClient
+        .from('creators')
+        .insert([creatorData]);
+
+      if (creatorError) {
+        console.error('❌ Erreur création profil creator:', creatorError);
+      } else {
+        console.log('✅ Profil creator créé');
+      }
+    } else if (role === 'brand') {
+      const brandData = {
+        user_id: userId,
+        company_name: metadata.companyName || metadata.company_name || fullName,
+        industry: metadata.industry || null,
+        website: metadata.website || null,
+        logo_url: metadata.logo_url || metadata.logoUrl || null,
+        description: metadata.description || metadata.bio || null,
+        is_verified: false,
+        total_campaigns: 0
+      };
+
+      const { error: brandError } = await window.supabaseClient
+        .from('brands')
+        .insert([brandData]);
+
+      if (brandError) {
+        console.error('❌ Erreur création profil brand:', brandError);
+      } else {
+        console.log('✅ Profil brand créé');
+      }
+    }
+
+    return { success: true, profile };
+  } catch (err) {
+    console.error('❌ Erreur createCompleteProfile:', err);
+    throw err;
+  }
+}
+
 // Inscription
 async function signupUser(email, password, role, fullName, phone, metadata = {}) {
   try {
@@ -102,7 +203,7 @@ async function signupUser(email, password, role, fullName, phone, metadata = {})
       throw new Error('Client Supabase non initialisé. Rafraîchissez la page.');
     }
     
-    // 1. Créer utilisateur Supabase
+    // 1. Créer utilisateur Supabase Auth
     const { data, error } = await window.supabaseClient.auth.signUp({
       email,
       password,
@@ -114,60 +215,68 @@ async function signupUser(email, password, role, fullName, phone, metadata = {})
       }
     });
 
-    console.log('📊 Résultat signup:', { data, error });
-    if (error) throw error;
+    console.log('📊 Résultat signup Supabase Auth:', { 
+      user: data?.user?.email, 
+      session: data?.session ? 'Oui' : 'Non',
+      error: error?.message 
+    });
 
-    // 2. Créer profil
-    const { error: profileError } = await supabaseClient
-      .from('profiles')
-      .insert([{
-        user_id: data.user.id,
-        email: email,
-        full_name: fullName,
-        phone: phone,
-        role: role,
-        status: 'active',
-        avatar_url: metadata.profilePictureUrl || null,
-        bio: metadata.bio || null,
-        metadata: {
-          username: metadata.username || null,
-          cin: metadata.cin || null,
-          birth_date: metadata.birthDate || null,
-          ville: metadata.ville || null,
-          languages: metadata.languages || [],
-          interests: metadata.interests || [],
-          bank_name: metadata.bankName || null,
-          rib: metadata.rib || null
-        }
-      }]);
-
-    if (profileError) {
-      console.error('Erreur création profil:', profileError);
-      // Continuer quand même, le profil sera créé plus tard
+    if (error) {
+      throw new Error('فشل إنشاء الحساب: ' + error.message);
     }
 
-    // 3. Créer wallet pour le nouveau utilisateur
-    const { error: walletError } = await supabaseClient
-      .from('wallets')
-      .insert([{
-        user_id: data.user.id,
-        balance_mad: 0,
-        total_earned: 0,
-        total_withdrawn: 0
-      }]);
-
-    if (walletError) {
-      console.error('Erreur création wallet:', walletError);
+    if (!data.user) {
+      throw new Error('فشل إنشاء الحساب - لا يوجد مستخدم');
     }
+
+    // 2. Créer profil complet (profil + wallet + creator/brand)
+    await createCompleteProfile(data.user.id, email, fullName, phone, role, metadata);
+
+    // 3. Si pas de session (email confirmation requis)
+    if (!data.session) {
+      console.log('⚠️ Session null - confirmation email requise');
+      return { 
+        success: true, 
+        message: 'تم إنشاء الحساب بنجاح! يرجى تأكيد بريدك الإلكتروني.',
+        requiresEmailVerification: true,
+        user: data.user
+      };
+    }
+
+    // 4. Si session existe (auto-login)
+    console.log('✅ Session active - connexion automatique');
+    
+    // Sauvegarder infos dans localStorage
+    localStorage.setItem('user_role', role);
+    localStorage.setItem('user_name', fullName || email);
+    localStorage.setItem('user_id', data.user.id);
+
+    // 5. Redirection automatique selon rôle
+    const dashboards = {
+      'creator': '/creator/creator_dashboard.html',
+      'brand': '/brand/brand_dashboard_premium.html',
+      'admin': '/admin/إدارة_المستخدمين_(للمسؤولين)_3.html'
+    };
+
+    console.log('📍 Redirection automatique vers:', dashboards[role]);
+    
+    setTimeout(() => {
+      window.location.href = dashboards[role] || '/index.html';
+    }, 1000);
 
     return { 
       success: true, 
-      message: 'Compte créé avec succès ! Vérifiez votre email pour confirmer.',
-      requiresEmailVerification: true
+      message: 'تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...',
+      requiresEmailVerification: false,
+      user: data.user,
+      session: data.session
     };
   } catch (err) {
-    console.error('Erreur inscription:', err);
-    return { success: false, error: err.message };
+    console.error('❌ Erreur inscription:', err);
+    return { 
+      success: false, 
+      error: err.message || 'حدث خطأ أثناء إنشاء الحساب'
+    };
   }
 }
 
@@ -272,5 +381,6 @@ window.auth = {
   getCurrentUser,
   getUserProfile,
   getAuthToken,
-  checkAuth
+  checkAuth,
+  createCompleteProfile
 };
