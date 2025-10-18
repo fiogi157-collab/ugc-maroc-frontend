@@ -391,6 +391,29 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = '<span class="animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> جارٍ الإرسال...';
   
   try {
+    console.log('🚀 Début inscription creator...');
+    
+    // Convert interests to specialization (first interest)
+    const specialization = interests[0] || 'lifestyle';
+    
+    // Prepare metadata with fields matching new schema
+    const metadata = {
+      username: document.getElementById('username').value,
+      specialization: specialization, // From interests
+      bio: document.getElementById('bio').value,
+      profilePictureUrl: appState.profilePictureUrl,
+      // Additional info (not in DB schema yet, but collected for future)
+      cin: document.getElementById('cin').value,
+      birthDate: document.getElementById('birth-date').value,
+      ville: document.getElementById('ville').value,
+      languages: languages,
+      interests: interests,
+      bankName: document.getElementById('bank-name').value,
+      rib: document.getElementById('rib').value
+    };
+    
+    console.log('📤 Données envoyées:', { email, role: 'creator', metadata });
+    
     // Utiliser la fonction signupUser() de auth.js (Supabase client-side)
     const result = await window.auth.signupUser(
       email,
@@ -398,19 +421,10 @@ signupForm.addEventListener('submit', async (e) => {
       'creator',
       document.getElementById('fullname').value,
       document.getElementById('phone').value,
-      {
-        username: document.getElementById('username').value,
-        cin: document.getElementById('cin').value,
-        birthDate: document.getElementById('birth-date').value,
-        ville: document.getElementById('ville').value,
-        languages: languages,
-        interests: interests,
-        bio: document.getElementById('bio').value,
-        bankName: document.getElementById('bank-name').value,
-        rib: document.getElementById('rib').value,
-        profilePictureUrl: appState.profilePictureUrl
-      }
+      metadata
     );
+    
+    console.log('📊 Résultat signup:', result);
     
     if (!result.success) {
       throw new Error(result.error || 'فشل التسجيل');
@@ -420,13 +434,26 @@ signupForm.addEventListener('submit', async (e) => {
     signupForm.classList.add('hidden');
     successMessage.classList.remove('hidden');
     
-    // Redirection vers la page de vérification email
-    setTimeout(() => {
-      window.location.href = '/auth/creator-verified.html';
-    }, 2000);
+    // Gestion selon le résultat
+    if (result.requiresEmailVerification) {
+      // Email confirmation requise (Supabase config)
+      console.log('⚠️ Confirmation email requise');
+      document.querySelector('#success-message h2').textContent = 'تم إنشاء حسابك!';
+      document.querySelector('#success-message p').textContent = 'يرجى التحقق من بريدك الإلكتروني لتأكيد حسابك، ثم تسجيل الدخول.';
+      
+      // Redirection vers login après 5 secondes
+      setTimeout(() => {
+        window.location.href = '/auth/creator-login.html';
+      }, 5000);
+    } else {
+      // Auto-login réussi, redirection automatique gérée par auth.js
+      console.log('✅ Auto-login activé, redirection automatique...');
+      // Le message par défaut est déjà correct : "جاري تحويلك إلى لوحة التحكم..."
+    }
     
   } catch (error) {
-    alert('❌ ' + error.message);
+    console.error('❌ Erreur signup:', error);
+    alert('❌ ' + (error.message || 'حدث خطأ أثناء التسجيل'));
     submitBtn.disabled = false;
     submitBtn.innerHTML = '<span class="material-symbols-outlined">rocket_launch</span> إرسال';
   }
