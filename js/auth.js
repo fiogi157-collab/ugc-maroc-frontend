@@ -121,7 +121,7 @@ async function createCompleteProfile(userId, email, fullName, phone, role, metad
 
     console.log('✅ Profil créé avec succès');
 
-    // 2. Créer wallet
+    // 2. Créer wallet (OBLIGATOIRE)
     const { error: walletError } = await window.supabaseClient
       .from('wallets')
       .insert([{
@@ -133,12 +133,12 @@ async function createCompleteProfile(userId, email, fullName, phone, role, metad
 
     if (walletError) {
       console.error('❌ Erreur création wallet:', walletError);
-      // Continuer même si wallet échoue (sera créé plus tard)
-    } else {
-      console.log('✅ Wallet créé avec succès');
+      throw new Error('فشل في إنشاء المحفظة: ' + walletError.message);
     }
+    
+    console.log('✅ Wallet créé avec succès');
 
-    // 3. Créer profil étendu selon le rôle
+    // 3. Créer profil étendu selon le rôle (OBLIGATOIRE)
     if (role === 'creator') {
       const creatorData = {
         user_id: userId,
@@ -159,9 +159,11 @@ async function createCompleteProfile(userId, email, fullName, phone, role, metad
 
       if (creatorError) {
         console.error('❌ Erreur création profil creator:', creatorError);
-      } else {
-        console.log('✅ Profil creator créé');
+        throw new Error('فشل في إنشاء ملف المبدع: ' + creatorError.message);
       }
+      
+      console.log('✅ Profil creator créé');
+      
     } else if (role === 'brand') {
       const brandData = {
         user_id: userId,
@@ -180,9 +182,10 @@ async function createCompleteProfile(userId, email, fullName, phone, role, metad
 
       if (brandError) {
         console.error('❌ Erreur création profil brand:', brandError);
-      } else {
-        console.log('✅ Profil brand créé');
+        throw new Error('فشل في إنشاء ملف العلامة التجارية: ' + brandError.message);
       }
+      
+      console.log('✅ Profil brand créé');
     }
 
     return { success: true, profile };

@@ -128,6 +128,106 @@ cd api && npm run db:studio
 
 ---
 
+## 🚀 Amélioration Future : Fonction RPC Transactionnelle (Optionnel)
+
+**État actuel** : La création de profil utilise 3 INSERT séparés (profiles → wallets → creators/brands). Si l'un échoue, l'utilisateur reçoit un message d'erreur clair en arabe, mais des données partielles peuvent rester dans la DB.
+
+**Solution recommandée** : Créer une fonction PostgreSQL RPC pour garantir l'atomicité (tout ou rien).
+
+### Comment implémenter (optionnel)
+
+1. Dans Supabase Dashboard, allez à **SQL Editor**
+2. Collez ce code SQL :
+
+```sql
+CREATE OR REPLACE FUNCTION create_complete_profile(
+  p_user_id UUID,
+  p_email TEXT,
+  p_full_name TEXT,
+  p_username TEXT,
+  p_role TEXT,
+  p_phone TEXT,
+  p_bio TEXT,
+  p_avatar_url TEXT,
+  p_metadata JSONB
+) RETURNS JSONB AS $$
+DECLARE
+  v_result JSONB;
+BEGIN
+  -- 1. Insert into profiles
+  INSERT INTO profiles (id, email, full_name, username, role, phone, bio, avatar_url)
+  VALUES (p_user_id, p_email, p_full_name, p_username, p_role, p_phone, p_bio, p_avatar_url);
+
+  -- 2. Insert into wallets
+  INSERT INTO wallets (user_id, balance, pending_balance, currency)
+  VALUES (p_user_id, 0, 0, 'MAD');
+
+  -- 3. Insert into role-specific table
+  IF p_role = 'creator' THEN
+    INSERT INTO creators (
+      user_id, specialization, instagram_handle, tiktok_handle, 
+      youtube_handle, followers_count, is_verified, rating, completed_campaigns
+    )
+    VALUES (
+      p_user_id, 
+      p_metadata->>'specialization',
+      p_metadata->>'instagram',
+      p_metadata->>'tiktok',
+      p_metadata->>'youtube',
+      COALESCE((p_metadata->>'followersCount')::INTEGER, 0),
+      false, 0, 0
+    );
+  ELSIF p_role = 'brand' THEN
+    INSERT INTO brands (
+      user_id, company_name, industry, website, 
+      logo_url, description, is_verified, total_campaigns
+    )
+    VALUES (
+      p_user_id,
+      COALESCE(p_metadata->>'companyName', p_full_name),
+      p_metadata->>'industry',
+      p_metadata->>'website',
+      p_metadata->>'logoUrl',
+      COALESCE(p_metadata->>'description', p_bio),
+      false, 0
+    );
+  END IF;
+
+  -- Return success
+  v_result := jsonb_build_object('success', true, 'user_id', p_user_id);
+  RETURN v_result;
+  
+EXCEPTION WHEN OTHERS THEN
+  -- Rollback automatique en cas d'erreur
+  RAISE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+3. Cliquez sur **Run**
+4. Dans `js/auth.js`, remplacez les appels à `createCompleteProfile()` par un appel RPC :
+
+```javascript
+const { data, error } = await window.supabaseClient.rpc('create_complete_profile', {
+  p_user_id: userId,
+  p_email: email,
+  p_full_name: fullName,
+  p_username: metadata.username,
+  p_role: role,
+  p_phone: phone,
+  p_bio: metadata.bio || '',
+  p_avatar_url: metadata.avatar_url || '',
+  p_metadata: metadata
+});
+```
+
+**Avantages** :
+- ✅ Atomicité garantie (tout ou rien)
+- ✅ Performance améliorée (1 requête au lieu de 3)
+- ✅ Rollback automatique en cas d'erreur
+
+---
+
 ## ⚠️ IMPORTANT
 
 Une fois ces 2 étapes faites dans Supabase Dashboard :
@@ -137,7 +237,7 @@ Une fois ces 2 étapes faites dans Supabase Dashboard :
 Le problème de déconnexion automatique sera **100% résolu** ✅
 
 Le code auth côté frontend a également été refactorisé pour gérer automatiquement :
-- Création profil lors de l'inscription
-- Création wallet automatique
+- Création profil lors de l'inscription (profiles + wallet + creator/brand)
+- Échec complet si une des 3 tables échoue (pas de données partielles)
 - Login automatique après inscription
-- Gestion d'erreurs complète
+- Messages d'erreur clairs en arabe
