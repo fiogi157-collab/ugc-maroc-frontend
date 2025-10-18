@@ -213,19 +213,19 @@ app.get("/api/creator/dashboard-data/:userId", async (req, res) => {
     const { eq, and, inArray } = await import("drizzle-orm");
 
     // Fetch profile
-    const profileData = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
+    const profileData = await db.select().from(profiles).where(eq(profiles.id, userId)).limit(1);
     const profile = profileData[0] || null;
 
     // Fetch wallet
-    const walletData = await db.select().from(wallets).where(eq(wallets.userId, userId)).limit(1);
-    const wallet = walletData[0] || { balance: 0, pendingAmount: 0 };
+    const walletData = await db.select().from(wallets).where(eq(wallets.user_id, userId)).limit(1);
+    const wallet = walletData[0] || { balance: 0, pending_balance: 0 };
 
     // Fetch creator data
-    const creatorData = await db.select().from(creators).where(eq(creators.userId, userId)).limit(1);
+    const creatorData = await db.select().from(creators).where(eq(creators.user_id, userId)).limit(1);
     const creator = creatorData[0] || null;
 
     // Fetch submissions statistics
-    const allSubmissions = await db.select().from(submissions).where(eq(submissions.creatorId, userId));
+    const allSubmissions = await db.select().from(submissions).where(eq(submissions.creator_id, userId));
     
     const accepted = allSubmissions.filter(s => s.status === 'approved').length;
     const rejected = allSubmissions.filter(s => s.status === 'rejected').length;
@@ -236,13 +236,13 @@ app.get("/api/creator/dashboard-data/:userId", async (req, res) => {
     const activeSubmissions = await db.select({
       id: submissions.id,
       status: submissions.status,
-      createdAt: submissions.createdAt,
-      campaignId: submissions.campaignId
+      submittedAt: submissions.submitted_at,
+      campaignId: submissions.campaign_id
     })
     .from(submissions)
     .where(
       and(
-        eq(submissions.creatorId, userId),
+        eq(submissions.creator_id, userId),
         inArray(submissions.status, ['pending', 'in_progress'])
       )
     )
@@ -275,10 +275,8 @@ app.get("/api/creator/dashboard-data/:userId", async (req, res) => {
     const opportunities = await db.select({
       id: campaigns.id,
       title: campaigns.title,
-      budgetMin: campaigns.budgetMin,
-      budgetMax: campaigns.budgetMax,
-      contentType: campaigns.contentType,
-      imageUrl: campaigns.imageUrl
+      budget: campaigns.budget,
+      contentType: campaigns.content_type
     })
     .from(campaigns)
     .where(eq(campaigns.status, 'active'))
@@ -288,13 +286,13 @@ app.get("/api/creator/dashboard-data/:userId", async (req, res) => {
       success: true,
       data: {
         profile: profile ? {
-          fullName: profile.fullName,
-          avatarUrl: profile.avatarUrl
+          fullName: profile.full_name,
+          avatarUrl: profile.avatar_url
         } : null,
         wallet: {
-          balance: wallet.balance || 0,
-          pendingAmount: wallet.pendingAmount || 0,
-          completed: (wallet.balance || 0) - (wallet.pendingAmount || 0)
+          balance: parseFloat(wallet.balance || 0),
+          pendingAmount: parseFloat(wallet.pending_balance || 0),
+          completed: parseFloat(wallet.balance || 0) - parseFloat(wallet.pending_balance || 0)
         },
         statistics: {
           accepted,

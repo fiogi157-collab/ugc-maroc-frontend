@@ -427,12 +427,12 @@ async function loadDashboardData() {
     if (opportunities && opportunities.length > 0) {
       const oppHTML = opportunities.map(opp => `
         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition cursor-pointer" onclick="window.location.href='/creator/تصفح_الحملات_(للمبدعين).html'">
-          <img alt="Campaign" class="w-full h-20 object-cover rounded-md mb-2" src="${opp.imageUrl || 'https://via.placeholder.com/300x200/1A1A2E/7C3AED?text=Campaign'}"/>
+          <img alt="Campaign" class="w-full h-20 object-cover rounded-md mb-2" src="https://via.placeholder.com/300x200/7C3AED/FFFFFF?text=Campaign"/>
           <p class="font-semibold text-sm text-gray-900 dark:text-white">${opp.title}</p>
           <div class="flex gap-1 my-2">
             <span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">${opp.contentType || 'فيديو'}</span>
           </div>
-          <p class="text-xs text-green-400 font-bold mb-2">${opp.budgetMin || 0} - ${opp.budgetMax || 0} د.م</p>
+          <p class="text-xs text-green-400 font-bold mb-2">${opp.budget || 0} د.م</p>
           <button class="w-full bg-primary text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">التقديم الآن</button>
         </div>
       `).join('');
