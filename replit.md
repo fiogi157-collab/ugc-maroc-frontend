@@ -64,6 +64,39 @@ Fixed critical authentication bugs and unified all auth pages to use client-side
 
 See `AUTH_FIX_COMPLETE.md` for detailed technical documentation.
 
+### Database Schema + Authentication Error Handling (October 18, 2025)
+
+**Complete database schema created and authentication hardened to prevent logout issues:**
+
+1. **Drizzle ORM Schema** (`api/db/schema.js`):
+   - Created complete schema matching Supabase tables: `profiles`, `wallets`, `creators`, `brands`, `campaigns`, `submissions`, `transactions`
+   - Proper relationships with foreign keys and constraints
+   - Pushed to Supabase using `npm run db:push`
+
+2. **Row-Level Security (RLS) Policies**:
+   - Documented all essential policies in `SUPABASE_SETUP_GUIDE.md`
+   - User must manually apply policies in Supabase Dashboard (automated SQL execution not possible via API)
+   - Policies ensure users can only access their own data
+
+3. **Error Handling Hardening** (`js/auth.js`):
+   - **Phase 1 (Implemented)**: `createCompleteProfile()` now throws errors if wallet or role-specific INSERT fails
+   - Arabic error messages displayed to users: "فشل في إنشاء المحفظة" / "فشل في إنشاء ملف المبدع" / "فشل في إنشاء ملف العلامة التجارية"
+   - Prevents silent partial writes (no more profile without wallet)
+   - **Phase 2 (Optional)**: RPC transaction documented in guide for true atomicity (requires manual SQL in Supabase Dashboard)
+
+4. **Signup Pages Enhanced** (`auth/creator-signup.html`, `auth/brand-signup.html`):
+   - Handle both email confirmation scenarios (disabled/enabled in Supabase)
+   - Comprehensive console logging for debugging
+   - Metadata fields aligned with new schema
+   - Clear Arabic error messages for all failure cases
+
+5. **User Action Required**:
+   - **CRITICAL**: Disable email confirmation in Supabase Dashboard (Authentication → Providers → Email → Confirm email: OFF)
+   - Apply RLS policies manually via Supabase SQL Editor (instructions in `SUPABASE_SETUP_GUIDE.md`)
+   - Optional: Apply RPC transaction function for atomic profile creation
+
+**Result**: Authentication now robust with proper error handling and complete profile creation (profile + wallet + creator/brand in one flow).
+
 ### Clickable Logo Navigation (October 18, 2025)
 
 Implemented universal clickable logo functionality across the platform:
