@@ -3,8 +3,12 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Resend } from "resend";
+import multer from "multer";
+import fs from "fs/promises";
+import { v4 as uuidv4 } from "uuid";
 import deepseekService from "../services/deepseek.js";
-// import authRoutes from "../routes/auth.js"; // DISABLED - Auth handled client-side via Supabase
+import r2Service from "../services/r2.js";
+import watermarkService from "../services/watermark.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,12 +24,33 @@ app.use(cors({
 
 app.use(express.json());
 
-// =====================================================
-// 🔐 AUTHENTICATION
-// =====================================================
-// Auth handled client-side via Supabase Auth (js/auth.js)
-// Backend routes disabled due to session leakage security issue
-// app.use("/api/auth", authRoutes);
+// Ensure temp directory exists for uploads
+const TEMP_DIR = path.join(__dirname, "../temp");
+await fs.mkdir(TEMP_DIR, { recursive: true }).catch(() => {});
+
+// Configure multer for video uploads (store on disk to avoid memory exhaustion)
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, TEMP_DIR);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `upload-${Date.now()}-${Math.random().toString(36).substring(7)}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    }
+  }),
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500MB max file size
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept video files only
+    if (file.mimetype.startsWith("video/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("فقط ملفات الفيديو مسموح بها"), false);
+    }
+  },
+});
 
 // API Routes
 app.get("/api", (req, res) => {
@@ -73,6 +98,106 @@ app.get("/api/config", (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL || "",
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ""
   });
+});
+
+// =====================================================
+// 🎬 VIDEO UPLOAD ENDPOINT - R2 + Watermark
+// =====================================================
+
+app.post("/api/upload-video", upload.single("video"), async (req, res) => {
+  let tempInputPath = null;
+  let tempOutputPath = null;
+
+  try {
+    console.log("📹 Starting video upload process...");
+
+    // Validate video file
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "لم يتم رفع ملف الفيديو"
+      });
+    }
+
+    // Get campaign info from request
+    const { campaignId, campaignName = "UGC Maroc" } = req.body;
+
+    // Generate unique file names
+    const videoId = uuidv4();
+    const originalExtension = path.extname(req.file.originalname);
+    const fileName = `${videoId}${originalExtension}`;
+
+    // Multer already saved to disk, use that path
+    tempInputPath = req.file.path;
+    tempOutputPath = path.join(path.dirname(tempInputPath), `output-${fileName}`);
+
+    // Apply watermark using FFmpeg (sanitize campaign name to prevent injection)
+    console.log("🎨 Applying watermark...");
+    const sanitizedCampaignName = (campaignName || "UGC Maroc").replace(/['"\\]/g, '');
+    const watermarkResult = await watermarkService.applyWatermark(
+      tempInputPath,
+      tempOutputPath,
+      {
+        campaignName: sanitizedCampaignName,
+        position: "bottom-right"
+      }
+    );
+
+    if (!watermarkResult.success) {
+      throw new Error("فشل في تطبيق العلامة المائية");
+    }
+
+    // Upload to Cloudflare R2 (stream from disk, no memory load)
+    const r2Key = campaignId 
+      ? `videos/campaign-${campaignId}/${fileName}`
+      : `videos/${fileName}`;
+
+    console.log(`☁️ Uploading to R2: ${r2Key}`);
+    const uploadResult = await r2Service.uploadFileToR2(
+      tempOutputPath,
+      r2Key,
+      req.file.mimetype
+    );
+
+    // Cleanup temp files (both input and output)
+    console.log("🧹 Cleaning up temporary files...");
+    await fs.unlink(tempInputPath).catch((err) => console.warn("Cleanup warning:", err.message));
+    await fs.unlink(tempOutputPath).catch((err) => console.warn("Cleanup warning:", err.message));
+
+    console.log("✅ Video upload completed successfully!");
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: "تم رفع الفيديو بنجاح! ✨",
+      data: {
+        videoId: videoId,
+        fileName: fileName,
+        publicUrl: uploadResult.publicUrl,
+        r2Key: uploadResult.key,
+        size: uploadResult.size,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error uploading video:", error);
+
+    // Cleanup temp files on error
+    if (tempInputPath) {
+      await fs.unlink(tempInputPath).catch(() => {});
+    }
+    if (tempOutputPath) {
+      await fs.unlink(tempOutputPath).catch(() => {});
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في رفع الفيديو. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
 });
 
 // =====================================================
@@ -245,4 +370,5 @@ const PORT = 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
   console.log(`📡 API endpoints available at /api/*`);
+  console.log(`🎬 Video upload endpoint: POST /api/upload-video`);
 });

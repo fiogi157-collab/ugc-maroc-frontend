@@ -589,22 +589,19 @@ function fillForm(profile, creator) {
         });
     }
 
-    // Informations bancaires
-    const metadata = profile.metadata || {};
-    document.getElementById('bankAccountName').value = metadata.bank_account_name || profile.full_name || '';
-    document.getElementById('bankName').value = metadata.bank_name || '';
-    document.getElementById('bankRIB').value = metadata.rib || '';
+    // Informations bancaires - Stockées dans le profil
+    document.getElementById('bankAccountName').value = profile.full_name || '';
+    document.getElementById('bankName').value = '';
+    document.getElementById('bankRIB').value = '';
 
-    // Réseaux sociaux
-    document.getElementById('socialInstagram').value = metadata.social_instagram || '';
-    document.getElementById('socialTikTok').value = metadata.social_tiktok || '';
-    document.getElementById('socialYouTube').value = metadata.social_youtube || '';
+    // Réseaux sociaux - Réinitialiser pour l'instant
+    document.getElementById('socialInstagram').value = '';
+    document.getElementById('socialTikTok').value = '';
+    document.getElementById('socialYouTube').value = '';
 
-    // Langues
-    const languages = metadata.languages || [];
+    // Langues - Réinitialiser pour l'instant
     document.querySelectorAll('.lang-checkbox').forEach(checkbox => {
-        const lang = checkbox.dataset.lang;
-        checkbox.checked = languages.includes(lang);
+        checkbox.checked = false;
     });
 
     // Portfolio vidéos
@@ -796,26 +793,23 @@ async function saveProfile() {
         const languages = Array.from(document.querySelectorAll('.lang-checkbox:checked'))
             .map(cb => cb.dataset.lang);
 
-        // Bank info & social media
-        const metadata = {
-            bank_account_name: document.getElementById('bankAccountName').value,
-            bank_name: document.getElementById('bankName').value,
-            rib: document.getElementById('bankRIB').value,
-            social_instagram: document.getElementById('socialInstagram').value,
-            social_tiktok: document.getElementById('socialTikTok').value,
-            social_youtube: document.getElementById('socialYouTube').value,
-            languages: languages
-        };
+        // Note: Bank info & social media temporarily not saved (metadata column removed)
+        // TODO: Add dedicated columns for this data in future update
+        const bankAccountName = document.getElementById('bankAccountName').value;
+        const bankName = document.getElementById('bankName').value;
+        const rib = document.getElementById('bankRIB').value;
+        const socialInstagram = document.getElementById('socialInstagram').value;
+        const socialTikTok = document.getElementById('socialTikTok').value;
+        const socialYouTube = document.getElementById('socialYouTube').value;
 
-        // Update profiles table
+        // Update profiles table (removed metadata reference)
         const { error: profileError } = await window.supabaseClient
             .from('profiles')
             .update({
                 full_name: fullName,
                 email: email,
                 phone: phone,
-                bio: bio,
-                metadata: metadata
+                bio: bio
             })
             .eq('user_id', currentUser.id);
 

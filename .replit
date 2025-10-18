@@ -9,6 +9,7 @@ PORT = "3000"
 
 [nix]
 channel = "stable-25_05"
+packages = ["ffmpeg"]
 
 [agent]
 expertMode = true
@@ -46,7 +47,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 39583
+localPort = 35403
 externalPort = 3001
 
 [deployment]
