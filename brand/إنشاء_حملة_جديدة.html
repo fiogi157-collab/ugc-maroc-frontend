@@ -322,6 +322,88 @@
 <script src="/js/ai-assistant.js"></script>
 
 <script>
+// Variable globale pour stocker la campagne chargée
+let currentCampaign = null;
+
+// Charger une campagne réelle depuis Supabase au chargement de la page
+async function loadCampaignFromDatabase() {
+  try {
+    if (!window.supabaseClient) {
+      console.log('En attente de Supabase...');
+      return;
+    }
+
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    if (!user) {
+      console.log('Utilisateur non connecté');
+      return;
+    }
+
+    // Récupérer la dernière campagne du brand
+    const { data: campaigns, error } = await window.supabaseClient
+      .from('campaigns')
+      .select('*')
+      .eq('brand_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Erreur chargement campagne:', error);
+      return;
+    }
+
+    if (campaigns && campaigns.length > 0) {
+      currentCampaign = campaigns[0];
+      console.log('✅ Campagne chargée depuis DB:', currentCampaign.title);
+      
+      // Mettre à jour l'affichage avec les vraies données
+      updatePageWithCampaignData(currentCampaign);
+    } else {
+      console.log('⚠️ Aucune campagne trouvée - utilisation des données exemples');
+      currentCampaign = null;
+    }
+  } catch (error) {
+    console.error('Erreur loadCampaignFromDatabase:', error);
+  }
+}
+
+// Mettre à jour la page avec les données de la campagne
+function updatePageWithCampaignData(campaign) {
+  // Titre de la campagne
+  const titleEl = document.querySelector('.summary-item:nth-child(1) .col-span-2');
+  if (titleEl && campaign.title) {
+    titleEl.textContent = campaign.title;
+  }
+
+  // Description
+  const descEl = document.querySelector('.summary-item:nth-child(2) .col-span-2');
+  if (descEl && campaign.description) {
+    descEl.textContent = campaign.description;
+  }
+
+  // Budget
+  const budgetEl = document.querySelector('.summary-item:nth-child(3) .col-span-2');
+  if (budgetEl && campaign.budget_per_video) {
+    budgetEl.textContent = `${campaign.budget_per_video} درهم مغربي`;
+  }
+
+  // Deadline
+  const deadlineEl = document.querySelector('.summary-item:nth-child(4) .col-span-2');
+  if (deadlineEl && campaign.deadline) {
+    const date = new Date(campaign.deadline);
+    deadlineEl.textContent = date.toLocaleDateString('ar-MA');
+  }
+
+  console.log('✅ Page mise à jour avec les données réelles');
+}
+
+// Initialiser au chargement de la page
+if (window.supabaseClient) {
+  loadCampaignFromDatabase();
+} else {
+  window.addEventListener('supabaseReady', loadCampaignFromDatabase);
+}
+
 // Fonction pour récupérer les données de la campagne depuis la page
 function getCampaignDataFromPage() {
   // Récupérer toutes les données affichées sur la page
@@ -364,24 +446,42 @@ function getCampaignDataFromPage() {
 // Fonction pour générer un brief avec l'IA
 async function generateAIBrief() {
   try {
-    // Récupérer les données de la campagne depuis la page
-    const pageData = getCampaignDataFromPage();
-    
-    // Préparer les données pour l'IA
-    const campaignInfo = {
-      campaignName: pageData.campaignName,
-      brandName: "علامتك التجارية", // Sera récupéré du profil utilisateur connecté
-      productName: pageData.description,
-      goal: `إنشاء ${pageData.contentTypes} على ${pageData.platforms}`,
-      budget: pageData.budget,
-      deadline: pageData.deadline,
-      targetAudience: `مهتمون ب${pageData.creativeField}، يتحدثون ${pageData.languages}`,
-      contentRequirements: pageData.contentTypes,
-      platforms: pageData.platforms
-    };
-    
-    // Appeler l'assistant IA
-    await AIAssistant.generateBrief(campaignInfo, 'ai-brief-result');
+    // Si nous avons une campagne chargée depuis la DB, utiliser ses données
+    if (currentCampaign) {
+      const campaignInfo = {
+        campaignName: currentCampaign.title || 'حملة جديدة',
+        brandName: "علامتك التجارية", // TODO: récupérer depuis le profil
+        productName: currentCampaign.description || 'منتج',
+        goal: `إنشاء محتوى UGC`,
+        budget: currentCampaign.budget_per_video ? `${currentCampaign.budget_per_video} درهم مغربي` : 'متوسطة',
+        deadline: currentCampaign.deadline ? new Date(currentCampaign.deadline).toLocaleDateString('ar-MA') : 'قريباً',
+        targetAudience: 'الجمهور المستهدف',
+        contentType: currentCampaign.content_type || 'فيديو UGC',
+        videoLength: currentCampaign.video_duration || 'قصير',
+        status: currentCampaign.status || 'active'
+      };
+      
+      console.log('📊 Génération brief avec données DB:', campaignInfo);
+      await AIAssistant.generateBrief(campaignInfo, 'ai-brief-result');
+    } else {
+      // Sinon, récupérer les données depuis le DOM (données exemples)
+      const pageData = getCampaignDataFromPage();
+      
+      const campaignInfo = {
+        campaignName: pageData.campaignName,
+        brandName: "علامتك التجارية",
+        productName: pageData.description,
+        goal: `إنشاء ${pageData.contentTypes} على ${pageData.platforms}`,
+        budget: pageData.budget,
+        deadline: pageData.deadline,
+        targetAudience: `مهتمون ب${pageData.creativeField}، يتحدثون ${pageData.languages}`,
+        contentRequirements: pageData.contentTypes,
+        platforms: pageData.platforms
+      };
+      
+      console.log('📊 Génération brief avec données exemples:', campaignInfo);
+      await AIAssistant.generateBrief(campaignInfo, 'ai-brief-result');
+    }
   } catch (error) {
     console.error('Erreur génération brief:', error);
     document.getElementById('ai-brief-result').innerHTML = `
