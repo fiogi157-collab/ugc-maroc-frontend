@@ -601,8 +601,8 @@ app.post("/api/ai/generate-description", async (req, res) => {
   }
 });
 
-// Add funds to wallet
-app.post("/api/wallet/add-funds", async (req, res) => {
+// Add funds to wallet with receipt upload
+app.post("/api/wallet/add-funds", upload.single('receipt'), async (req, res) => {
   try {
     const { user_id, amount } = req.body;
 
@@ -613,21 +613,43 @@ app.post("/api/wallet/add-funds", async (req, res) => {
       });
     }
 
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || parseFloat(amount) < 50) {
       return res.status(400).json({
         success: false,
-        message: "المبلغ يجب أن يكون أكبر من صفر"
+        message: "المبلغ يجب أن يكون 50 د.م على الأقل"
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "إثبات الدفع مطلوب"
       });
     }
 
     const db = await import("../db/client.js").then(m => m.db);
-    const { wallets } = await import("../db/schema.js");
+    const { wallets, transactions } = await import("../db/schema.js");
     const { eq, sql } = await import("drizzle-orm");
 
-    // Update wallet balance
+    // Upload receipt to R2
+    const receiptId = uuidv4();
+    const fileExtension = path.extname(req.file.originalname);
+    const receiptKey = `receipts/${user_id}/${receiptId}${fileExtension}`;
+
+    console.log(`☁️ Uploading receipt to R2: ${receiptKey}`);
+    const uploadResult = await r2Service.uploadFileToR2(
+      req.file.path,
+      receiptKey,
+      req.file.mimetype
+    );
+
+    // Cleanup temp file
+    await fs.unlink(req.file.path).catch((err) => console.warn("Cleanup warning:", err.message));
+
+    // Update wallet pending_balance
     const updatedWallet = await db.update(wallets)
       .set({ 
-        balance: sql`balance + ${parseFloat(amount)}`,
+        pending_balance: sql`pending_balance + ${parseFloat(amount)}`,
         updated_at: new Date()
       })
       .where(eq(wallets.user_id, user_id))
@@ -640,24 +662,35 @@ app.post("/api/wallet/add-funds", async (req, res) => {
       });
     }
 
-    console.log("✅ Funds added to wallet:", user_id, "+", amount, "MAD");
+    // Create transaction record
+    await db.insert(transactions).values({
+      user_id: user_id,
+      amount: parseFloat(amount),
+      type: 'deposit',
+      status: 'pending',
+      description: `طلب إضافة رصيد - في انتظار المراجعة (إثبات: ${receiptId})`,
+      created_at: new Date()
+    });
+
+    console.log("✅ Fund request created:", user_id, "+", amount, "MAD (pending)");
 
     return res.status(200).json({
       success: true,
-      message: `تم إضافة ${amount} د.م بنجاح! ✨`,
+      message: `تم إرسال طلب إضافة ${amount} د.م بنجاح! سيتم مراجعته خلال 24-48 ساعة ✨`,
       wallet: {
         user_id: updatedWallet[0].user_id,
         balance: parseFloat(updatedWallet[0].balance),
         pending_balance: parseFloat(updatedWallet[0].pending_balance || 0),
         currency: updatedWallet[0].currency || 'MAD'
-      }
+      },
+      receipt_url: uploadResult.publicUrl
     });
 
   } catch (error) {
     console.error("❌ Error adding funds:", error);
     return res.status(500).json({
       success: false,
-      message: "خطأ في إضافة الرصيد",
+      message: "خطأ في إرسال الطلب",
       error: error.message
     });
   }
