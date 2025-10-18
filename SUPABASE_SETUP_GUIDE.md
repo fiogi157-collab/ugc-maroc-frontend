@@ -1,143 +1,100 @@
 # Guide de Configuration Supabase - UGC Maroc
 
-## 🚨 ACTIONS CRITIQUES À FAIRE DANS SUPABASE DASHBOARD
+## 🚨 PROBLÈME ACTUEL
 
-### ✅ Étape 1 : Désactiver la confirmation email (OBLIGATOIRE)
-
-**Problème actuel** : Les utilisateurs s'inscrivent mais ne peuvent pas se connecter car Supabase attend la confirmation email.
-
-**Solution** :
-
-1. Allez sur [Supabase Dashboard](https://supabase.com/dashboard)
-2. Sélectionnez votre projet UGC Maroc
-3. Dans le menu de gauche, allez à **Authentication** → **Providers**
-4. Cliquez sur **Email**
-5. Désactivez l'option **"Confirm email"** (mettre sur OFF)
-6. Cliquez sur **Save**
-
-**Résultat** : Les utilisateurs peuvent se connecter immédiatement après inscription, sans attendre un email de confirmation.
+L'erreur "Could not find the 'id' column" signifie que **les politiques RLS manquent**. Les tables existent mais Supabase bloque toutes les opérations sans politiques de sécurité.
 
 ---
 
-### ✅ Étape 2 : Appliquer les politiques RLS (Row Level Security)
+## ✅ SOLUTION EN 2 ÉTAPES (5 MINUTES)
 
-**Problème actuel** : Les tables ont RLS activé mais sans politiques, donc INSERT/SELECT bloquent.
+### Étape 1 : Appliquer les politiques RLS
 
-**Solution** :
+1. Ouvrez [Supabase Dashboard](https://supabase.com/dashboard) → Sélectionnez votre projet
+2. Allez à **SQL Editor** (dans le menu de gauche)
+3. Cliquez sur **New query**
+4. Ouvrez le fichier `api/db/setup-rls-policies.sql` dans votre éditeur
+5. **Copiez TOUT le contenu du fichier**
+6. **Collez-le dans l'éditeur SQL de Supabase**
+7. Cliquez sur **Run** (en bas à droite)
 
-1. Dans Supabase Dashboard, allez à **Database** → **Tables**
-2. Pour chaque table (`profiles`, `wallets`, `creators`, `brands`, etc.), cliquez dessus
-3. Allez à l'onglet **Policies**
-4. Cliquez sur **New Policy**
-5. Utilisez le template **"Enable insert for authenticated users only"** ou créez manuellement
+✅ Vous devriez voir : "Success. No rows returned"
 
-#### Politiques essentielles pour `profiles` :
+### Étape 2 : Désactiver la confirmation email
 
-```sql
--- Permettre aux utilisateurs de créer leur propre profil
-CREATE POLICY "Users can insert their own profile"
-ON profiles FOR INSERT
-TO authenticated
-WITH CHECK (auth.uid()::text = id);
+1. Dans Supabase Dashboard, allez à **Authentication** → **Providers**
+2. Cliquez sur **Email**
+3. **Désactivez "Confirm email"** (mettre sur OFF)
+4. Cliquez sur **Save**
 
--- Permettre aux utilisateurs de voir leur propre profil
-CREATE POLICY "Users can view their own profile"
-ON profiles FOR SELECT
-TO authenticated
-USING (auth.uid()::text = id);
-```
-
-#### Politiques essentielles pour `wallets` :
-
-```sql
--- Permettre aux utilisateurs de créer leur propre wallet
-CREATE POLICY "Users can insert their own wallet"
-ON wallets FOR INSERT
-TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
-
--- Permettre aux utilisateurs de voir leur propre wallet
-CREATE POLICY "Users can view their own wallet"
-ON wallets FOR SELECT
-TO authenticated
-USING (user_id = auth.uid()::text);
-```
-
-#### Politiques essentielles pour `creators` :
-
-```sql
--- Permettre aux créateurs de créer leur profil étendu
-CREATE POLICY "Creators can insert their own profile"
-ON creators FOR INSERT
-TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
-
--- Permettre à tous de voir les profils créateurs (pour découverte)
-CREATE POLICY "Anyone can view creator profiles"
-ON creators FOR SELECT
-TO authenticated, anon
-USING (true);
-```
-
-#### Politiques essentielles pour `brands` :
-
-```sql
--- Permettre aux marques de créer leur profil étendu
-CREATE POLICY "Brands can insert their own profile"
-ON brands FOR INSERT
-TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
-
--- Permettre à tous de voir les profils marques
-CREATE POLICY "Anyone can view brand profiles"
-ON brands FOR SELECT
-TO authenticated, anon
-USING (true);
-```
-
-**Fichier complet** : Voir `api/db/rls-policies.sql` pour toutes les politiques.
+✅ Les utilisateurs pourront se connecter immédiatement après inscription
 
 ---
 
-### ✅ Étape 3 : Vérifier le schéma database
+## 🎯 C'EST TOUT !
 
-Le schéma complet a été poussé via Drizzle. Vérifiez dans **Database** → **Tables** que vous avez :
+Après ces 2 étapes, l'authentification fonctionnera parfaitement :
+- ✅ Inscription créateur → Auto-login → Dashboard créateur
+- ✅ Inscription brand → Auto-login → Dashboard brand
+- ✅ Création automatique de : profil + wallet + creator/brand
+- ✅ Messages d'erreur clairs en arabe
 
-- ✅ `profiles` - Profils utilisateurs de base
-- ✅ `creators` - Informations étendues créateurs
-- ✅ `brands` - Informations étendues marques
+---
+
+## 🔍 Vérification (optionnel)
+
+Pour vérifier que les politiques sont bien appliquées :
+
+1. Dans Supabase Dashboard, allez à **Database** → **Policies**
+2. Vous devriez voir des politiques pour toutes les tables :
+   - `profiles` : 4 politiques
+   - `wallets` : 3 politiques
+   - `creators` : 3 politiques
+   - `brands` : 3 politiques
+   - `campaigns` : 4 politiques
+   - `submissions` : 4 politiques
+   - `transactions` : 2 politiques
+
+---
+
+## ⚠️ Si l'inscription ne marche toujours pas
+
+1. Vérifiez que vous avez bien désactivé la confirmation email
+2. Vérifiez que le SQL s'est exécuté sans erreur
+3. Essayez de rafraîchir la page d'inscription (Ctrl+F5 / Cmd+Shift+R)
+4. Vérifiez les logs dans la console du navigateur (F12)
+
+---
+
+## 📦 Tables dans Supabase
+
+Votre base de données contient déjà toutes les tables :
+- ✅ `profiles` - Profils utilisateurs
 - ✅ `wallets` - Portefeuilles financiers
+- ✅ `creators` - Profils créateurs étendus
+- ✅ `brands` - Profils marques étendus
 - ✅ `campaigns` - Campagnes marketing
-- ✅ `submissions` - Soumissions vidéos créateurs
-- ✅ `transactions` - Historique transactions
+- ✅ `submissions` - Soumissions vidéos
+- ✅ `transactions` - Historique des transactions
 
 ---
 
-## 🔧 Commandes utiles (backend)
+## 🚀 Amélioration Future (Optionnel)
 
-```bash
-# Pousser le schéma vers Supabase
-cd api && npm run db:push
+Pour une atomicité complète (garantie que profil + wallet + creator/brand sont créés ensemble ou pas du tout), vous pouvez créer une fonction RPC PostgreSQL.
 
-# Générer les migrations
-cd api && npm run db:generate
+**Actuellement** : Le code crée les 3 entrées séparément. Si l'une échoue, l'utilisateur voit un message d'erreur clair en arabe.
 
-# Ouvrir Drizzle Studio (interface visuelle)
-cd api && npm run db:studio
-```
+**Avec RPC** : Transaction atomique garantie (tout ou rien) avec rollback automatique.
+
+Les instructions détaillées sont disponibles dans ce même fichier (section archivée en bas).
 
 ---
 
-## 🚀 Amélioration Future : Fonction RPC Transactionnelle (Optionnel)
+## 📝 Archive : Fonction RPC Transactionnelle (pour référence)
 
-**État actuel** : La création de profil utilise 3 INSERT séparés (profiles → wallets → creators/brands). Si l'un échoue, l'utilisateur reçoit un message d'erreur clair en arabe, mais des données partielles peuvent rester dans la DB.
-
-**Solution recommandée** : Créer une fonction PostgreSQL RPC pour garantir l'atomicité (tout ou rien).
-
-### Comment implémenter (optionnel)
-
-1. Dans Supabase Dashboard, allez à **SQL Editor**
-2. Collez ce code SQL :
+<details>
+<summary>Cliquez pour voir le code SQL de la fonction RPC (optionnel)</summary>
 
 ```sql
 CREATE OR REPLACE FUNCTION create_complete_profile(
@@ -204,8 +161,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-3. Cliquez sur **Run**
-4. Dans `js/auth.js`, remplacez les appels à `createCompleteProfile()` par un appel RPC :
+Pour utiliser cette fonction dans `js/auth.js` :
 
 ```javascript
 const { data, error } = await window.supabaseClient.rpc('create_complete_profile', {
@@ -221,23 +177,4 @@ const { data, error } = await window.supabaseClient.rpc('create_complete_profile
 });
 ```
 
-**Avantages** :
-- ✅ Atomicité garantie (tout ou rien)
-- ✅ Performance améliorée (1 requête au lieu de 3)
-- ✅ Rollback automatique en cas d'erreur
-
----
-
-## ⚠️ IMPORTANT
-
-Une fois ces 2 étapes faites dans Supabase Dashboard :
-1. Désactiver confirmation email
-2. Appliquer politiques RLS
-
-Le problème de déconnexion automatique sera **100% résolu** ✅
-
-Le code auth côté frontend a également été refactorisé pour gérer automatiquement :
-- Création profil lors de l'inscription (profiles + wallet + creator/brand)
-- Échec complet si une des 3 tables échoue (pas de données partielles)
-- Login automatique après inscription
-- Messages d'erreur clairs en arabe
+</details>

@@ -36,12 +36,6 @@ TO authenticated
 USING (auth.uid()::text = id)
 WITH CHECK (auth.uid()::text = id);
 
--- Politique: Les utilisateurs authentifiés peuvent voir tous les profils (pour découverte)
-CREATE POLICY "Authenticated users can view all profiles"
-ON profiles FOR SELECT
-TO authenticated
-USING (true);
-
 -- ============================================
 -- TABLE: wallets
 -- ============================================
@@ -203,11 +197,11 @@ ON transactions FOR SELECT
 TO authenticated
 USING (user_id = auth.uid()::text);
 
--- Politique: Le système peut créer des transactions (via backend)
-CREATE POLICY "System can insert transactions"
+-- Politique: Les utilisateurs peuvent créer leurs propres transactions
+CREATE POLICY "Users can insert their own transactions"
 ON transactions FOR INSERT
 TO authenticated
-WITH CHECK (true);
+WITH CHECK (user_id = auth.uid()::text);
 
 -- ============================================
 -- VERIFICATION
