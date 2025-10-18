@@ -8,9 +8,8 @@ const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
 class DeepSeekService {
   constructor() {
-    // Clean API key: remove all invisible characters, line breaks, and whitespace
-    const rawKey = process.env.DEEPSEEK_API_KEY || '';
-    this.apiKey = rawKey.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '').trim();
+    // Simple trim only - don't corrupt the API key
+    this.apiKey = (process.env.DEEPSEEK_API_KEY || '').trim();
     
     if (!this.apiKey) {
       console.error("⚠️ DEEPSEEK_API_KEY manquante dans les variables d'environnement");
@@ -29,14 +28,11 @@ class DeepSeekService {
         temperature: temperature,
         max_tokens: 2000
       };
-
-      // Ensure clean authorization header
-      const cleanApiKey = this.apiKey.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '');
       
       const response = await axios.post(DEEPSEEK_API_URL, payload, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${cleanApiKey}`
+          "Authorization": `Bearer ${this.apiKey}`
         },
         timeout: 30000 // 30 seconds timeout
       });
