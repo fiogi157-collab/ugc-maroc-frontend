@@ -2,16 +2,21 @@
 // 🌍 UGC Maroc – Navigation intelligente + Auth Supabase
 // =====================================================
 
-import { supabase } from './supabaseClient.js';
+// ES6 imports removed for compatibility - using window.supabaseClient from config.js instead
 
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('✅ nav-links.js chargé avec succès');
+async function performAuthCheck() {
+  console.log('✅ nav-links.js - performing auth check');
+
+  if (!window.supabaseClient) {
+    console.log('⚠️ Supabase client not available — skipping auth check');
+    return;
+  }
 
   // Vérifie si un utilisateur est connecté
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await window.supabaseClient.auth.getUser();
 
   if (user) {
-    const role = user.user_metadata?.role || 'unknown';
+    const role = user.user_metadata?.role || localStorage.getItem('user_role') || 'unknown';
     console.log(`👤 Utilisateur connecté : ${user.email} (${role})`);
 
     // Redirection automatique selon le rôle
@@ -26,6 +31,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('⚠️ Aucun utilisateur connecté — navigation publique activée');
   }
 
+  setupNavigation();
+}
+
+function setupNavigation() {
   // Navigation standard si non connecté
   const routes = {
     creatorLogin: '/auth/creator-login.html',
@@ -54,18 +63,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       el.addEventListener('click', e => redirect(e, routes.brandLogin));
     }
 
-    if (text.includes('ابدأ الربح') || text.includes('المبدعين') || text.toLowerCase().includes('creator signup')) {
+    if (text.includes('تسجيل كمبدع') || text.toLowerCase().includes('creator signup')) {
       el.addEventListener('click', e => redirect(e, routes.creatorSignup));
     }
 
-    if (text.includes('ابدأ حملتك') || text.includes('العلامات') || text.toLowerCase().includes('brand signup')) {
+    if (text.includes('تسجيل كعلامة تجارية') || text.toLowerCase().includes('brand signup')) {
       el.addEventListener('click', e => redirect(e, routes.brandSignup));
     }
 
-    if (text.includes('نسيت كلمة المرور') || text.toLowerCase().includes('forgot')) {
+    if (text.includes('نسيت كلمة المرور') || text.toLowerCase().includes('forgot password')) {
       el.addEventListener('click', e => redirect(e, routes.forgotPassword));
     }
   });
+}
 
-  console.log('🎯 Navigation publique prête');
+// Wait for both DOM and Supabase to be ready
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ nav-links.js chargé avec succès');
+  
+  // If Supabase is already initialized, perform auth check immediately
+  if (window.supabaseClient) {
+    performAuthCheck();
+  } else {
+    // Otherwise, wait for the supabaseReady event
+    window.addEventListener('supabaseReady', () => {
+      performAuthCheck();
+    });
+  }
 });

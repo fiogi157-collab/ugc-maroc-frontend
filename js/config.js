@@ -47,6 +47,9 @@ async function initializeSupabase() {
     console.log("✅ Supabase client initialized");
     console.log("✅ API Backend connecté :", API_BASE_URL);
     
+    // Emit custom event to notify other scripts that Supabase is ready
+    window.dispatchEvent(new CustomEvent('supabaseReady', { detail: { supabaseClient } }));
+    
     return supabaseClient;
   } catch (error) {
     console.error("❌ Failed to initialize Supabase:", error);
@@ -59,4 +62,10 @@ if (typeof supabase !== 'undefined') {
   initializeSupabase();
 } else {
   console.warn('⚠️ Supabase library not loaded yet. Will initialize when available.');
+  // Wait for Supabase library to load
+  window.addEventListener('load', () => {
+    if (typeof supabase !== 'undefined') {
+      initializeSupabase();
+    }
+  });
 }
