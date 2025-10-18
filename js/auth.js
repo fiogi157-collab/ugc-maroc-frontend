@@ -55,18 +55,16 @@ async function loginUser(email, password) {
 
     console.log('✅ Authentification réussie:', data.user.email);
 
-    // 2. Récupérer le profil depuis la base de données
-    const { data: profile, error: profileError } = await window.supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('user_id', data.user.id)
-      .single();
+    // 2. Récupérer le profil depuis Replit PostgreSQL via API
+    const profileResponse = await fetch(`${window.API_BASE_URL}/api/profile/${data.user.id}`);
+    const profileResult = await profileResponse.json();
 
-    if (profileError) {
-      console.error('Erreur récupération profil:', profileError);
+    if (!profileResponse.ok || !profileResult.success) {
+      console.error('Erreur récupération profil:', profileResult);
       throw new Error('خطأ في تحميل معلومات المستخدم');
     }
 
+    const profile = profileResult.profile;
     console.log('✅ Profil chargé:', profile.role);
 
     // 3. Sauvegarder infos dans localStorage

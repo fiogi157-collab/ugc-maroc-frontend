@@ -125,17 +125,10 @@
 </div>
 </div>
 
-<!-- Full Name & Username -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<!-- Full Name -->
 <div>
 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="fullname">الاسم الكامل <span class="text-red-500">*</span></label>
 <input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="fullname" name="fullname" placeholder="أدخل اسمك الكامل" required type="text"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="username">اسم المستخدم <span class="text-red-500">*</span></label>
-<input class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all" id="username" name="username" placeholder="@username" required type="text"/>
-<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">سيظهر في ملفك الشخصي</p>
-</div>
 </div>
 
 <!-- Phone & CIN -->
@@ -398,7 +391,6 @@ signupForm.addEventListener('submit', async (e) => {
     
     // Prepare metadata with fields matching new schema
     const metadata = {
-      username: document.getElementById('username').value,
       specialization: specialization, // From interests
       bio: document.getElementById('bio').value,
       profilePictureUrl: appState.profilePictureUrl,

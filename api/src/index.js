@@ -102,9 +102,10 @@ app.get("/api/config", (req, res) => {
 });
 
 // =====================================================
-// 👤 USER PROFILE CREATION - Replit PostgreSQL
+// 👤 USER PROFILE ENDPOINTS - Replit PostgreSQL
 // =====================================================
 
+// Create complete profile (profile + wallet + creator/brand)
 app.post("/api/create-profile", async (req, res) => {
   try {
     const { userId, email, fullName, phone, role, metadata } = req.body;
@@ -152,6 +153,44 @@ app.post("/api/create-profile", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "خطأ في إنشاء الملف الشخصي",
+      error: error.message
+    });
+  }
+});
+
+// Get user profile by ID
+app.get("/api/profile/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف المستخدم مطلوب"
+      });
+    }
+
+    // Import storage functions
+    const { getUserProfile } = await import("../db/storage.js");
+    const profile = await getUserProfile(userId);
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "الملف الشخصي غير موجود"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      profile: profile
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching profile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل الملف الشخصي",
       error: error.message
     });
   }

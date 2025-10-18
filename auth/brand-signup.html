@@ -328,10 +328,6 @@ signupForm.addEventListener('submit', async (e) => {
   const monthlyBudget = document.getElementById('monthly-budget').value;
   const bio = document.getElementById('bio').value.trim();
 
-  const username = companyName.toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^\w_]/g, '') + '_brand';
-
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> جارٍ الإنشاء...';
 
@@ -340,7 +336,6 @@ signupForm.addEventListener('submit', async (e) => {
     
     // Prepare metadata with fields matching new schema
     const metadata = {
-      username: username,
       companyName: companyName,
       company_name: companyName, // Alias for createCompleteProfile
       industry: industry,
