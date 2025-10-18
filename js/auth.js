@@ -92,64 +92,41 @@ async function loginUser(email, password) {
 }
 
 // Créer profil complet (profil + wallet + creator/brand)
-// Utilise une fonction RPC SECURITY DEFINER pour contourner les problèmes de cache RLS
+// Utilise l'API backend qui écrit dans Replit PostgreSQL
 async function createCompleteProfile(userId, email, fullName, phone, role, metadata = {}) {
   try {
-    console.log('📝 Création profil complet via RPC:', { userId, email, role });
+    console.log('📝 Création profil complet via API backend:', { userId, email, role });
 
-    // Préparer les paramètres selon le rôle
-    const rpcParams = {
-      p_user_id: userId,
-      p_email: email,
-      p_full_name: fullName,
-      p_role: role
+    // Préparer les données pour l'API
+    const requestBody = {
+      userId,
+      email,
+      fullName,
+      phone,
+      role,
+      metadata
     };
 
-    // Paramètres spécifiques pour creator
-    if (role === 'creator') {
-      rpcParams.p_username = metadata.username || null;
-      rpcParams.p_specialization = metadata.specialization || null;
-      rpcParams.p_bio = metadata.bio || null;
-      rpcParams.p_profile_picture_url = metadata.profilePictureUrl || null;
-      rpcParams.p_cin = metadata.cin || null;
-      rpcParams.p_birth_date = metadata.birthDate || null;
-      rpcParams.p_ville = metadata.ville || null;
-      rpcParams.p_languages = metadata.languages || null;
-      rpcParams.p_interests = metadata.interests || null;
-      rpcParams.p_bank_name = metadata.bankName || null;
-      rpcParams.p_rib = metadata.rib || null;
+    console.log('🚀 Appel API /api/create-profile');
+
+    // Appeler l'API backend
+    const response = await fetch(`${window.API_BASE_URL}/api/create-profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error('❌ Erreur API create-profile:', result);
+      throw new Error(result.message || 'فشل في إنشاء الملف الشخصي');
     }
 
-    // Paramètres spécifiques pour brand
-    if (role === 'brand') {
-      rpcParams.p_company_name = metadata.companyName || metadata.company_name || fullName;
-      rpcParams.p_company_description = metadata.description || metadata.bio || null;
-      rpcParams.p_profile_picture_url = metadata.profilePictureUrl || metadata.logo_url || null;
-      rpcParams.p_website = metadata.website || null;
-      rpcParams.p_industry = metadata.industry || null;
-      rpcParams.p_company_size = metadata.companySize || metadata.company_size || null;
-    }
-
-    console.log('🚀 Appel RPC create_complete_profile avec params:', rpcParams);
-
-    // Appeler la fonction RPC
-    const { data, error } = await window.supabaseClient
-      .rpc('create_complete_profile', rpcParams);
-
-    if (error) {
-      console.error('❌ Erreur RPC create_complete_profile:', error);
-      throw new Error('فشل في إنشاء الملف الشخصي: ' + error.message);
-    }
-
-    console.log('📊 Résultat RPC:', data);
-
-    // Vérifier le résultat
-    if (!data || !data.success) {
-      throw new Error('فشل في إنشاء الملف الشخصي: ' + (data?.error || 'خطأ غير معروف'));
-    }
-
-    console.log('✅ Profil complet créé avec succès via RPC');
-    return { success: true, profile: data };
+    console.log('✅ Profil complet créé avec succès:', result);
+    return { success: true, profile: result.profile };
   } catch (err) {
     console.error('❌ Erreur createCompleteProfile:', err);
     throw err;

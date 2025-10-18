@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import deepseekService from "../services/deepseek.js";
 import r2Service from "../services/r2.js";
 import watermarkService from "../services/watermark.js";
+import { createCompleteProfile } from "../db/storage.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -98,6 +99,62 @@ app.get("/api/config", (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL || "",
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ""
   });
+});
+
+// =====================================================
+// 👤 USER PROFILE CREATION - Replit PostgreSQL
+// =====================================================
+
+app.post("/api/create-profile", async (req, res) => {
+  try {
+    const { userId, email, fullName, phone, role, metadata } = req.body;
+
+    // Validation
+    if (!userId || !email || !fullName || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "البيانات المطلوبة: userId, email, fullName, role"
+      });
+    }
+
+    if (!['creator', 'brand', 'admin'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "الدور غير صالح (creator, brand, admin فقط)"
+      });
+    }
+
+    // Create complete profile in Replit PostgreSQL
+    const result = await createCompleteProfile({
+      userId,
+      email,
+      fullName,
+      role
+    }, metadata || {});
+
+    return res.status(201).json({
+      success: true,
+      message: "تم إنشاء الملف الشخصي بنجاح! ✨",
+      profile: result.profile
+    });
+
+  } catch (error) {
+    console.error("❌ Error creating profile:", error);
+    
+    // Check for specific errors
+    if (error.code === '23505') { // Unique constraint violation
+      return res.status(409).json({
+        success: false,
+        message: "هذا البريد الإلكتروني مستخدم بالفعل"
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إنشاء الملف الشخصي",
+      error: error.message
+    });
+  }
 });
 
 // =====================================================
