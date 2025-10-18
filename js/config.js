@@ -1,19 +1,39 @@
-// ===========================================================
-// 🔧 UGC Maroc - Configuration Centrale
-// ===========================================================
+// =====================================================
+// 🌍 UGC Maroc – Configuration Centrale
+// =====================================================
 
-// Configuration API Backend - Utilise le domaine actuel
-const API_BASE_URL = window.location.origin + "/api";
+// -------------------------------
+// 🔹 BACKEND API CONFIGURATION
+// -------------------------------
+const API_BASE_URL = "https://ugc-maroc-backend-q7zna70gs-nabils-projects-e12f0a77.vercel.app"; // ton backend déployé
 window.API_BASE_URL = API_BASE_URL;
 
-// Configuration Supabase - Clés mises à jour
-const SUPABASE_URL = "https://arfmvtfkibjadxwnbqjl.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZm12dGZraWJqYWR4d25icWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODI0MjAsImV4cCI6MjA3NTY1ODQyMH0.PIWR6lWml5iliG4658nZdaNy1aiF7hgZZUR__NUDOT0";
+// Helper pour requêtes API (login, signup, etc.)
+async function apiRequest(endpoint, options = {}) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...options,
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("❌ Erreur de communication avec le backend:", err);
+    return { success: false, message: "Erreur serveur" };
+  }
+}
 
-// Initialisation Supabase Client
+// -------------------------------
+// 🔹 SUPABASE CONFIGURATION
+// -------------------------------
+const SUPABASE_URL = "https://arfmvtfxibjdaxwbnqjl.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZm12dGZ4aWJqZGF4d2JucWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjkwODg4MDcsImV4cCI6MjA0NDY2NDgwN30.CI6brtCwaXOnzDN7IDy30GZ2U9TQ6tHVmA2GZ6zS41I";
+
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Export pour utilisation globale
 window.supabaseClient = supabaseClient;
-console.log('✅ Supabase client initialized');
+
+console.log("✅ Supabase client initialized");
+console.log("✅ API Backend connecté :", API_BASE_URL);

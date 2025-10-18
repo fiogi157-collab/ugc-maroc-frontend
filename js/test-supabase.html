@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Supabase</title>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+  <h1>🔍 Test de connexion à Supabase</h1>
+  <p id="status">Chargement...</p>
+
+  <script type="module">
+    import { supabase } from './supabaseClient.js'
+
+    async function testConnection() {
+      try {
+        const { data, error } = await supabase.from('users').select('*').limit(1)
+        if (error) throw error
+        document.getElementById('status').textContent = '✅ Connexion réussie à Supabase !'
+      } catch (err) {
+        document.getElementById('status').textContent = '❌ Erreur : ' + err.message
+        console.error(err)
+      }
+    }
+
+    testConnection()
+  </script>
+</body>
+</html>
