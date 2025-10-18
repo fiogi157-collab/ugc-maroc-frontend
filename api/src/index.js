@@ -196,6 +196,127 @@ app.get("/api/profile/:userId", async (req, res) => {
   }
 });
 
+// Get complete dashboard data for creator
+app.get("/api/creator/dashboard-data/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف المستخدم مطلوب"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { profiles, wallets, creators, submissions, campaigns } = await import("../db/schema.js");
+    const { eq, and, inArray } = await import("drizzle-orm");
+
+    // Fetch profile
+    const profileData = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
+    const profile = profileData[0] || null;
+
+    // Fetch wallet
+    const walletData = await db.select().from(wallets).where(eq(wallets.userId, userId)).limit(1);
+    const wallet = walletData[0] || { balance: 0, pendingAmount: 0 };
+
+    // Fetch creator data
+    const creatorData = await db.select().from(creators).where(eq(creators.userId, userId)).limit(1);
+    const creator = creatorData[0] || null;
+
+    // Fetch submissions statistics
+    const allSubmissions = await db.select().from(submissions).where(eq(submissions.creatorId, userId));
+    
+    const accepted = allSubmissions.filter(s => s.status === 'approved').length;
+    const rejected = allSubmissions.filter(s => s.status === 'rejected').length;
+    const total = allSubmissions.length;
+    const acceptanceRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
+
+    // Fetch active campaigns (submissions in progress/pending)
+    const activeSubmissions = await db.select({
+      id: submissions.id,
+      status: submissions.status,
+      createdAt: submissions.createdAt,
+      campaignId: submissions.campaignId
+    })
+    .from(submissions)
+    .where(
+      and(
+        eq(submissions.creatorId, userId),
+        inArray(submissions.status, ['pending', 'in_progress'])
+      )
+    )
+    .limit(5);
+
+    // Fetch campaign details for active submissions
+    const campaignIds = activeSubmissions.map(s => s.campaignId).filter(Boolean);
+    let activeCampaigns = [];
+    
+    if (campaignIds.length > 0) {
+      const campaignDetails = await db.select({
+        id: campaigns.id,
+        title: campaigns.title,
+        deadline: campaigns.deadline
+      })
+      .from(campaigns)
+      .where(inArray(campaigns.id, campaignIds));
+
+      activeCampaigns = activeSubmissions.map(sub => {
+        const campaign = campaignDetails.find(c => c.id === sub.campaignId);
+        return {
+          id: sub.id,
+          status: sub.status,
+          campaign: campaign || null
+        };
+      });
+    }
+
+    // Fetch available opportunities (active campaigns)
+    const opportunities = await db.select({
+      id: campaigns.id,
+      title: campaigns.title,
+      budgetMin: campaigns.budgetMin,
+      budgetMax: campaigns.budgetMax,
+      contentType: campaigns.contentType,
+      imageUrl: campaigns.imageUrl
+    })
+    .from(campaigns)
+    .where(eq(campaigns.status, 'active'))
+    .limit(3);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        profile: profile ? {
+          fullName: profile.fullName,
+          avatarUrl: profile.avatarUrl
+        } : null,
+        wallet: {
+          balance: wallet.balance || 0,
+          pendingAmount: wallet.pendingAmount || 0,
+          completed: (wallet.balance || 0) - (wallet.pendingAmount || 0)
+        },
+        statistics: {
+          accepted,
+          rejected,
+          total,
+          acceptanceRate
+        },
+        activeCampaigns,
+        opportunities
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching creator dashboard data:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل بيانات لوحة التحكم",
+      error: error.message
+    });
+  }
+});
+
 // =====================================================
 // 🎬 VIDEO UPLOAD ENDPOINT - R2 + Watermark
 // =====================================================

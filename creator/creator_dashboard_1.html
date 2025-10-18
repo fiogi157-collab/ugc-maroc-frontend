@@ -271,15 +271,15 @@
 <script src="/js/config.js"></script>
 <script src="/js/auth.js"></script>
 <script>
-// Wait for Supabase to be ready
+// Load dashboard data from Replit PostgreSQL API
 async function loadDashboardData() {
   if (!window.supabaseClient) {
-    console.error('Supabase not initialized');
+    console.error('Supabase Auth not initialized');
     return;
   }
 
   try {
-    // Get current user
+    // Get current user from Supabase Auth
     const { data: { user }, error: userError } = await window.supabaseClient.auth.getUser();
     
     if (userError || !user) {
@@ -288,83 +288,64 @@ async function loadDashboardData() {
       return;
     }
 
-    // Load user profile
-    const { data: profile, error: profileError } = await window.supabaseClient
-      .from('profiles')
-      .select('full_name, avatar_url')
-      .eq('id', user.id)
-      .single();
+    console.log('✅ Loading dashboard for user:', user.id);
 
-    if (profile && !profileError) {
-      document.getElementById('user-name').textContent = profile.full_name || 'منشئ محتوى';
-      if (profile.avatar_url) {
-        document.getElementById('user-avatar').src = profile.avatar_url;
+    // Fetch all dashboard data from Replit PostgreSQL API
+    const response = await fetch(`${window.API_BASE_URL}/api/creator/dashboard-data/${user.id}`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error('Error loading dashboard:', result);
+      return;
+    }
+
+    const { profile, wallet, statistics, activeCampaigns, opportunities } = result.data;
+
+    // Update profile info
+    if (profile) {
+      const nameEl = document.getElementById('user-name');
+      if (nameEl) nameEl.textContent = profile.fullName || 'منشئ محتوى';
+      
+      if (profile.avatarUrl) {
+        const avatarEl = document.getElementById('user-avatar');
+        if (avatarEl) avatarEl.src = profile.avatarUrl;
       }
     }
 
-    // Load wallet balance
-    const { data: wallet, error: walletError } = await window.supabaseClient
-      .from('wallets')
-      .select('balance, pending_amount')
-      .eq('user_id', user.id)
-      .single();
+    // Update wallet info
+    const total = wallet.balance || 0;
+    const pending = wallet.pendingAmount || 0;
+    const completed = wallet.completed || 0;
+    
+    const updateElement = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
 
-    if (wallet && !walletError) {
-      const total = wallet.balance || 0;
-      const pending = wallet.pending_amount || 0;
-      const completed = total - pending;
-      
-      document.getElementById('wallet-display').textContent = `${total.toLocaleString('ar-MA')} د.م`;
-      document.getElementById('wallet-main').textContent = `${total.toLocaleString('ar-MA')} د.م`;
-      document.getElementById('wallet-pending').textContent = `${pending.toLocaleString('ar-MA')} د.م`;
-      document.getElementById('wallet-completed').textContent = `${completed.toLocaleString('ar-MA')} د.م`;
-      
-      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-      document.getElementById('wallet-progress').style.width = `${percentage}%`;
-      document.getElementById('wallet-percentage').textContent = `مكتمل ${percentage}%`;
-      document.getElementById('wallet-progress-text').textContent = `${completed.toFixed(0)} / ${total.toFixed(0)}`;
-    }
+    updateElement('wallet-display', `${total.toLocaleString('ar-MA')} د.م`);
+    updateElement('wallet-main', `${total.toLocaleString('ar-MA')} د.م`);
+    updateElement('wallet-pending', `${pending.toLocaleString('ar-MA')} د.م`);
+    updateElement('wallet-completed', `${completed.toLocaleString('ar-MA')} د.م`);
+    
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const progressBar = document.getElementById('wallet-progress');
+    if (progressBar) progressBar.style.width = `${percentage}%`;
+    updateElement('wallet-percentage', `مكتمل ${percentage}%`);
+    updateElement('wallet-progress-text', `${completed.toFixed(0)} / ${total.toFixed(0)}`);
 
-    // Load campaign statistics
-    const { data: submissions, error: submissionsError } = await window.supabaseClient
-      .from('submissions')
-      .select('status')
-      .eq('creator_id', user.id);
+    // Update statistics
+    updateElement('accepted-campaigns', statistics.accepted || 0);
+    updateElement('rejected-campaigns', statistics.rejected || 0);
+    updateElement('delivery-rate', `${statistics.acceptanceRate || 0}%`);
 
-    if (submissions && !submissionsError) {
-      const accepted = submissions.filter(s => s.status === 'approved').length;
-      const rejected = submissions.filter(s => s.status === 'rejected').length;
-      const total = submissions.length;
-      
-      document.getElementById('accepted-campaigns').textContent = accepted;
-      document.getElementById('rejected-campaigns').textContent = rejected;
-      
-      if (total > 0) {
-        const acceptanceRate = Math.round((accepted / total) * 100);
-        document.getElementById('delivery-rate').textContent = `${acceptanceRate}%`;
-      }
-    }
-
-    // Load active campaigns
-    const { data: activeCampaigns, error: campaignsError } = await window.supabaseClient
-      .from('submissions')
-      .select(`
-        id,
-        status,
-        campaigns (
-          title,
-          deadline
-        )
-      `)
-      .eq('creator_id', user.id)
-      .in('status', ['pending', 'in_progress'])
-      .limit(5);
-
-    if (activeCampaigns && !campaignsError && activeCampaigns.length > 0) {
+    // Update active campaigns list
+    if (activeCampaigns && activeCampaigns.length > 0) {
       const listHTML = activeCampaigns.map(sub => {
         const statusColor = sub.status === 'pending' ? 'yellow' : 'green';
         const statusText = sub.status === 'pending' ? 'قيد المراجعة' : 'قيد التنفيذ';
-        const daysLeft = sub.campaigns?.deadline ? Math.ceil((new Date(sub.campaigns.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+        const daysLeft = sub.campaign?.deadline 
+          ? Math.ceil((new Date(sub.campaign.deadline) - new Date()) / (1000 * 60 * 60 * 24)) 
+          : 0;
         
         return `
           <div class="flex items-center">
@@ -372,7 +353,7 @@ async function loadDashboardData() {
               <span class="material-icons text-${statusColor}-400">${sub.status === 'pending' ? 'rate_review' : 'videocam'}</span>
             </div>
             <div class="mr-3 flex-1">
-              <p class="text-sm text-gray-800 dark:text-gray-200">${sub.campaigns?.title || 'حملة'}</p>
+              <p class="text-sm text-gray-800 dark:text-gray-200">${sub.campaign?.title || 'حملة'}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">${statusText} • ${daysLeft} أيام</p>
             </div>
           </div>
@@ -382,22 +363,16 @@ async function loadDashboardData() {
       document.getElementById('active-campaigns-list').innerHTML = listHTML;
     }
 
-    // Load available opportunities (campaigns)
-    const { data: opportunities, error: oppError } = await window.supabaseClient
-      .from('campaigns')
-      .select('id, title, budget_min, budget_max, content_type, image_url')
-      .eq('status', 'active')
-      .limit(2);
-
-    if (opportunities && !oppError && opportunities.length > 0) {
+    // Update opportunities list
+    if (opportunities && opportunities.length > 0) {
       const oppHTML = opportunities.map(opp => `
         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition cursor-pointer" onclick="window.location.href='/creator/تصفح_الحملات_(للمبدعين).html'">
-          <img alt="Campaign" class="w-full h-20 object-cover rounded-md mb-2" src="${opp.image_url || 'https://via.placeholder.com/300x200/1A1A2E/7C3AED?text=Campaign'}"/>
+          <img alt="Campaign" class="w-full h-20 object-cover rounded-md mb-2" src="${opp.imageUrl || 'https://via.placeholder.com/300x200/1A1A2E/7C3AED?text=Campaign'}"/>
           <p class="font-semibold text-sm text-gray-900 dark:text-white">${opp.title}</p>
           <div class="flex gap-1 my-2">
-            <span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">${opp.content_type || 'فيديو'}</span>
+            <span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">${opp.contentType || 'فيديو'}</span>
           </div>
-          <p class="text-xs text-green-400 font-bold mb-2">${opp.budget_min} - ${opp.budget_max} د.م</p>
+          <p class="text-xs text-green-400 font-bold mb-2">${opp.budgetMin || 0} - ${opp.budgetMax || 0} د.م</p>
           <button class="w-full bg-primary text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">التقديم الآن</button>
         </div>
       `).join('');
@@ -407,8 +382,10 @@ async function loadDashboardData() {
       document.getElementById('opportunities-list').innerHTML = '<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">لا توجد فرص متاحة حالياً</div>';
     }
 
+    console.log('✅ Dashboard loaded successfully');
+
   } catch (error) {
-    console.error('Error loading dashboard data:', error);
+    console.error('❌ Error loading dashboard data:', error);
   }
 }
 
