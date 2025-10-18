@@ -79,6 +79,11 @@
       to { transform: translate(-50%, 0); opacity: 1; }
     }
 
+    @keyframes slideUp {
+      from { transform: translate(-50%, 0); opacity: 1; }
+      to { transform: translate(-50%, -100px); opacity: 0; }
+    }
+
     .toast.success { border-right: 4px solid #10b981; }
     .toast.error { border-right: 4px solid #ef4444; }
     .toast.info { border-right: 4px solid #3b82f6; }
@@ -134,13 +139,13 @@
         <!-- Wallet Widget + Profile -->
         <div class="flex items-center gap-4">
           <!-- Wallet -->
-          <div class="hidden md:flex items-center gap-3 bg-gradient-to-r from-primary/10 to-purple-500/10 dark:from-primary/20 dark:to-purple-500/20 px-4 py-2 rounded-full border border-primary/20">
+          <div onclick="openWalletModal()" class="hidden md:flex items-center gap-3 bg-gradient-to-r from-primary/10 to-purple-500/10 dark:from-primary/20 dark:to-purple-500/20 px-4 py-2 rounded-full border border-primary/20 cursor-pointer hover:from-primary/15 hover:to-purple-500/15 transition-all">
             <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
             <div class="text-left">
               <div class="text-xs text-gray-500 dark:text-gray-400">الرصيد</div>
               <div class="font-bold" id="header-balance">0 د.م</div>
             </div>
-            <button onclick="openWalletModal()" class="text-primary hover:text-primary-dark">
+            <button onclick="event.stopPropagation(); openAddFundsModal()" class="text-primary hover:text-primary-dark transition-colors">
               <span class="material-symbols-outlined text-sm">add_circle</span>
             </button>
           </div>
@@ -418,7 +423,7 @@
         <div class="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-6 text-white mb-6">
           <div class="text-sm opacity-80 mb-2">الرصيد الحالي</div>
           <div class="text-4xl font-bold mb-4" id="modal-balance">0 د.م</div>
-          <button class="bg-white text-primary px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
+          <button onclick="openAddFundsModal()" class="bg-white text-primary px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
             إضافة رصيد
           </button>
         </div>
@@ -472,46 +477,47 @@
           <!-- Step 1: Basic Info -->
           <div>
             <label class="block text-sm font-semibold mb-2">عنوان الحملة *</label>
-            <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="مثال: حملة ترويج منتجات العناية بالبشرة">
+            <input type="text" id="campaign-title" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="مثال: حملة ترويج منتجات العناية بالبشرة">
           </div>
 
           <div>
             <label class="block text-sm font-semibold mb-2">وصف الحملة</label>
-            <textarea rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="صف ما تريد تحقيقه من هذه الحملة..."></textarea>
-            <button type="button" class="mt-2 text-sm text-primary hover:text-primary-dark flex items-center gap-1">
+            <textarea rows="4" id="campaign-description" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="صف ما تريد تحقيقه من هذه الحملة..."></textarea>
+            <button type="button" id="generate-desc-btn" onclick="generateCampaignDescription()" class="mt-2 text-sm text-primary hover:text-primary-dark flex items-center gap-1 transition-colors">
               <span class="material-symbols-outlined text-sm">auto_awesome</span>
-              <span>توليد الوصف بالذكاء الاصطناعي</span>
+              <span id="generate-desc-text">توليد الوصف بالذكاء الاصطناعي</span>
             </button>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-semibold mb-2">الفئة *</label>
-              <select required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
+              <select id="campaign-category" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
                 <option value="">اختر الفئة</option>
                 <option value="beauty">الجمال</option>
                 <option value="fashion">الموضة</option>
                 <option value="tech">التكنولوجيا</option>
                 <option value="food">الطعام</option>
                 <option value="travel">السفر</option>
+                <option value="other">أخرى</option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-semibold mb-2">الميزانية (د.م) *</label>
-              <input type="number" required min="100" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="500">
+              <input type="number" id="campaign-budget" required min="100" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="500">
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-semibold mb-2">تاريخ الانتهاء *</label>
-              <input type="date" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
+              <label class="block text-sm font-semibold mb-2">تاريخ الانتهاء</label>
+              <input type="date" id="campaign-deadline" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
             </div>
             <div>
               <label class="block text-sm font-semibold mb-2">المستوى</label>
-              <select class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
+              <select id="campaign-difficulty" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary">
                 <option value="beginner">للمبتدئين</option>
-                <option value="intermediate">متوسط</option>
+                <option value="intermediate" selected>متوسط</option>
                 <option value="expert">خبير</option>
               </select>
             </div>
@@ -521,8 +527,55 @@
             <button type="button" onclick="closeCreateCampaignModal()" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               إلغاء
             </button>
-            <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
-              إنشاء الحملة
+            <button type="submit" id="submit-campaign-btn" class="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+              <span id="submit-campaign-text">إنشاء الحملة</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Funds Modal -->
+  <div id="add-funds-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="if(event.target === this) closeAddFundsModal()">
+    <div class="bg-white dark:bg-card-dark rounded-2xl max-w-md w-full" onclick="event.stopPropagation()">
+      <div class="border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between">
+        <h3 class="text-xl font-bold">إضافة رصيد</h3>
+        <button onclick="closeAddFundsModal()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-6">
+        <form id="add-funds-form" class="space-y-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">المبلغ (د.م) *</label>
+            <input type="number" id="funds-amount" required min="50" step="10" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary" placeholder="500">
+            <p class="text-xs text-gray-500 mt-1">الحد الأدنى: 50 د.م</p>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-gray-600 dark:text-gray-400">الرصيد الحالي:</span>
+              <span class="font-bold" id="current-balance-add">0 د.م</span>
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-gray-600 dark:text-gray-400">المبلغ المضاف:</span>
+              <span class="font-bold text-primary" id="adding-amount">0 د.م</span>
+            </div>
+            <div class="border-t border-gray-300 dark:border-gray-700 pt-2 mt-2">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold">الرصيد الجديد:</span>
+                <span class="font-bold text-lg text-green-600" id="new-balance-preview">0 د.م</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" onclick="closeAddFundsModal()" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              إلغاء
+            </button>
+            <button type="submit" id="confirm-add-funds-btn" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+              <span id="confirm-add-funds-text">تأكيد الإضافة</span>
             </button>
           </div>
         </form>
@@ -595,6 +648,265 @@
 
     function closeCreateCampaignModal() {
       document.getElementById('create-campaign-modal').classList.add('hidden');
+      // Reset form
+      document.getElementById('create-campaign-form').reset();
+    }
+
+    function openAddFundsModal() {
+      const modal = document.getElementById('add-funds-modal');
+      modal.classList.remove('hidden');
+      
+      // Update current balance display
+      const currentBalance = wallet ? wallet.balance : 0;
+      document.getElementById('current-balance-add').textContent = `${currentBalance.toFixed(2)} د.م`;
+      
+      // Reset form
+      document.getElementById('add-funds-form').reset();
+      document.getElementById('adding-amount').textContent = '0 د.م';
+      document.getElementById('new-balance-preview').textContent = `${currentBalance.toFixed(2)} د.م`;
+    }
+
+    function closeAddFundsModal() {
+      document.getElementById('add-funds-modal').classList.add('hidden');
+    }
+
+    // Update new balance preview as user types
+    document.addEventListener('DOMContentLoaded', () => {
+      const fundsInput = document.getElementById('funds-amount');
+      if (fundsInput) {
+        fundsInput.addEventListener('input', (e) => {
+          const amount = parseFloat(e.target.value) || 0;
+          const currentBalance = wallet ? wallet.balance : 0;
+          const newBalance = currentBalance + amount;
+          
+          document.getElementById('adding-amount').textContent = `${amount.toFixed(2)} د.م`;
+          document.getElementById('new-balance-preview').textContent = `${newBalance.toFixed(2)} د.م`;
+        });
+      }
+    });
+
+    // Generate Campaign Description with AI (auto-detect language)
+    async function generateCampaignDescription() {
+      const titleInput = document.getElementById('campaign-title');
+      const descriptionInput = document.getElementById('campaign-description');
+      const generateBtn = document.getElementById('generate-desc-btn');
+      const generateText = document.getElementById('generate-desc-text');
+      
+      const title = titleInput.value.trim();
+      
+      if (!title) {
+        showToast('الرجاء إدخال عنوان الحملة أولاً', 'error');
+        titleInput.focus();
+        return;
+      }
+
+      // Show loading state
+      generateBtn.disabled = true;
+      generateText.textContent = 'جاري التوليد...';
+      
+      try {
+        const response = await fetch(`${window.API_BASE_URL}/api/ai/generate-description`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          descriptionInput.value = data.description;
+          showToast('تم توليد الوصف بنجاح! ✨', 'success');
+        } else {
+          showToast(data.message || 'فشل توليد الوصف', 'error');
+        }
+      } catch (error) {
+        console.error('Error generating description:', error);
+        showToast('حدث خطأ أثناء توليد الوصف', 'error');
+      } finally {
+        // Reset button state
+        generateBtn.disabled = false;
+        generateText.textContent = 'توليد الوصف بالذكاء الاصطناعي';
+      }
+    }
+
+    // Submit Campaign Form
+    document.addEventListener('DOMContentLoaded', () => {
+      const createCampaignForm = document.getElementById('create-campaign-form');
+      if (createCampaignForm) {
+        createCampaignForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const submitBtn = document.getElementById('submit-campaign-btn');
+          const submitText = document.getElementById('submit-campaign-text');
+          
+          // Get form data
+          const title = document.getElementById('campaign-title').value.trim();
+          const description = document.getElementById('campaign-description').value.trim();
+          const category = document.getElementById('campaign-category').value;
+          const budget = document.getElementById('campaign-budget').value;
+          const deadline = document.getElementById('campaign-deadline').value;
+          const difficulty = document.getElementById('campaign-difficulty').value;
+
+          // Validation
+          if (!title || !category || !budget || parseFloat(budget) < 100) {
+            showToast('الرجاء ملء جميع الحقول المطلوبة', 'error');
+            return;
+          }
+
+          // Show loading state
+          submitBtn.disabled = true;
+          submitText.textContent = 'جاري الإنشاء...';
+
+          try {
+            const response = await fetch(`${window.API_BASE_URL}/api/campaigns`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title,
+                description: description || null,
+                category,
+                budget: parseFloat(budget),
+                deadline: deadline || null,
+                difficulty,
+                content_type: 'video',
+                brand_id: currentUser.id
+              })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              closeCreateCampaignModal();
+              showElegantNotification('تم إنشاء الحملة بنجاح! ✨', data.campaign);
+              await refreshCampaigns();
+            } else {
+              showToast(data.message || 'فشل إنشاء الحملة', 'error');
+            }
+          } catch (error) {
+            console.error('Error creating campaign:', error);
+            showToast('حدث خطأ أثناء إنشاء الحملة', 'error');
+          } finally {
+            submitBtn.disabled = false;
+            submitText.textContent = 'إنشاء الحملة';
+          }
+        });
+      }
+    });
+
+    // Add Funds Form
+    document.addEventListener('DOMContentLoaded', () => {
+      const addFundsForm = document.getElementById('add-funds-form');
+      if (addFundsForm) {
+        addFundsForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const confirmBtn = document.getElementById('confirm-add-funds-btn');
+          const confirmText = document.getElementById('confirm-add-funds-text');
+          const amount = parseFloat(document.getElementById('funds-amount').value);
+
+          if (!amount || amount < 50) {
+            showToast('المبلغ يجب أن يكون 50 د.م على الأقل', 'error');
+            return;
+          }
+
+          // Show loading state
+          confirmBtn.disabled = true;
+          confirmText.textContent = 'جاري الإضافة...';
+
+          try {
+            const response = await fetch(`${window.API_BASE_URL}/api/wallet/add-funds`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: currentUser.id,
+                amount
+              })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              closeAddFundsModal();
+              showToast(`تم إضافة ${amount} د.م بنجاح! ✨`, 'success');
+              await refreshWallet();
+            } else {
+              showToast(data.message || 'فشل إضافة الرصيد', 'error');
+            }
+          } catch (error) {
+            console.error('Error adding funds:', error);
+            showToast('حدث خطأ أثناء إضافة الرصيد', 'error');
+          } finally {
+            confirmBtn.disabled = false;
+            confirmText.textContent = 'تأكيد الإضافة';
+          }
+        });
+      }
+    });
+
+    // Refresh Campaigns
+    async function refreshCampaigns() {
+      if (!currentUser) return;
+      await loadCampaigns();
+    }
+
+    // Refresh Wallet
+    async function refreshWallet() {
+      if (!currentUser) return;
+      await loadWallet();
+    }
+
+    // Elegant Notification System
+    function showElegantNotification(message, campaign = null) {
+      // Remove existing notification if any
+      const existing = document.getElementById('elegant-notification');
+      if (existing) existing.remove();
+
+      const notification = document.createElement('div');
+      notification.id = 'elegant-notification';
+      notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] animate-slideDown';
+      
+      notification.innerHTML = `
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-2xl p-6 text-white max-w-md" style="backdrop-filter: blur(10px);">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+                <span class="material-symbols-outlined text-3xl">check_circle</span>
+              </div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-bold text-lg mb-1">${message}</h4>
+              ${campaign ? `<p class="text-sm opacity-90 mb-3">${campaign.title}</p>` : ''}
+              <div class="flex gap-2 mt-3">
+                ${campaign ? `<button onclick="viewCampaign(${campaign.id})" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition-colors">عرض الحملة</button>` : ''}
+                <button onclick="closeElegantNotification()" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition-colors">حسناً</button>
+              </div>
+            </div>
+            <button onclick="closeElegantNotification()" class="flex-shrink-0 p-1 hover:bg-white/20 rounded-lg transition-colors">
+              <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        closeElegantNotification();
+      }, 5000);
+    }
+
+    function closeElegantNotification() {
+      const notification = document.getElementById('elegant-notification');
+      if (notification) {
+        notification.style.animation = 'slideUp 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+      }
+    }
+
+    function viewCampaign(campaignId) {
+      closeElegantNotification();
+      scrollToMyCampaigns();
     }
 
     // Scroll Functions

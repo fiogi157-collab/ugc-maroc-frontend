@@ -15,26 +15,34 @@ class DeepSeekService {
   // Méthode générique pour appeler DeepSeek
   async callDeepSeek(systemPrompt, userMessage, temperature = 0.7) {
     try {
+      // Clean strings to remove problematic Unicode characters
+      const cleanString = (str) => str.replace(/[\u2028\u2029]/g, ' ');
+      
+      const payload = {
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: cleanString(systemPrompt) },
+          { role: "user", content: cleanString(userMessage) }
+        ],
+        temperature: temperature,
+        max_tokens: 2000
+      };
+
+      const jsonBody = JSON.stringify(payload);
+      
       const response = await fetch(DEEPSEEK_API_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json; charset=utf-8",
           "Authorization": `Bearer ${this.apiKey}`
         },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userMessage }
-          ],
-          temperature: temperature,
-          max_tokens: 2000
-        })
+        body: jsonBody
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`DeepSeek API Error: ${errorData.error?.message || response.statusText}`);
+        const errorText = await response.text();
+        console.error("DeepSeek API error response:", errorText);
+        throw new Error(`DeepSeek API Error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();

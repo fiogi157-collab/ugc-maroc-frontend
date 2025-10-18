@@ -484,6 +484,185 @@ app.get("/api/wallet/:userId", async (req, res) => {
   }
 });
 
+// Create a new campaign
+app.post("/api/campaigns", async (req, res) => {
+  try {
+    const { 
+      title, 
+      description, 
+      budget, 
+      deadline, 
+      category, 
+      difficulty, 
+      content_type, 
+      video_duration, 
+      brand_id 
+    } = req.body;
+
+    // Validation
+    if (!title || title.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "عنوان الحملة مطلوب"
+      });
+    }
+
+    if (!brand_id) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف العلامة التجارية مطلوب"
+      });
+    }
+
+    if (!budget || parseFloat(budget) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "الميزانية يجب أن تكون أكبر من صفر"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+
+    // Set default deadline if not provided (30 days from now)
+    const defaultDeadline = new Date();
+    defaultDeadline.setDate(defaultDeadline.getDate() + 30);
+    
+    // Insert new campaign
+    const newCampaign = await db.insert(campaigns).values({
+      title: title.trim(),
+      description: description?.trim() || title.trim(), // Use title as default description
+      budget: parseFloat(budget),
+      deadline: deadline ? new Date(deadline) : defaultDeadline,
+      category: category || 'other',
+      difficulty: difficulty || 'intermediate',
+      content_type: content_type || 'video',
+      video_duration: video_duration || null,
+      brand_id: brand_id,
+      status: 'active',
+      created_at: new Date(),
+      updated_at: new Date()
+    }).returning();
+
+    console.log("✅ Campaign created:", newCampaign[0]?.id);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم إنشاء الحملة بنجاح! ✨",
+      campaign: newCampaign[0]
+    });
+
+  } catch (error) {
+    console.error("❌ Error creating campaign:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إنشاء الحملة",
+      error: error.message
+    });
+  }
+});
+
+// Generate campaign description using AI (auto-detect language)
+app.post("/api/ai/generate-description", async (req, res) => {
+  try {
+    const { title } = req.body;
+
+    if (!title || title.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "عنوان الحملة مطلوب لتوليد الوصف"
+      });
+    }
+
+    const deepseek = await import("../services/deepseek.js").then(m => m.default);
+
+    // Smart prompt that auto-detects language and responds in the same language
+    const systemPrompt = `You are a professional marketing copywriter specialized in UGC campaigns. Generate a compelling campaign description in the EXACT SAME LANGUAGE as the title provided. Keep it professional, engaging (2-3 sentences), focused on benefits, with a clear call-to-action for creators.`;
+
+    const userMessage = `Campaign title: "${title.trim()}". Generate a marketing description in the same language as this title to attract content creators.`;
+
+    const description = await deepseek.callDeepSeek(systemPrompt, userMessage, 0.7);
+
+    console.log("✅ AI Description generated for:", title.substring(0, 30));
+
+    return res.status(200).json({
+      success: true,
+      description: description.trim(),
+      title: title.trim()
+    });
+
+  } catch (error) {
+    console.error("❌ Error generating description:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في توليد الوصف. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
+});
+
+// Add funds to wallet
+app.post("/api/wallet/add-funds", async (req, res) => {
+  try {
+    const { user_id, amount } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف المستخدم مطلوب"
+      });
+    }
+
+    if (!amount || parseFloat(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "المبلغ يجب أن يكون أكبر من صفر"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { wallets } = await import("../db/schema.js");
+    const { eq, sql } = await import("drizzle-orm");
+
+    // Update wallet balance
+    const updatedWallet = await db.update(wallets)
+      .set({ 
+        balance: sql`balance + ${parseFloat(amount)}`,
+        updated_at: new Date()
+      })
+      .where(eq(wallets.user_id, user_id))
+      .returning();
+
+    if (updatedWallet.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "المحفظة غير موجودة"
+      });
+    }
+
+    console.log("✅ Funds added to wallet:", user_id, "+", amount, "MAD");
+
+    return res.status(200).json({
+      success: true,
+      message: `تم إضافة ${amount} د.م بنجاح! ✨`,
+      wallet: {
+        user_id: updatedWallet[0].user_id,
+        balance: parseFloat(updatedWallet[0].balance),
+        pending_balance: parseFloat(updatedWallet[0].pending_balance || 0),
+        currency: updatedWallet[0].currency || 'MAD'
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error adding funds:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إضافة الرصيد",
+      error: error.message
+    });
+  }
+});
+
 // =====================================================
 // 🎬 VIDEO UPLOAD ENDPOINT - R2 + Watermark
 // =====================================================
