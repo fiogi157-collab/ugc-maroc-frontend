@@ -28,6 +28,16 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 
 ### Feature Specifications
 - **Campaign Discovery**: Creators can browse campaigns with advanced filtering (category, budget, difficulty), search, and sorting options. Includes a dedicated "beginner" section and AI recommendations.
+- **Brand Premium Dashboard**: Modern, elegant dashboard for brands featuring:
+    - Header with integrated wallet widget (balance display + quick recharge)
+    - 4 key performance stats cards (active campaigns, engaged creators, budget spent, ROI)
+    - 5 quick action cards: Create Campaign (AI-assisted), Search Creators, Manage Funds, My Campaigns, Messages
+    - Advanced creator search with filters (category, followers, location, budget, rating)
+    - Campaign management section with status badges and quick actions
+    - Wallet management modal with transaction history and fund management
+    - Campaign creation wizard with AI brief generation
+    - Toast notification system for user feedback
+    - Skeleton loaders for optimal perceived performance
 - **AI-Powered Tools**:
     - Script Generator
     - Content Suggestion for campaigns
