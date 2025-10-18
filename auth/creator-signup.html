@@ -589,72 +589,39 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = '<span class="animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> جارٍ الإرسال...';
   
   try {
-    const formData = {
-      email: appState.email,
-      verificationToken: appState.verificationToken,
-      fullname: document.getElementById('fullname').value,
-      username: document.getElementById('username').value,
-      phone: document.getElementById('phone').value,
-      cin: document.getElementById('cin').value,
-      birthDate: document.getElementById('birth-date').value,
-      ville: document.getElementById('ville').value,
-      languages: languages,
-      interests: interests,
-      bio: document.getElementById('bio').value,
-      bankName: document.getElementById('bank-name').value,
-      rib: document.getElementById('rib').value,
-      password: password,
-      profilePicture: appState.profilePictureUrl,
-      userType: 'creator'
-    };
+    // Utiliser la fonction signupUser() de auth.js (Supabase client-side)
+    const result = await window.auth.signupUser(
+      appState.email,
+      password,
+      'creator',
+      document.getElementById('fullname').value,
+      document.getElementById('phone').value,
+      {
+        username: document.getElementById('username').value,
+        cin: document.getElementById('cin').value,
+        birthDate: document.getElementById('birth-date').value,
+        ville: document.getElementById('ville').value,
+        languages: languages,
+        interests: interests,
+        bio: document.getElementById('bio').value,
+        bankName: document.getElementById('bank-name').value,
+        rib: document.getElementById('rib').value,
+        profilePictureUrl: appState.profilePictureUrl
+      }
+    );
     
-    const response = await fetch(`${window.API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.error || 'فشل التسجيل');
+    if (!result.success) {
+      throw new Error(result.error || 'فشل التسجيل');
     }
     
-    // Si une session est retournée, sauvegarder et connecter automatiquement
-    if (data.session) {
-      // Sauvegarder la session Supabase
-      await window.supabaseClient.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      });
-      
-      // Sauvegarder les infos utilisateur
-      localStorage.setItem('user_role', data.role);
-      localStorage.setItem('user_id', data.userId);
-      localStorage.setItem('user_name', formData.fullname);
-      
-      // Redirection directe vers le dashboard
-      signupForm.classList.add('hidden');
-      successMessage.classList.remove('hidden');
-      
-      setTimeout(() => {
-        window.location.href = '/creator/creator_dashboard.html';
-      }, 2000);
-    } else if (data.requiresLogin) {
-      // Compte créé mais session non créée - rediriger vers login
-      alert('✅ تم إنشاء حسابك بنجاح! يرجى تسجيل الدخول.');
-      setTimeout(() => {
-        window.location.href = '/auth/creator-login.html';
-      }, 1000);
-    } else {
-      // Ancien flux (si pas de session retournée)
-      signupForm.classList.add('hidden');
-      successMessage.classList.remove('hidden');
-      
-      setTimeout(() => {
-        window.location.href = '/auth/creator-verified.html';
-      }, 2000);
-    }
+    // Afficher le message de succès
+    signupForm.classList.add('hidden');
+    successMessage.classList.remove('hidden');
+    
+    // Redirection vers la page de vérification email
+    setTimeout(() => {
+      window.location.href = '/auth/creator-verified.html';
+    }, 2000);
     
   } catch (error) {
     alert('❌ ' + error.message);
@@ -663,7 +630,6 @@ signupForm.addEventListener('submit', async (e) => {
   }
 });
 </script>
-<script type="module" src="../js/signup_creator_supabase.js"></script>
 <script src="/js/nav-links.js"></script>
 </body>
 </html>

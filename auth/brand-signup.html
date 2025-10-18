@@ -550,65 +550,34 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> جارٍ الإنشاء...';
 
   try {
-    const response = await fetch(`${window.API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: userEmail,
-        password,
-        fullname: companyName,
-        phone,
-        verificationToken,
-        userType: 'brand',
+    // Utiliser la fonction signupUser() de auth.js (Supabase client-side)
+    const result = await window.auth.signupUser(
+      userEmail,
+      password,
+      'brand',
+      companyName,
+      phone,
+      {
+        username: username,
         brandName: companyName,
         sector: industry,
-        website,
-        description: bio,
-        username
-      })
-    });
+        website: website,
+        bio: bio
+      }
+    );
 
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.error || 'فشل التسجيل');
+    if (!result.success) {
+      throw new Error(result.error || 'فشل التسجيل');
     }
     
-    // Si une session est retournée, sauvegarder et connecter automatiquement
-    if (data.session) {
-      // Sauvegarder la session Supabase
-      await window.supabaseClient.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      });
-      
-      // Sauvegarder les infos utilisateur
-      localStorage.setItem('user_role', data.role);
-      localStorage.setItem('user_id', data.userId);
-      localStorage.setItem('user_name', companyName);
-      
-      // Redirection directe vers le dashboard
-      signupForm.classList.add('hidden');
-      successMessage.classList.remove('hidden');
-      
-      setTimeout(() => {
-        window.location.href = '/brand/brand_dashboard_-_variant_2.html';
-      }, 2000);
-    } else if (data.requiresLogin) {
-      // Compte créé mais session non créée - rediriger vers login
-      alert('✅ تم إنشاء حسابك بنجاح! يرجى تسجيل الدخول.');
-      setTimeout(() => {
-        window.location.href = '/auth/brand-login.html';
-      }, 1000);
-    } else {
-      // Ancien flux (si pas de session retournée)
-      signupForm.classList.add('hidden');
-      successMessage.classList.remove('hidden');
-      
-      setTimeout(() => {
-        window.location.href = '/auth/brand-verified.html';
-      }, 2000);
-    }
+    // Afficher le message de succès
+    signupForm.classList.add('hidden');
+    successMessage.classList.remove('hidden');
+    
+    // Redirection vers la page de vérification
+    setTimeout(() => {
+      window.location.href = '/auth/brand-verified.html';
+    }, 2000);
     
   } catch (error) {
     console.error('Signup error:', error);
@@ -637,7 +606,6 @@ function showStatus(element, message, type) {
   element.classList.remove('hidden');
 }
 </script>
-<script type="module" src="../js/signup_brand_supabase.js"></script>
 <script src="/js/nav-links.js"></script>
 </body>
 </html>
