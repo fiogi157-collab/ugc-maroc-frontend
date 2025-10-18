@@ -15,6 +15,15 @@ Successfully migrated the entire platform from Vercel to Replit with the followi
 3. **Proper Port Configuration**: Configured server to run on port 5000 with 0.0.0.0 binding for Replit compatibility
 4. **Event-Driven Initialization**: Implemented `supabaseReady` custom event to ensure proper initialization timing
 
+### DeepSeek V3.1 AI Integration (October 18, 2025)
+
+Integrated AI-powered features using DeepSeek V3.1 with complete Arabic/Moroccan Darija support:
+
+1. **Backend AI Service**: Created `/api/services/deepseek.js` with 5 specialized prompts
+2. **API Endpoints**: 5 new REST endpoints under `/api/ai/*` for all AI features
+3. **Frontend Module**: `ai-assistant.js` provides easy-to-use functions with loading states
+4. **Test Interface**: `test-ai.html` demonstrates all AI capabilities in production-ready UI
+
 ## Project Architecture
 
 ### Frontend
@@ -31,11 +40,17 @@ Successfully migrated the entire platform from Vercel to Replit with the followi
 - **Location**: `/api/`
 - **Technology**: Node.js with Express
 - **Port**: 5000 (required for Replit)
-- **Endpoints**:
+- **Standard Endpoints**:
   - `GET /api` - Health check
   - `GET /api/ping` - API connectivity test
   - `POST /api/send-email` - Email sending via Resend
   - `GET /api/config` - Supabase configuration for frontend
+- **AI Endpoints** (DeepSeek V3.1):
+  - `POST /api/ai/generate-script` - مولد السكريبت - Generate UGC video scripts
+  - `POST /api/ai/suggest-content` - اقتراحات المحتوى - Content suggestions for campaigns
+  - `POST /api/ai/predict-performance` - تحليل الأداء - Predict video performance
+  - `POST /api/ai/generate-brief` - مولد البريف - Auto-generate campaign briefs
+  - `POST /api/ai/match-creators` - توصيات المبدعين - Match creators to campaigns
 
 ### Database & Authentication
 - **Supabase**: PostgreSQL database with authentication
@@ -48,6 +63,7 @@ Required secrets (stored in Replit Secrets):
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_ANON_KEY` - Supabase anonymous/public key
 - `RESEND_API_KEY` - Email service API key
+- `DEEPSEEK_API_KEY` - DeepSeek V3.1 AI API key for intelligent features
 
 ## Key Technical Decisions
 
