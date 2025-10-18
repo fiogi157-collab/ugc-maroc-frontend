@@ -336,6 +336,27 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> جارٍ الإنشاء...';
 
   try {
+    console.log('🚀 Début inscription brand...');
+    
+    // Prepare metadata with fields matching new schema
+    const metadata = {
+      username: username,
+      companyName: companyName,
+      company_name: companyName, // Alias for createCompleteProfile
+      industry: industry,
+      website: website,
+      description: bio,
+      bio: bio, // Alias
+      // Additional info (not in DB schema yet, but collected for future)
+      contactName: contactName,
+      contactPosition: contactPosition,
+      city: city,
+      address: address,
+      monthlyBudget: monthlyBudget
+    };
+    
+    console.log('📤 Données envoyées:', { email, role: 'brand', companyName, metadata });
+    
     // Utiliser la fonction signupUser() de auth.js (Supabase client-side)
     const result = await window.auth.signupUser(
       email,
@@ -343,14 +364,10 @@ signupForm.addEventListener('submit', async (e) => {
       'brand',
       companyName,
       phone,
-      {
-        username: username,
-        brandName: companyName,
-        sector: industry,
-        website: website,
-        bio: bio
-      }
+      metadata
     );
+
+    console.log('📊 Résultat signup:', result);
 
     if (!result.success) {
       throw new Error(result.error || 'فشل التسجيل');
@@ -360,14 +377,26 @@ signupForm.addEventListener('submit', async (e) => {
     signupForm.classList.add('hidden');
     successMessage.classList.remove('hidden');
     
-    // Redirection vers la page de vérification
-    setTimeout(() => {
-      window.location.href = '/auth/brand-verified.html';
-    }, 2000);
+    // Gestion selon le résultat
+    if (result.requiresEmailVerification) {
+      // Email confirmation requise (Supabase config)
+      console.log('⚠️ Confirmation email requise');
+      document.querySelector('#success-message h2').textContent = 'تم إنشاء حساب علامتك التجارية!';
+      document.querySelector('#success-message p').textContent = 'يرجى التحقق من بريدك الإلكتروني لتأكيد حسابك، ثم تسجيل الدخول.';
+      
+      // Redirection vers login après 5 secondes
+      setTimeout(() => {
+        window.location.href = '/auth/brand-login.html';
+      }, 5000);
+    } else {
+      // Auto-login réussi, redirection automatique gérée par auth.js
+      console.log('✅ Auto-login activé, redirection automatique...');
+      // Le message par défaut est déjà correct : "جارٍ تحويلك إلى لوحة التحكم..."
+    }
     
   } catch (error) {
-    console.error('Signup error:', error);
-    alert('❌ ' + error.message);
+    console.error('❌ Erreur signup brand:', error);
+    alert('❌ ' + (error.message || 'حدث خطأ أثناء التسجيل'));
     submitBtn.disabled = false;
     submitBtn.innerHTML = '<span class="material-symbols-outlined">business</span> إرسال';
   }
