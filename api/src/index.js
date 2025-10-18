@@ -10,6 +10,7 @@ import deepseekService from "../services/deepseek.js";
 import r2Service from "../services/r2.js";
 import watermarkService from "../services/watermark.js";
 import { createCompleteProfile } from "../db/storage.js";
+import { authMiddleware, ownershipMiddleware } from "../middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -484,8 +485,8 @@ app.get("/api/wallet/:userId", async (req, res) => {
   }
 });
 
-// Create a new campaign
-app.post("/api/campaigns", async (req, res) => {
+// Create a new campaign (protected route)
+app.post("/api/campaigns", authMiddleware, ownershipMiddleware('brand_id'), async (req, res) => {
   try {
     const { 
       title, 
@@ -601,8 +602,8 @@ app.post("/api/ai/generate-description", async (req, res) => {
   }
 });
 
-// Add funds to wallet with receipt upload
-app.post("/api/wallet/add-funds", upload.single('receipt'), async (req, res) => {
+// Add funds to wallet with receipt upload (protected route)
+app.post("/api/wallet/add-funds", authMiddleware, upload.single('receipt'), ownershipMiddleware('user_id'), async (req, res) => {
   try {
     const { user_id, amount } = req.body;
 

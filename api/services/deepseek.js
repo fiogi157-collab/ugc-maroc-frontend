@@ -2,54 +2,54 @@
 // 🤖 Service DeepSeek V3.1 - IA en Arabe/Darija
 // =====================================================
 
+import axios from 'axios';
+
 const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
 class DeepSeekService {
   constructor() {
-    this.apiKey = process.env.DEEPSEEK_API_KEY;
+    // Clean API key: remove all invisible characters, line breaks, and whitespace
+    const rawKey = process.env.DEEPSEEK_API_KEY || '';
+    this.apiKey = rawKey.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '').trim();
+    
     if (!this.apiKey) {
       console.error("⚠️ DEEPSEEK_API_KEY manquante dans les variables d'environnement");
     }
   }
 
-  // Méthode générique pour appeler DeepSeek
+  // Méthode générique pour appeler DeepSeek (utilise axios au lieu de fetch)
   async callDeepSeek(systemPrompt, userMessage, temperature = 0.7) {
     try {
-      // Clean strings to remove problematic Unicode characters
-      const cleanString = (str) => str.replace(/[\u2028\u2029]/g, ' ');
-      
       const payload = {
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: cleanString(systemPrompt) },
-          { role: "user", content: cleanString(userMessage) }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage }
         ],
         temperature: temperature,
         max_tokens: 2000
       };
 
-      const jsonBody = JSON.stringify(payload);
+      // Ensure clean authorization header
+      const cleanApiKey = this.apiKey.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '');
       
-      const response = await fetch(DEEPSEEK_API_URL, {
-        method: "POST",
+      const response = await axios.post(DEEPSEEK_API_URL, payload, {
         headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Authorization": `Bearer ${this.apiKey}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${cleanApiKey}`
         },
-        body: jsonBody
+        timeout: 30000 // 30 seconds timeout
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("DeepSeek API error response:", errorText);
-        throw new Error(`DeepSeek API Error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0]?.message?.content || "";
+      return response.data.choices[0]?.message?.content || "";
     } catch (error) {
-      console.error("❌ Erreur DeepSeek:", error);
-      throw error;
+      if (error.response) {
+        console.error("❌ DeepSeek API error:", error.response.status, error.response.data);
+        throw new Error(`DeepSeek API Error: ${error.response.status} - ${error.response.data.error?.message || 'Unknown error'}`);
+      } else {
+        console.error("❌ Erreur DeepSeek:", error.message);
+        throw error;
+      }
     }
   }
 

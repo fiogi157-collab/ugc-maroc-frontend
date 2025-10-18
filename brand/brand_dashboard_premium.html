@@ -616,6 +616,22 @@
     let brandProfile = null;
     let wallet = null;
 
+    // Get Auth Headers with Supabase Token
+    async function getAuthHeaders(includeContentType = true) {
+      const { data: { session } } = await window.supabaseClient.auth.getSession();
+      const headers = {};
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      
+      if (includeContentType) {
+        headers['Content-Type'] = 'application/json';
+      }
+      
+      return headers;
+    }
+
     // Toast Notifications
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
@@ -726,9 +742,10 @@
       generateText.textContent = 'جاري التوليد...';
       
       try {
+        const headers = await getAuthHeaders();
         const response = await fetch(`${window.API_BASE_URL}/api/ai/generate-description`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify({ title })
         });
 
@@ -779,9 +796,10 @@
           submitText.textContent = 'جاري الإنشاء...';
 
           try {
+            const headers = await getAuthHeaders();
             const response = await fetch(`${window.API_BASE_URL}/api/campaigns`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: headers,
               body: JSON.stringify({
                 title,
                 description: description || null,
@@ -876,8 +894,10 @@
             formData.append('amount', amount);
             formData.append('receipt', receiptFile);
 
+            const headers = await getAuthHeaders(false); // Don't include Content-Type for FormData
             const response = await fetch(`${window.API_BASE_URL}/api/wallet/add-funds`, {
               method: 'POST',
+              headers: headers,
               body: formData
             });
 
@@ -1053,7 +1073,10 @@
     // Load Campaigns
     async function loadCampaigns() {
       try {
-        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/brand/${currentUser.id}`);
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/brand/${currentUser.id}`, {
+          headers: headers
+        });
         const data = await response.json();
         
         if (data.success) {
