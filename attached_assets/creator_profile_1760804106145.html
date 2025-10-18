@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - ملفي الشخصي</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7C3AED',
+            'background-dark': '#0D0D1A',
+            'card-dark': '#1A1A2E',
+          },
+        },
+      },
+    };
+</script>
+<style>
+    body { font-family: 'Tajawal', sans-serif; }
+    .glow-card { box-shadow: 0 0 15px rgba(124, 58, 237, 0.2); transition: all 0.3s ease; }
+    .glow-card:hover { box-shadow: 0 0 25px rgba(124, 58, 237, 0.4); }
+    .section-divider { border-top: 2px solid rgba(124, 58, 237, 0.2); margin: 2rem 0; }
+    .upload-zone { border: 2px dashed rgba(124, 58, 237, 0.5); transition: all 0.3s ease; }
+    .upload-zone:hover { border-color: #7C3AED; background: rgba(124, 58, 237, 0.05); }
+    .tag-chip { transition: all 0.2s ease; }
+    .tag-chip:hover { transform: translateY(-2px); }
+    .toast { animation: slideInRight 0.3s ease; }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+    .stat-card { background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(29, 77, 201, 0.1) 100%); }
+</style>
+</head>
+<body class="bg-background-dark text-gray-200">
+<script>document.documentElement.classList.add('dark');</script>
+
+<!-- Mobile Header -->
+<header class="bg-card-dark p-4 sticky top-0 z-40 border-b border-primary/20">
+<div class="flex items-center justify-between">
+<button onclick="window.history.back()" class="p-2 rounded-lg hover:bg-gray-700">
+<span class="material-icons">arrow_forward</span>
+</button>
+<h1 class="text-xl font-bold text-white">ملفي الشخصي</h1>
+<button onclick="saveProfile()" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition text-sm">
+حفظ
+</button>
+</div>
+</header>
+
+<main class="pb-20">
+<!-- Profile Header Card -->
+<div class="bg-gradient-to-r from-primary/20 to-blue-500/20 p-6">
+<div class="flex flex-col items-center text-center">
+<div class="relative mb-4">
+<img id="profileImage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHi2r7jqzN8GpUovDFPNQnifnDASS3qhnybpZfGQ6TmlC4jHteBAXgKzZxN4HcufNYzNa1alX_cFIIxXGthnhFBLwJNfV0hhFGUknsy1Z1BHEGWAhsYmaxg1zDnT5wwE1y4q_iYxv2VSSn29-KOg73xF0_2yE8urfAdY4N1KGw6pYhgQ2vc5IjVZLbTucd5O-A8kPVkDp-Amt-_b3rz9g5fTr_bRtqo36UOJ7ijd-GQzIKrRDU5DSEgt_7kfwoasqsuXQuGg78FM" alt="Profile" class="w-24 h-24 rounded-full border-4 border-primary"/>
+<button onclick="document.getElementById('photoUpload').click()" class="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-primary/90 transition">
+<span class="material-icons text-sm">camera_alt</span>
+</button>
+<input type="file" id="photoUpload" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)"/>
+</div>
+<h2 class="text-2xl font-bold text-white mb-1">سارة أحمد</h2>
+<p class="text-gray-400 mb-3">منشئ محتوى</p>
+<div class="flex gap-2">
+<span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-semibold flex items-center">
+<span class="material-icons text-xs ml-1">verified</span>
+موثق
+</span>
+<span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-semibold">
+⭐ 4.8
+</span>
+</div>
+</div>
+</div>
+
+<!-- Statistics Grid -->
+<div class="grid grid-cols-2 gap-3 p-4">
+<div class="stat-card p-4 rounded-lg border border-primary/30">
+<div class="flex items-center justify-between mb-2">
+<span class="material-icons text-primary">movie</span>
+<span class="text-2xl font-bold text-white">47</span>
+</div>
+<p class="text-xs text-gray-400">عدد الفيديوهات</p>
+</div>
+<div class="stat-card p-4 rounded-lg border border-green-500/30">
+<div class="flex items-center justify-between mb-2">
+<span class="material-icons text-green-400">check_circle</span>
+<span class="text-2xl font-bold text-white">94%</span>
+</div>
+<p class="text-xs text-gray-400">معدل القبول</p>
+</div>
+<div class="stat-card p-4 rounded-lg border border-yellow-500/30">
+<div class="flex items-center justify-between mb-2">
+<span class="material-icons text-yellow-400">star</span>
+<span class="text-2xl font-bold text-white">4.8</span>
+</div>
+<p class="text-xs text-gray-400">التقييم المتوسط</p>
+</div>
+<div class="stat-card p-4 rounded-lg border border-blue-500/30">
+<div class="flex items-center justify-between mb-2">
+<span class="material-icons text-blue-400">schedule</span>
+<span class="text-2xl font-bold text-white">48h</span>
+</div>
+<p class="text-xs text-gray-400">متوسط التسليم</p>
+</div>
+</div>
+
+<!-- Personal Information -->
+<div class="p-4">
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">person</span>
+المعلومات الشخصية
+</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">الاسم الكامل</label>
+<input type="text" id="fullName" value="سارة أحمد" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">البريد الإلكتروني</label>
+<input type="email" id="email" value="sara.ahmed@example.com" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">رقم الهاتف</label>
+<input type="tel" id="phone" value="+212 6 12 34 56 78" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">نبذة عني</label>
+<textarea id="bio" rows="4" placeholder="اكتب نبذة قصيرة عنك وخبراتك..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">منشئة محتوى متخصصة في مجال الجمال والموضة. أعمل على إنشاء محتوى إبداعي وجذاب للعلامات التجارية.</textarea>
+</div>
+</div>
+</div>
+
+<!-- Portfolio -->
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">video_library</span>
+معرض الأعمال
+</h3>
+<div id="portfolioGrid" class="grid grid-cols-2 gap-3 mb-4">
+<div class="upload-zone rounded-lg p-8 text-center cursor-pointer" onclick="document.getElementById('videoUpload').click()">
+<span class="material-icons text-4xl text-primary mb-2 block">add_circle</span>
+<p class="text-sm text-gray-400">إضافة فيديو</p>
+<input type="file" id="videoUpload" class="hidden" accept="video/*" multiple onchange="handleVideoUpload(event)"/>
+</div>
+<div class="relative rounded-lg overflow-hidden bg-gray-800 aspect-video">
+<video class="w-full h-full object-cover" poster="https://via.placeholder.com/300x200/1A1A2E/7C3AED?text=Video+1">
+<source src="#" type="video/mp4"/>
+</video>
+<button onclick="removeVideo(this)" class="absolute top-2 left-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
+<span class="material-icons text-sm">close</span>
+</button>
+</div>
+<div class="relative rounded-lg overflow-hidden bg-gray-800 aspect-video">
+<video class="w-full h-full object-cover" poster="https://via.placeholder.com/300x200/1A1A2E/7C3AED?text=Video+2">
+<source src="#" type="video/mp4"/>
+</video>
+<button onclick="removeVideo(this)" class="absolute top-2 left-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
+<span class="material-icons text-sm">close</span>
+</button>
+</div>
+</div>
+<p class="text-xs text-gray-500 flex items-center">
+<span class="material-icons text-xs ml-1">info</span>
+يمكنك إضافة حتى 6 فيديوهات نموذجية
+</p>
+</div>
+
+<!-- Specializations -->
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">label</span>
+التخصصات
+</h3>
+<div class="flex flex-wrap gap-2 mb-4">
+<button onclick="toggleTag(this)" class="tag-chip bg-primary/20 text-primary border border-primary/30 px-4 py-2 rounded-full text-sm font-semibold" data-active="true">
+الجمال
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-primary/20 text-primary border border-primary/30 px-4 py-2 rounded-full text-sm font-semibold" data-active="true">
+الموضة
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-gray-700 text-gray-400 border border-gray-600 px-4 py-2 rounded-full text-sm font-semibold" data-active="false">
+التقنية
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-gray-700 text-gray-400 border border-gray-600 px-4 py-2 rounded-full text-sm font-semibold" data-active="false">
+الطعام
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-gray-700 text-gray-400 border border-gray-600 px-4 py-2 rounded-full text-sm font-semibold" data-active="false">
+السفر
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-gray-700 text-gray-400 border border-gray-600 px-4 py-2 rounded-full text-sm font-semibold" data-active="false">
+الرياضة
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-gray-700 text-gray-400 border border-gray-600 px-4 py-2 rounded-full text-sm font-semibold" data-active="false">
+التعليم
+</button>
+<button onclick="toggleTag(this)" class="tag-chip bg-gray-700 text-gray-400 border border-gray-600 px-4 py-2 rounded-full text-sm font-semibold" data-active="false">
+الديكور
+</button>
+</div>
+<p class="text-xs text-gray-500">اختر حتى 5 تخصصات</p>
+</div>
+
+<!-- Pricing -->
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">payments</span>
+التسعير
+</h3>
+<div class="space-y-4">
+<div class="bg-gray-800 rounded-lg p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<span class="material-icons text-yellow-400 ml-2">schedule</span>
+<span class="text-white font-semibold">فيديو 30 ثانية</span>
+</div>
+<div class="flex items-center">
+<input type="number" value="500" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+<span class="text-gray-400 mr-2">د.م</span>
+</div>
+</div>
+</div>
+<div class="bg-gray-800 rounded-lg p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<span class="material-icons text-blue-400 ml-2">schedule</span>
+<span class="text-white font-semibold">فيديو 60 ثانية</span>
+</div>
+<div class="flex items-center">
+<input type="number" value="800" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+<span class="text-gray-400 mr-2">د.م</span>
+</div>
+</div>
+</div>
+<div class="bg-gray-800 rounded-lg p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<span class="material-icons text-green-400 ml-2">schedule</span>
+<span class="text-white font-semibold">فيديو 90 ثانية</span>
+</div>
+<div class="flex items-center">
+<input type="number" value="1200" class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
+<span class="text-gray-400 mr-2">د.م</span>
+</div>
+</div>
+</div>
+</div>
+<p class="text-xs text-gray-500 mt-3 flex items-center">
+<span class="material-icons text-xs ml-1">info</span>
+يتم خصم عمولة المنصة 15% من كل عملية
+</p>
+</div>
+
+<!-- Bank Information -->
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">account_balance</span>
+المعلومات البنكية
+</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">اسم صاحب الحساب</label>
+<input type="text" value="سارة أحمد" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">اسم البنك</label>
+<select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+<option value="">اختر البنك</option>
+<option value="attijariwafa" selected>Attijariwafa Bank</option>
+<option value="bmce">BMCE Bank</option>
+<option value="bp">Banque Populaire</option>
+<option value="cih">CIH Bank</option>
+<option value="cdm">Crédit du Maroc</option>
+<option value="sgmb">Société Générale</option>
+<option value="bmci">BMCI</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-400 mb-2">رقم RIB</label>
+<input type="text" value="123 456 7890 1234567890" maxlength="24" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:ring-2 focus:ring-primary"/>
+</div>
+</div>
+<div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mt-4">
+<p class="text-xs text-blue-300 flex items-start">
+<span class="material-icons text-sm ml-2 mt-0.5">lock</span>
+معلوماتك البنكية محمية ومشفرة. يتم استخدامها فقط لتحويل أرباحك.
+</p>
+</div>
+</div>
+
+<!-- Languages -->
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">language</span>
+اللغات
+</h3>
+<div class="space-y-3">
+<label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+<div class="flex items-center">
+<span class="text-white font-semibold">العربية</span>
+</div>
+<input type="checkbox" checked class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+</label>
+<label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+<div class="flex items-center">
+<span class="text-white font-semibold">الفرنسية</span>
+</div>
+<input type="checkbox" checked class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+</label>
+<label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+<div class="flex items-center">
+<span class="text-white font-semibold">الدارجة المغربية</span>
+</div>
+<input type="checkbox" checked class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+</label>
+<label class="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+<div class="flex items-center">
+<span class="text-white font-semibold">الإنجليزية</span>
+</div>
+<input type="checkbox" class="w-5 h-5 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary focus:ring-2"/>
+</label>
+</div>
+</div>
+
+<!-- Social Media -->
+<div class="bg-card-dark rounded-lg p-4 glow-card mb-4">
+<h3 class="text-lg font-bold text-white mb-4 flex items-center">
+<span class="material-icons text-primary ml-2">share</span>
+الشبكات الاجتماعية
+<span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full mr-2 font-normal">اختياري</span>
+</h3>
+<div class="space-y-4">
+<div class="flex items-center bg-gray-800 rounded-lg p-4">
+<span class="material-icons text-pink-400 ml-3">camera_alt</span>
+<input type="text" placeholder="اسم المستخدم في Instagram" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
+</div>
+<div class="flex items-center bg-gray-800 rounded-lg p-4">
+<span class="material-icons text-blue-400 ml-3">music_note</span>
+<input type="text" placeholder="اسم المستخدم في TikTok" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
+</div>
+<div class="flex items-center bg-gray-800 rounded-lg p-4">
+<span class="material-icons text-red-400 ml-3">play_circle</span>
+<input type="text" placeholder="قناة YouTube" class="flex-1 bg-transparent border-none text-white focus:outline-none"/>
+</div>
+</div>
+<p class="text-xs text-gray-500 mt-3 flex items-center">
+<span class="material-icons text-xs ml-1">info</span>
+ربط حساباتك الاجتماعية يزيد من فرص اختيارك للحملات
+</p>
+</div>
+
+<!-- Actions -->
+<div class="space-y-3 mb-4">
+<button onclick="saveProfile()" class="w-full bg-primary text-white px-6 py-4 rounded-lg font-bold hover:bg-primary/90 transition flex items-center justify-center text-lg">
+<span class="material-icons ml-3">save</span>
+حفظ التغييرات
+</button>
+<button onclick="previewProfile()" class="w-full bg-gray-700 text-white px-6 py-4 rounded-lg font-bold hover:bg-gray-600 transition flex items-center justify-center">
+<span class="material-icons ml-3">visibility</span>
+معاينة الملف الشخصي
+</button>
+</div>
+
+<!-- Danger Zone -->
+<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+<h3 class="text-lg font-bold text-red-400 mb-3 flex items-center">
+<span class="material-icons ml-2">warning</span>
+منطقة خطرة
+</h3>
+<button onclick="confirmAccountDeletion()" class="w-full bg-red-500/20 text-red-400 px-6 py-3 rounded-lg font-semibold hover:bg-red-500/30 transition border border-red-500/50">
+حذف الحساب نهائياً
+</button>
+</div>
+</div>
+</main>
+
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-card-dark border-t border-primary/20 px-4 py-3 z-40">
+<div class="flex items-center justify-around">
+<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<span class="material-icons">dashboard</span>
+<span class="text-xs mt-1">الرئيسية</span>
+</a>
+<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<span class="material-icons">work_outline</span>
+<span class="text-xs mt-1">الحملات</span>
+</a>
+<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<span class="material-icons">account_balance_wallet</span>
+<span class="text-xs mt-1">المحفظة</span>
+</a>
+<a href="#" class="flex flex-col items-center text-primary transition">
+<span class="material-icons">person</span>
+<span class="text-xs mt-1">الملف</span>
+</a>
+</div>
+</nav>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed top-6 left-6 hidden toast z-50"></div>
+
+<script>
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profileImage').src = e.target.result;
+            showToast('✅ تم تحديث الصورة بنجاح', 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function handleVideoUpload(event) {
+    const files = event.target.files;
+    if (files.length > 0) {
+        showToast(`✅ تم إضافة ${files.length} فيديو(هات)`, 'success');
+    }
+}
+
+function removeVideo(button) {
+    if (confirm('هل تريد حذف هذا الفيديو؟')) {
+        button.parentElement.remove();
+        showToast('🗑️ تم حذف الفيديو', 'info');
+    }
+}
+
+function toggleTag(button) {
+    const isActive = button.dataset.active === 'true';
+    const activeCount = document.querySelectorAll('.tag-chip[data-active="true"]').length;
+    
+    if (!isActive && activeCount >= 5) {
+        showToast('⚠️ يمكنك اختيار 5 تخصصات كحد أقصى', 'warning');
+        return;
+    }
+    
+    if (isActive) {
+        button.classList.remove('bg-primary/20', 'text-primary', 'border-primary/30');
+        button.classList.add('bg-gray-700', 'text-gray-400', 'border-gray-600');
+        button.dataset.active = 'false';
+    } else {
+        button.classList.remove('bg-gray-700', 'text-gray-400', 'border-gray-600');
+        button.classList.add('bg-primary/20', 'text-primary', 'border-primary/30');
+        button.dataset.active = 'true';
+    }
+}
+
+function saveProfile() {
+    showToast('💾 جاري حفظ التغييرات...', 'info');
+    setTimeout(() => {
+        showToast('✅ تم حفظ التغييرات بنجاح!', 'success');
+    }, 1500);
+}
+
+function previewProfile() {
+    showToast('👁️ فتح معاينة الملف الشخصي...', 'info');
+}
+
+function confirmAccountDeletion() {
+    if (confirm('⚠️ هل أنت متأكد من حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء!')) {
+        if (confirm('⛔ تأكيد نهائي: سيتم حذف جميع بياناتك وفيديوهاتك بشكل دائم!')) {
+            showToast('
