@@ -21,20 +21,20 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can insert their own profile"
 ON profiles FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid()::text = id);
+WITH CHECK (auth.uid()::text = profiles.id);
 
 -- Politique: Les utilisateurs peuvent voir leur propre profil
 CREATE POLICY "Users can view their own profile"
 ON profiles FOR SELECT
 TO authenticated
-USING (auth.uid()::text = id);
+USING (auth.uid()::text = profiles.id);
 
 -- Politique: Les utilisateurs peuvent mettre à jour leur propre profil
 CREATE POLICY "Users can update their own profile"
 ON profiles FOR UPDATE
 TO authenticated
-USING (auth.uid()::text = id)
-WITH CHECK (auth.uid()::text = id);
+USING (auth.uid()::text = profiles.id)
+WITH CHECK (auth.uid()::text = profiles.id);
 
 -- ============================================
 -- TABLE: wallets
@@ -47,20 +47,20 @@ ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can insert their own wallet"
 ON wallets FOR INSERT
 TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
+WITH CHECK (wallets.user_id = auth.uid()::text);
 
 -- Politique: Les utilisateurs peuvent voir leur propre wallet uniquement
 CREATE POLICY "Users can view their own wallet"
 ON wallets FOR SELECT
 TO authenticated
-USING (user_id = auth.uid()::text);
+USING (wallets.user_id = auth.uid()::text);
 
 -- Politique: Les utilisateurs peuvent mettre à jour leur propre wallet
 CREATE POLICY "Users can update their own wallet"
 ON wallets FOR UPDATE
 TO authenticated
-USING (user_id = auth.uid()::text)
-WITH CHECK (user_id = auth.uid()::text);
+USING (wallets.user_id = auth.uid()::text)
+WITH CHECK (wallets.user_id = auth.uid()::text);
 
 -- ============================================
 -- TABLE: creators
@@ -73,7 +73,7 @@ ALTER TABLE creators ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Creators can insert their own profile"
 ON creators FOR INSERT
 TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
+WITH CHECK (creators.user_id = auth.uid()::text);
 
 -- Politique: Tout le monde peut voir les profils créateurs (découverte)
 CREATE POLICY "Anyone can view creator profiles"
@@ -85,8 +85,8 @@ USING (true);
 CREATE POLICY "Creators can update their own profile"
 ON creators FOR UPDATE
 TO authenticated
-USING (user_id = auth.uid()::text)
-WITH CHECK (user_id = auth.uid()::text);
+USING (creators.user_id = auth.uid()::text)
+WITH CHECK (creators.user_id = auth.uid()::text);
 
 -- ============================================
 -- TABLE: brands
@@ -99,7 +99,7 @@ ALTER TABLE brands ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Brands can insert their own profile"
 ON brands FOR INSERT
 TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
+WITH CHECK (brands.user_id = auth.uid()::text);
 
 -- Politique: Tout le monde peut voir les profils marques
 CREATE POLICY "Anyone can view brand profiles"
@@ -111,8 +111,8 @@ USING (true);
 CREATE POLICY "Brands can update their own profile"
 ON brands FOR UPDATE
 TO authenticated
-USING (user_id = auth.uid()::text)
-WITH CHECK (user_id = auth.uid()::text);
+USING (brands.user_id = auth.uid()::text)
+WITH CHECK (brands.user_id = auth.uid()::text);
 
 -- ============================================
 -- TABLE: campaigns
@@ -125,7 +125,7 @@ ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Brands can insert campaigns"
 ON campaigns FOR INSERT
 TO authenticated
-WITH CHECK (brand_id = auth.uid()::text);
+WITH CHECK (campaigns.brand_id = auth.uid()::text);
 
 -- Politique: Tout le monde peut voir les campagnes (découverte)
 CREATE POLICY "Anyone can view campaigns"
@@ -137,14 +137,14 @@ USING (true);
 CREATE POLICY "Brands can update their own campaigns"
 ON campaigns FOR UPDATE
 TO authenticated
-USING (brand_id = auth.uid()::text)
-WITH CHECK (brand_id = auth.uid()::text);
+USING (campaigns.brand_id = auth.uid()::text)
+WITH CHECK (campaigns.brand_id = auth.uid()::text);
 
 -- Politique: Les marques peuvent supprimer leurs propres campagnes
 CREATE POLICY "Brands can delete their own campaigns"
 ON campaigns FOR DELETE
 TO authenticated
-USING (brand_id = auth.uid()::text);
+USING (campaigns.brand_id = auth.uid()::text);
 
 -- ============================================
 -- TABLE: submissions
@@ -157,13 +157,13 @@ ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Creators can insert submissions"
 ON submissions FOR INSERT
 TO authenticated
-WITH CHECK (creator_id = auth.uid()::text);
+WITH CHECK (submissions.creator_id = auth.uid()::text);
 
 -- Politique: Les créateurs peuvent voir leurs propres soumissions
 CREATE POLICY "Creators can view their own submissions"
 ON submissions FOR SELECT
 TO authenticated
-USING (creator_id = auth.uid()::text);
+USING (submissions.creator_id = auth.uid()::text);
 
 -- Politique: Les marques peuvent voir les soumissions de leurs campagnes
 CREATE POLICY "Brands can view submissions for their campaigns"
@@ -181,8 +181,8 @@ USING (
 CREATE POLICY "Creators can update their own submissions"
 ON submissions FOR UPDATE
 TO authenticated
-USING (creator_id = auth.uid()::text)
-WITH CHECK (creator_id = auth.uid()::text);
+USING (submissions.creator_id = auth.uid()::text)
+WITH CHECK (submissions.creator_id = auth.uid()::text);
 
 -- ============================================
 -- TABLE: transactions
@@ -195,13 +195,13 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own transactions"
 ON transactions FOR SELECT
 TO authenticated
-USING (user_id = auth.uid()::text);
+USING (transactions.user_id = auth.uid()::text);
 
 -- Politique: Les utilisateurs peuvent créer leurs propres transactions
 CREATE POLICY "Users can insert their own transactions"
 ON transactions FOR INSERT
 TO authenticated
-WITH CHECK (user_id = auth.uid()::text);
+WITH CHECK (transactions.user_id = auth.uid()::text);
 
 -- ============================================
 -- VERIFICATION
