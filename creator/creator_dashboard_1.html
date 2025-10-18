@@ -1,345 +1,424 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar"><head>
+<html dir="rtl" lang="ar">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>UGC Maroc - لوحة تحكم المبدعين المحسنة</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#5020df",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#151121",
-                        "foreground-light": "#110e1b",
-                        "foreground-dark": "#f9f8fb",
-                        "muted-light": "#625095",
-                        "muted-dark": "#a094c7",
-                        "border-light": "#d6d1e6",
-                        "border-dark": "#2a2243",
-                        "card-light": "#ffffff",
-                        "card-dark": "#1a1629",
-                    },
-                    fontFamily: {
-                        "display": ["Tajawal", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.5rem",
-                        "lg": "0.75rem",
-                        "xl": "1rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+<title>UGC Maroc - لوحة تحكم المبدع</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7C3AED',
+            'background-light': '#F3F4F6',
+            'background-dark': '#0D0D1A',
+            'card-light': '#FFFFFF',
+            'card-dark': '#1A1A2E',
+            'glow-purple': 'rgba(124, 58, 237, 0.5)',
+          },
+          fontFamily: {
+            display: ["Tajawal", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: '0.75rem',
+          },
+        },
+      },
+    };
+  </script>
 <style>
-        .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-    </style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+    }
+    .glowing-shadow {
+        box-shadow: 0 0 15px 5px rgba(124, 58, 237, 0.2);
+    }
+  </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-foreground-light dark:text-foreground-dark">
-<div class="flex min-h-screen">
-<aside class="w-64 flex-shrink-0 bg-background-light dark:bg-background-dark p-6 hidden lg:flex flex-col justify-between border-l border-border-light dark:border-border-dark">
-<div class="flex flex-col gap-8">
-<h1 class="text-xl font-bold text-foreground-light dark:text-foreground-dark text-right">UGC Maroc</h1>
-<nav class="flex flex-col gap-2">
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold" href="#">
-<span class="material-symbols-outlined">home</span>
-<span>الرئيسية</span>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<script>
+  document.documentElement.classList.add('dark');
+</script>
+<div class="flex h-screen">
+<aside class="w-64 bg-card-light dark:bg-card-dark p-6 hidden lg:flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-10">
+<a href="/index.html" class="text-2xl font-bold text-gray-900 dark:text-white hover:text-primary transition cursor-pointer">UGC Maroc</a>
+<img alt="UGC Maroc Logo" class="h-8 w-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtf0P9a91BJ6ihopDI66pG0byaX4WAy_4BfLaTydBP0gtXS1sy_VGDzNFyVDE3Lyj8AvOIkAwguGNKV0FP7eaXUoQ6ccitczVp1MHbfd0cQ0sdpj_uBVDcYPmjTehe_iTEgOCAdo0e3aMwTUG9IB07KPHVzm0CHAG3653qmArAtldJhiHJMkriJHyPv4UD2A3XvgJ23A1UdWAKgrzdQ13lhozsQBeNkoZGacsvxEBk7p0Eso8l8umvlVJQwTJNpI6ZdfC5hFv69io"/>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center p-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary font-bold" href="/creator/creator_dashboard_1.html">
+<span class="material-icons">dashboard</span>
+<span class="mr-4">لوحة التحكم</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined">campaign</span>
-<span>الحملات</span>
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="/creator/تصفح_الحملات_(للمبدعين).html">
+<span class="material-icons">work_outline</span>
+<span class="mr-4">فرص جديدة</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined">inventory_2</span>
-<span>المشاركات</span>
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 relative" href="#">
+<span class="material-icons">email</span>
+<span class="mr-4">الرسائل</span>
+<span class="absolute top-2 right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined">payments</span>
-<span>الأرباح</span>
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="/creator/سحب_وتاريخ_الأرباح_(للمبدعين).html">
+<span class="material-icons">account_balance_wallet</span>
+<span class="mr-4">المحفظة</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined">account_circle</span>
-<span>الملف الشخصي</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors relative" href="#">
-<span class="material-symbols-outlined">message</span>
-<span>الرسائل</span>
-<span class="absolute top-2 right-3 flex h-2 w-2">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-</span>
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="/creator/profile.html">
+<span class="material-icons">person</span>
+<span class="mr-4">ملفي الشخصي</span>
 </a>
 </nav>
-<div class="flex flex-col gap-4">
-<h3 class="text-sm font-semibold text-muted-light dark:text-muted-dark px-4">موارد</h3>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors text-sm" href="#">
-<span class="material-symbols-outlined">school</span>
-<span>مركز التعلم</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors text-sm" href="#">
-<span class="material-symbols-outlined">groups</span>
-<span>مجتمع المبدعين</span>
-</a>
 </div>
-</div>
-<div class="flex flex-col gap-2">
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
-<span class="material-symbols-outlined">support_agent</span>
-<span>الدعم</span>
+<div>
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="#">
+<span class="material-icons">settings</span>
+<span class="mr-4">الإعدادات</span>
 </a>
-<a class="text-xs text-muted-light dark:text-muted-dark hover:text-primary text-center mt-2" href="#">الشروط القانونية/الأحكام</a>
+<a class="flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" href="#">
+<span class="material-icons">help_outline</span>
+<span class="mr-4">الدعم</span>
+</a>
+<div class="flex items-center justify-between mt-4 p-3 rounded-lg bg-gray-200 dark:bg-gray-700/50">
+<span class="font-medium">الوضع الداكن</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked class="sr-only peer" onchange="document.documentElement.classList.toggle('dark')" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary"></div>
+</label>
+</div>
 </div>
 </aside>
-<main class="flex-1 p-6 lg:p-10 overflow-y-auto">
-<div class="max-w-7xl mx-auto">
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-<div>
-<h1 class="text-3xl font-bold text-foreground-light dark:text-foreground-dark">لوحة تحكم المبدعين المحسنة</h1>
-<p class="text-muted-light dark:text-muted-dark mt-1">مرحباً بعودتك! لنبدع شيئًا مذهلاً اليوم.</p>
-<p class="text-sm text-primary mt-2 font-medium">الرصيد: <span id="wallet-balance">0 MAD</span></p>
-</div>
-<div class="flex items-center gap-4 mt-4 sm:mt-0">
-<button class="relative p-2 rounded-full hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-1 right-1 flex h-3 w-3">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-<span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 justify-center items-center text-white text-[8px] font-bold">3</span>
-</span>
+<main class="flex-1 p-4 md:p-6 overflow-y-auto">
+<header class="flex items-center justify-between mb-6">
+<div class="flex items-center space-x-4">
+<button class="lg:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-icons">menu</span>
 </button>
-<img alt="User profile" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_f-grDMnpeX_yGYCT-507LyId-DgVKRu30Wth7hjl3nv0CG12uAbxL6qXETLfiMTPVxDWNhNKtJMlwSvhgFqwZGquRi0xpAgFGNO7h3jZfEhsZfZLHcui6XzQsQPxljRhT9os-NceJ95Bw5oU4sg6gK9VNeUsuqZhktWwV7YjJ8SvrXIUkEtUDYtYYEgC0O0ok56ejId5nlTmiJhoOIf8M6D13GUY29-AJyoTgIfcz8TTla5DzezzEiKXh8K9nUQvRtPYXbr19JM"/>
+<div class="relative hidden sm:block">
+<input class="bg-card-light dark:bg-card-dark py-2 pr-10 pl-4 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary w-64" placeholder="بحث سريع..." type="text"/>
+<span class="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
 </div>
 </div>
-<section class="mb-8">
-<h2 class="text-2xl font-bold mb-4">موجز أداء الحملات النشطة</h2>
-<div id="campaigns-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
-<h3 class="font-bold text-lg">حملة العناية بالبشرة</h3>
-<p class="text-sm text-muted-light dark:text-muted-dark">المهمة: فيديو مراجعة للمنتج</p>
-<div>
-<p class="text-xs text-muted-light dark:text-muted-dark mb-1">التقدم</p>
-<div class="w-full bg-primary/10 rounded-full h-2.5">
-<div class="bg-primary h-2.5 rounded-full" style="width: 75%"></div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2 bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
+<span class="material-icons text-primary">account_balance_wallet</span>
+<span id="wallet-display" class="font-bold text-gray-900 dark:text-white">0 د.م</span>
+<span class="material-icons text-gray-500 dark:text-gray-400">keyboard_arrow_down</span>
 </div>
-</div>
-<div class="flex justify-between items-center text-sm">
-<span class="flex items-center gap-1 text-yellow-600 dark:text-yellow-400"><span class="material-symbols-outlined text-base">hourglass_top</span> باقي 3 أيام</span>
-<a class="text-primary font-bold hover:underline" href="#">عرض التفاصيل</a>
-</div>
-</div>
-<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
-<h3 class="font-bold text-lg">مستحضرات التجميل</h3>
-<p class="text-sm text-muted-light dark:text-muted-dark">المهمة: 3 صور على انستغرام</p>
-<div>
-<p class="text-xs text-muted-light dark:text-muted-dark mb-1">التقدم</p>
-<div class="w-full bg-primary/10 rounded-full h-2.5">
-<div class="bg-primary h-2.5 rounded-full" style="width: 25%"></div>
-</div>
-</div>
-<div class="flex justify-between items-center text-sm">
-<span class="flex items-center gap-1 text-red-600 dark:text-red-400"><span class="material-symbols-outlined text-base">error_outline</span> متأخر يومان</span>
-<a class="text-primary font-bold hover:underline" href="#">عرض التفاصيل</a>
-</div>
-</div>
-<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
-<h3 class="font-bold text-lg">ملابس رياضية</h3>
-<p class="text-sm text-muted-light dark:text-muted-dark">المهمة: فيديو TikTok</p>
-<div>
-<p class="text-xs text-muted-light dark:text-muted-dark mb-1">التقدم</p>
-<div class="w-full bg-primary/10 rounded-full h-2.5">
-<div class="bg-green-500 h-2.5 rounded-full" style="width: 100%"></div>
-</div>
-</div>
-<div class="flex justify-between items-center text-sm">
-<span class="flex items-center gap-1 text-green-600 dark:text-green-400"><span class="material-symbols-outlined text-base">check_circle</span> في انتظار الموافقة</span>
-<a class="text-primary font-bold hover:underline" href="#">عرض التفاصيل</a>
-</div>
-</div>
-</div>
-</section>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-<div class="lg:col-span-2">
-<section class="mb-8">
-<h2 class="text-2xl font-bold mb-4">خطواتي التالية</h2>
-<div class="space-y-4">
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-border-light dark:border-border-dark flex items-center gap-4">
-<div class="bg-primary/10 p-3 rounded-full">
-<span class="material-symbols-outlined text-primary">campaign</span>
-</div>
-<div class="flex-1">
-<h3 class="font-bold">تقديم عرض لحملة "مشروب الطاقة"</h3>
-<p class="text-sm text-muted-light dark:text-muted-dark">تطابق مهاراتك الحملة بنسبة 95%. الموعد النهائي للتقديم غدًا.</p>
-</div>
-<button class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm whitespace-nowrap hover:bg-primary/90 transition-colors">تقديم الآن</button>
-</div>
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-border-light dark:border-border-dark flex items-center gap-4">
-<div class="bg-primary/10 p-3 rounded-full">
-<span class="material-symbols-outlined text-primary">upload</span>
-</div>
-<div class="flex-1">
-<h3 class="font-bold">رفع المحتوى لحملة "العناية بالبشرة"</h3>
-<p class="text-sm text-muted-light dark:text-muted-dark">الموعد النهائي للتسليم قريب، لا تفوت الفرصة.</p>
-</div>
-<button class="px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm whitespace-nowrap hover:bg-primary/20 transition-colors">رفع المحتوى</button>
-</div>
-<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-border-light dark:border-border-dark flex items-center gap-4">
-<div class="bg-primary/10 p-3 rounded-full">
-<span class="material-symbols-outlined text-primary">account_circle</span>
-</div>
-<div class="flex-1">
-<h3 class="font-bold">تحديث ملفك الشخصي</h3>
-<p class="text-sm text-muted-light dark:text-muted-dark">أضف فيديو تقديمي لزيادة فرصك في الحصول على حملات مميزة.</p>
-</div>
-<button class="px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold text-sm whitespace-nowrap hover:bg-primary/20 transition-colors">تحديث الآن</button>
-</div>
-</div>
-</section>
-<section>
-<h2 class="text-2xl font-bold mb-4">سجل الأرباح والمدفوعات</h2>
-<div id="recent-submissions" class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-<p class="text-muted-light dark:text-muted-dark">إجمالي الأرباح: <span id="total-earned" class="font-bold text-foreground-light dark:text-foreground-dark">0 MAD</span></p>
-<div class="flex items-center gap-2 mt-2 sm:mt-0">
-<select class="block w-full sm:w-auto rounded-md border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
-<option>تصفية حسب الحالة</option>
-<option>مدفوع</option>
-<option>معلق</option>
-<option>قيد المراجعة</option>
-</select>
-<button class="p-2 rounded-lg hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined">download</span>
+<div class="relative">
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-icons text-gray-500 dark:text-gray-400">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">5</span>
 </button>
 </div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-right">
-<thead class="border-b border-border-light dark:border-border-dark">
-<tr>
-<th class="py-2 px-4 font-semibold">الحملة</th>
-<th class="py-2 px-4 font-semibold">المبلغ</th>
-<th class="py-2 px-4 font-semibold">التاريخ</th>
-<th class="py-2 px-4 font-semibold">الحالة</th>
-</tr>
-</thead>
-<tbody>
-<tr class="border-b border-border-light dark:border-border-dark">
-<td class="py-3 px-4">حملة الساعات الفاخرة</td>
-<td class="py-3 px-4">10,000 درهم</td>
-<td class="py-3 px-4">15 مارس 2024</td>
-<td class="py-3 px-4"><span class="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">مدفوع</span></td>
-</tr>
-<tr class="border-b border-border-light dark:border-border-dark">
-<td class="py-3 px-4">حملة العناية بالبشرة</td>
-<td class="py-3 px-4">2,500 درهم</td>
-<td class="py-3 px-4">10 أبريل 2024</td>
-<td class="py-3 px-4"><span class="px-3 py-1 text-sm rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">معلق</span></td>
-</tr>
-<tr>
-<td class="py-3 px-4">مستحضرات التجميل</td>
-<td class="py-3 px-4">3,500 درهم</td>
-<td class="py-3 px-4">25 أبريل 2024</td>
-<td class="py-3 px-4"><span class="px-3 py-1 text-sm rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">قيد المراجعة</span></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section>
-</div>
-<div class="lg:col-span-1 flex flex-col gap-8">
-<section>
-<h2 class="text-2xl font-bold mb-4">تنبيهات فورية</h2>
-<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
-<div class="flex items-start gap-3 pb-4 border-b border-border-light dark:border-border-dark">
-<span class="material-symbols-outlined text-green-500 mt-1">check_circle</span>
+<div class="flex items-center space-x-3 bg-card-light dark:bg-card-dark p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+<img id="user-avatar" alt="Creator Avatar" class="h-8 w-8 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHi2r7jqzN8GpUovDFPNQnifnDASS3qhnybpZfGQ6TmlC4jHteBAXgKzZxN4HcufNYzNa1alX_cFIIxXGthnhFBLwJNfV0hhFGUknsy1Z1BHEGWAhsYmaxg1zDnT5wwE1y4q_iYxv2VSSn29-KOg73xF0_2yE8urfAdY4N1KGw6pYhgQ2vc5IjVZLbTucd5O-A8kPVkDp-Amt-_b3rz9g5fTr_bRtqo36UOJ7ijd-GQzIKrRDU5DSEgt_7kfwoasqsuXQuGg78FM"/>
 <div>
-<p class="font-semibold">تمت الموافقة على محتواك!</p>
-<p class="text-sm text-muted-light dark:text-muted-dark">تمت الموافقة على الفيديو الخاص بحملة "الساعات الفاخرة".</p>
-<span class="text-xs text-muted-light dark:text-muted-dark">قبل 10 دقائق</span>
+<p id="user-name" class="font-semibold text-sm text-gray-800 dark:text-white">منشئ محتوى</p>
+<a class="text-xs text-primary hover:underline" href="/creator/profile.html">منشئ محتوى</a>
 </div>
 </div>
-<div class="flex items-start gap-3 pb-4 border-b border-border-light dark:border-border-dark">
-<span class="material-symbols-outlined text-primary mt-1">chat</span>
+</div>
+</header>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg mb-6 flex justify-between items-start border border-transparent dark:border-primary/20" style="box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);">
+<div class="flex items-start">
+<span class="material-icons text-2xl text-primary mr-4 mt-1">lightbulb</span>
 <div>
-<p class="font-semibold">رسالة جديدة من "ماركة X"</p>
-<p class="text-sm text-muted-light dark:text-muted-dark">"مرحباً فاطمة، لدينا بعض الملاحظات..."</p>
-<span class="text-xs text-muted-light dark:text-muted-dark">قبل ساعة</span>
+<h3 class="font-bold text-gray-900 dark:text-white">نصيحة من الذكاء الاصطناعي</h3>
+<p class="text-sm text-gray-600 dark:text-gray-300 mt-1">🎯 <span class="font-bold text-primary">3 فرص جديدة</span> مناسبة لأسلوبك في التصوير. معدل القبول <span class="font-bold text-green-400">85%</span>. حدّث معرض أعمالك لزيادة فرصك بنسبة <span class="font-bold text-white">+20%</span>.</p>
+<div class="mt-3 space-x-2 space-x-reverse">
+<button onclick="window.location.href='/creator/تصفح_الحملات_(للمبدعين).html'" class="bg-primary text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">عرض الفرص</button>
+<button class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition">إخفاء</button>
 </div>
-<span class="w-2 h-2 rounded-full bg-primary self-center ml-auto"></span>
 </div>
-<div class="flex items-start gap-3">
-<span class="material-symbols-outlined text-yellow-500 mt-1">campaign</span>
+</div>
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+<span class="material-icons text-xl">close</span>
+</button>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+<div class="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-primary p-6 rounded-lg text-white glowing-shadow relative overflow-hidden">
+<div class="absolute -top-4 -left-4 w-24 h-24 bg-white/10 rounded-full"></div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-semibold">المحفظة</h3>
+<span class="material-icons">credit_card</span>
+</div>
+<div id="wallet-main" class="text-4xl font-bold mb-4">0 د.م</div>
+<div class="w-full bg-white/20 rounded-full h-2.5 mb-2">
+<div id="wallet-progress" class="bg-white rounded-full h-2.5" style="width: 0%"></div>
+</div>
+<div class="flex justify-between text-xs font-light mb-4">
+<span id="wallet-progress-text">0 / 0</span>
+<span id="wallet-percentage">مكتمل 0%</span>
+</div>
+<div class="text-sm mb-4">
+قيد الانتظار: <span id="wallet-pending" class="font-bold">0 د.م</span> | مكتمل: <span id="wallet-completed" class="font-bold">0 د.م</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button onclick="window.location.href='/creator/Demande_Retrait_createur.html'" class="bg-white text-primary font-bold py-2 rounded-lg hover:bg-gray-100 transition-colors w-full">سحب الأرباح</button>
+<button onclick="window.location.href='/creator/سحب_وتاريخ_الأرباح_(للمبدعين).html'" class="bg-white/20 text-white font-bold py-2 rounded-lg hover:bg-white/30 transition-colors w-full">التفاصيل</button>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-6">
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex flex-col justify-between">
+<div class="flex items-center text-gray-500 dark:text-gray-400">
+<span class="material-icons text-primary">check_circle</span>
+<h4 class="mr-2 text-sm font-medium">حملات مقبولة</h4>
+</div>
+<div class="my-2">
+<p id="accepted-campaigns" class="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+<p class="text-xs text-green-500">+0 هذا الشهر</p>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex flex-col justify-between">
+<div class="flex items-center text-gray-500 dark:text-gray-400">
+<span class="material-icons text-primary">star</span>
+<h4 class="mr-2 text-sm font-medium">متوسط التقييم</h4>
+</div>
+<div class="my-2">
+<p id="average-rating" class="text-3xl font-bold text-gray-900 dark:text-white">0.0</p>
+<p class="text-xs text-yellow-400">⭐⭐⭐⭐⭐</p>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
+<h3 class="font-semibold text-gray-900 dark:text-white mb-3">الحملات الجارية</h3>
+<div id="active-campaigns-list" class="space-y-3">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+لا توجد حملات جارية حالياً
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-2 grid grid-cols-2 gap-6">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex flex-col justify-between">
+<div class="flex items-center text-gray-500 dark:text-gray-400">
+<span class="material-icons text-primary">schedule</span>
+<h4 class="mr-2 text-sm font-medium">الالتزام بالمواعيد</h4>
+</div>
+<div class="my-2">
+<p id="delivery-rate" class="text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+<p class="text-xs text-blue-500">ممتاز - استمر!</p>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg flex flex-col justify-between">
+<div class="flex items-center text-gray-500 dark:text-gray-400">
+<span class="material-icons text-primary">cancel</span>
+<h4 class="mr-2 text-sm font-medium">حملات مرفوضة</h4>
+</div>
+<div class="my-2">
+<p id="rejected-campaigns" class="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+<p class="text-xs text-gray-500">معدل قبول 0%</p>
+</div>
+</div>
+</div>
+<div class="md:col-span-2 bg-card-light dark:bg-card-dark p-4 rounded-lg">
+<h3 class="font-semibold text-gray-900 dark:text-white mb-4">تقرير الأداء الذكي (7 أيام)</h3>
+<div class="grid grid-cols-3 gap-4 text-center">
 <div>
-<p class="font-semibold">دعوة جديدة لحملة</p>
-<p class="text-sm text-muted-light dark:text-muted-dark">تمت دعوتك للانضمام إلى حملة "أزياء الصيف".</p>
-<span class="text-xs text-muted-light dark:text-muted-dark">قبل 3 ساعات</span>
+<p class="text-2xl font-bold text-green-400">↑ 15%</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">معدل القبول</p>
+</div>
+<div>
+<p class="text-2xl font-bold text-green-400">↑ 8%</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">جودة المحتوى</p>
+</div>
+<div>
+<p class="text-2xl font-bold text-yellow-400">= 0%</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">سرعة التسليم</p>
 </div>
 </div>
 </div>
-</section>
-<section>
-<h2 class="text-2xl font-bold mb-4">الشارات والإنجازات</h2>
-<div id="badges-container" class="grid grid-cols-2 gap-4 mb-6"></div>
-<h2 class="text-2xl font-bold mb-4 mt-6">أكثر المبدعين نشاطاً</h2>
-<div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col gap-4">
-<div class="flex items-center gap-4">
-<span class="text-2xl font-bold text-muted-light dark:text-muted-dark">1</span>
-<img alt="User 1" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKRSde5WRp89-YadL8vDXwzoII8rciXbu3sGWTcoElAVPToWoHAWh6RUH7_-lWmCJABata73durpXR0lNKj9y3NCCWaZJuDBrmsbFlzX7IByMOjQBIHvJTiBIs3x9kDxXiIAi0u8BjEaVuIZV08vNUKWnh5GDa0wPunFE9XYCpAOTviRmkcviDrKESeH8a28uCE1500iLE4VkjLOU1clK86K8m_7cV2PEEUyotb0bK-qTVL4LjENdJGTEAQ4GaKdVyn2HMiAMh2zk"/>
-<div class="flex-1">
-<p class="font-bold">أمينة العلوي</p>
-<p class="text-sm text-muted-light dark:text-muted-dark">25,000 درهم</p>
 </div>
-<span class="material-symbols-outlined text-yellow-400">military_tech</span>
+<div class="xl:col-span-1 space-y-6">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
+<h3 class="font-semibold text-gray-900 dark:text-white mb-4">فرص جديدة مناسبة لك</h3>
+<div id="opportunities-list" class="space-y-4">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+جار تحميل الفرص...
 </div>
-<div class="flex items-center gap-4">
-<span class="text-2xl font-bold text-muted-light dark:text-muted-dark">2</span>
-<img alt="User 2" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_f-grDMnpeX_yGYCT-507LyId-DgVKRu30Wth7hjl3nv0CG12uAbxL6qXETLfiMTPVxDWNhNKtJMlwSvhgFqwZGquRi0xpAgFGNO7h3jZfEhsZfZLHcui6XzQsQPxljRhT9os-NceJ95Bw5oU4sg6gK9VNeUsuqZhktWwV7YjJ8SvrXIUkEtUDYtYYEgC0O0ok56ejId5nlTmiJhoOIf8M6D13GUY29-AJyoTgIfcz8TTla5DzezzEiKXh8K9nUQvRtPYXbr19JM"/>
-<div class="flex-1">
-<p class="font-bold">فاطمة الزهراء (أنت)</p>
-<p class="text-sm text-muted-light dark:text-muted-dark">12,500 درهم</p>
 </div>
-<span class="material-symbols-outlined text-gray-400">military_tech</span>
 </div>
-<div class="flex items-center gap-4">
-<span class="text-2xl font-bold text-muted-light dark:text-muted-dark">3</span>
-<img alt="User 3" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg7p34ZjRv6iQ7DbtTPKqqL7bCxrYEebT7zdQ1mvpbsE7UyMPbFiZzQkEDWT7T_9ouPWcAJVZ-cmqIKZMNaE27xVXucvrTJWhSJj4hpQ9L9BSu_Bl-Cilmud8537mX6xF6T7ooxRB3jYc5msEoZtfpWfUqCjTGfC31z7kF81YHMD2m6ZjYjKDFULy1sVrWQ9iAMBW1K22cqEqu_cKCXy3wUdfSYd2UAbN2fH1Qnj3Gion2OMdvJOdXM8hF58jmnwr1V7Jpzdji-mg"/>
-<div class="flex-1">
-<p class="font-bold">يوسف النصيري</p>
-<p class="text-sm text-muted-light dark:text-muted-dark">9,800 درهم</p>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
+<h3 class="font-semibold text-gray-900 dark:text-white mb-3">تقييماتي الأخيرة</h3>
+<div id="reviews-list" class="space-y-3">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+لا توجد تقييمات بعد
 </div>
-<span class="material-symbols-outlined text-orange-400">military_tech</span>
 </div>
-<button class="mt-2 w-full h-11 px-4 rounded-lg border border-primary text-primary font-bold tracking-wide hover:bg-primary/10 transition-colors">عرض لوحة المتصدرين كاملة</button>
 </div>
-</section>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg">
+<h3 class="font-semibold text-gray-900 dark:text-white mb-3">الإشعارات الأخيرة</h3>
+<div id="notifications-list" class="space-y-3">
+<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+لا توجد إشعارات
+</div>
+</div>
 </div>
 </div>
 </div>
 </main>
 </div>
 
-<!-- Scripts Supabase -->
+<!-- Supabase & Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Scripts UGC Maroc -->
 <script src="/js/config.js"></script>
-<script src="/js/utils.js"></script>
 <script src="/js/auth.js"></script>
-<script src="/js/api.js"></script>
-<script src="/js/main.js"></script>
-<script src="/js/dashboard-creator.js"></script>
+<script>
+// Wait for Supabase to be ready
+async function loadDashboardData() {
+  if (!window.supabaseClient) {
+    console.error('Supabase not initialized');
+    return;
+  }
 
-</body></html>
+  try {
+    // Get current user
+    const { data: { user }, error: userError } = await window.supabaseClient.auth.getUser();
+    
+    if (userError || !user) {
+      console.log('No user logged in, redirecting to login...');
+      window.location.href = '/auth/creator-login.html';
+      return;
+    }
+
+    // Load user profile
+    const { data: profile, error: profileError } = await window.supabaseClient
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    if (profile && !profileError) {
+      document.getElementById('user-name').textContent = profile.full_name || 'منشئ محتوى';
+      if (profile.avatar_url) {
+        document.getElementById('user-avatar').src = profile.avatar_url;
+      }
+    }
+
+    // Load wallet balance
+    const { data: wallet, error: walletError } = await window.supabaseClient
+      .from('wallets')
+      .select('balance, pending_amount')
+      .eq('user_id', user.id)
+      .single();
+
+    if (wallet && !walletError) {
+      const total = wallet.balance || 0;
+      const pending = wallet.pending_amount || 0;
+      const completed = total - pending;
+      
+      document.getElementById('wallet-display').textContent = `${total.toLocaleString('ar-MA')} د.م`;
+      document.getElementById('wallet-main').textContent = `${total.toLocaleString('ar-MA')} د.م`;
+      document.getElementById('wallet-pending').textContent = `${pending.toLocaleString('ar-MA')} د.م`;
+      document.getElementById('wallet-completed').textContent = `${completed.toLocaleString('ar-MA')} د.م`;
+      
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      document.getElementById('wallet-progress').style.width = `${percentage}%`;
+      document.getElementById('wallet-percentage').textContent = `مكتمل ${percentage}%`;
+      document.getElementById('wallet-progress-text').textContent = `${completed.toFixed(0)} / ${total.toFixed(0)}`;
+    }
+
+    // Load campaign statistics
+    const { data: submissions, error: submissionsError } = await window.supabaseClient
+      .from('submissions')
+      .select('status')
+      .eq('creator_id', user.id);
+
+    if (submissions && !submissionsError) {
+      const accepted = submissions.filter(s => s.status === 'approved').length;
+      const rejected = submissions.filter(s => s.status === 'rejected').length;
+      const total = submissions.length;
+      
+      document.getElementById('accepted-campaigns').textContent = accepted;
+      document.getElementById('rejected-campaigns').textContent = rejected;
+      
+      if (total > 0) {
+        const acceptanceRate = Math.round((accepted / total) * 100);
+        document.getElementById('delivery-rate').textContent = `${acceptanceRate}%`;
+      }
+    }
+
+    // Load active campaigns
+    const { data: activeCampaigns, error: campaignsError } = await window.supabaseClient
+      .from('submissions')
+      .select(`
+        id,
+        status,
+        campaigns (
+          title,
+          deadline
+        )
+      `)
+      .eq('creator_id', user.id)
+      .in('status', ['pending', 'in_progress'])
+      .limit(5);
+
+    if (activeCampaigns && !campaignsError && activeCampaigns.length > 0) {
+      const listHTML = activeCampaigns.map(sub => {
+        const statusColor = sub.status === 'pending' ? 'yellow' : 'green';
+        const statusText = sub.status === 'pending' ? 'قيد المراجعة' : 'قيد التنفيذ';
+        const daysLeft = sub.campaigns?.deadline ? Math.ceil((new Date(sub.campaigns.deadline) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+        
+        return `
+          <div class="flex items-center">
+            <div class="p-2 bg-${statusColor}-500/20 rounded-full">
+              <span class="material-icons text-${statusColor}-400">${sub.status === 'pending' ? 'rate_review' : 'videocam'}</span>
+            </div>
+            <div class="mr-3 flex-1">
+              <p class="text-sm text-gray-800 dark:text-gray-200">${sub.campaigns?.title || 'حملة'}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">${statusText} • ${daysLeft} أيام</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('active-campaigns-list').innerHTML = listHTML;
+    }
+
+    // Load available opportunities (campaigns)
+    const { data: opportunities, error: oppError } = await window.supabaseClient
+      .from('campaigns')
+      .select('id, title, budget_min, budget_max, content_type, image_url')
+      .eq('status', 'active')
+      .limit(2);
+
+    if (opportunities && !oppError && opportunities.length > 0) {
+      const oppHTML = opportunities.map(opp => `
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-gray-800/50 transition cursor-pointer" onclick="window.location.href='/creator/تصفح_الحملات_(للمبدعين).html'">
+          <img alt="Campaign" class="w-full h-20 object-cover rounded-md mb-2" src="${opp.image_url || 'https://via.placeholder.com/300x200/1A1A2E/7C3AED?text=Campaign'}"/>
+          <p class="font-semibold text-sm text-gray-900 dark:text-white">${opp.title}</p>
+          <div class="flex gap-1 my-2">
+            <span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">${opp.content_type || 'فيديو'}</span>
+          </div>
+          <p class="text-xs text-green-400 font-bold mb-2">${opp.budget_min} - ${opp.budget_max} د.م</p>
+          <button class="w-full bg-primary text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition">التقديم الآن</button>
+        </div>
+      `).join('');
+      
+      document.getElementById('opportunities-list').innerHTML = oppHTML;
+    } else {
+      document.getElementById('opportunities-list').innerHTML = '<div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">لا توجد فرص متاحة حالياً</div>';
+    }
+
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+  }
+}
+
+// Initialize when Supabase is ready
+if (window.supabaseClient) {
+  loadDashboardData();
+} else {
+  window.addEventListener('supabaseReady', loadDashboardData);
+}
+</script>
+<script src="/js/nav-links.js"></script>
+</body>
+</html>

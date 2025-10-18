@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - الإشعارات (علامة تجارية)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7C3AED',
+            'background-dark': '#0D0D1A',
+            'card-dark': '#1A1A2E',
+          },
+        },
+      },
+    };
+</script>
+<style>
+    body { font-family: 'Tajawal', sans-serif; }
+    .glow-card { box-shadow: 0 0 15px rgba(124, 58, 237, 0.2); transition: all 0.3s ease; }
+    .notification-unread { background: rgba(124, 58, 237, 0.1); border-right: 4px solid #7C3AED; }
+    .notification-read { opacity: 0.7; }
+    .notification-item { transition: all 0.3s ease; }
+    .notification-item:hover { transform: translateX(-5px); }
+    .notification-urgent { border-right: 4px solid #ef4444; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    .toast { animation: slideInRight 0.3s ease; }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+    .badge-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    .filter-active { background: rgba(124, 58, 237, 0.2); border-color: #7C3AED; }
+</style>
+</head>
+<body class="bg-background-dark text-gray-200">
+<script>document.documentElement.classList.add('dark');</script>
+
+<!-- Mobile Header -->
+<header class="bg-card-dark p-4 sticky top-0 z-40 border-b border-primary/20">
+<div class="flex items-center justify-between">
+<button onclick="window.history.back()" class="p-2 rounded-lg hover:bg-gray-700">
+<span class="material-icons">arrow_forward</span>
+</button>
+<div class="flex items-center">
+<h1 class="text-xl font-bold text-white">الإشعارات</h1>
+<span id="unreadBadge" class="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2 badge-pulse">8</span>
+</div>
+<button onclick="markAllAsRead()" class="text-primary text-sm font-semibold hover:text-primary/80 transition">
+تعيين الكل كمقروء
+</button>
+</div>
+</header>
+
+<main class="pb-20">
+<!-- Quick Stats -->
+<div class="bg-gradient-to-r from-primary/20 to-blue-500/20 p-4 border-b border-primary/30">
+<div class="grid grid-cols-4 gap-2">
+<div class="text-center">
+<p class="text-2xl font-bold text-white">8</p>
+<p class="text-xs text-gray-400">غير مقروءة</p>
+</div>
+<div class="text-center">
+<p class="text-2xl font-bold text-white">15</p>
+<p class="text-xs text-gray-400">اليوم</p>
+</div>
+<div class="text-center">
+<p class="text-2xl font-bold text-red-400">2</p>
+<p class="text-xs text-gray-400">عاجلة</p>
+</div>
+<div class="text-center">
+<p class="text-2xl font-bold text-white">63</p>
+<p class="text-xs text-gray-400">الإجمالي</p>
+</div>
+</div>
+</div>
+
+<!-- Filters -->
+<div class="p-4 bg-card-dark border-b border-gray-700">
+<div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<button onclick="filterNotifications('all')" class="filter-btn filter-active flex-shrink-0 px-4 py-2 rounded-lg border border-gray-600 text-sm font-semibold text-white transition" data-filter="all">
+الكل
+</button>
+<button onclick="filterNotifications('unread')" class="filter-btn flex-shrink-0 px-4 py-2 rounded-lg border border-gray-600 text-sm font-semibold text-gray-300 transition" data-filter="unread">
+غير مقروءة
+</button>
+<button onclick="filterNotifications('submission')" class="filter-btn flex-shrink-0 px-4 py-2 rounded-lg border border-gray-600 text-sm font-semibold text-gray-300 transition" data-filter="submission">
+📹 تسليمات
+</button>
+<button onclick="filterNotifications('campaign')" class="filter-btn flex-shrink-0 px-4 py-2 rounded-lg border border-gray-600 text-sm font-semibold text-gray-300 transition" data-filter="campaign">
+🎬 حملات
+</button>
+<button onclick="filterNotifications('creator')" class="filter-btn flex-shrink-0 px-4 py-2 rounded-lg border border-gray-600 text-sm font-semibold text-gray-300 transition" data-filter="creator">
+👤 منشئون
+</button>
+<button onclick="filterNotifications('urgent')" class="filter-btn flex-shrink-0 px-4 py-2 rounded-lg border border-red-600 text-sm font-semibold text-red-400 transition" data-filter="urgent">
+⚠️ عاجل
+</button>
+</div>
+</div>
+
+<!-- Notifications List -->
+<div class="p-4 space-y-3" id="notificationsList">
+<!-- Low Balance Warning - URGENT UNREAD -->
+<div class="notification-item notification-unread notification-urgent bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="urgent" data-time="now" onclick="openNotification(this, 1)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+<span class="material-icons text-red-400 text-2xl">warning</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">تحذير: رصيد منخفض ⚠️</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">الآن</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">رصيدك الحالي 450 د.م - قد لا يكفي للحملات النشطة</p>
+<div class="flex items-center gap-2">
+<button onclick="rechargeBalance(event)" class="text-xs bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition font-semibold">
+إعادة الشحن الآن
+</button>
+<span class="text-xs text-red-400">عاجل</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- New Submission - UNREAD -->
+<div class="notification-item notification-unread bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="submission" data-time="5m" onclick="openNotification(this, 2)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+<span class="material-icons text-blue-400 text-2xl">video_library</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">تسليم فيديو جديد 📹</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ 5 دقائق</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">سارة أحمد قدمت فيديو لحملة "منتج العناية بالبشرة"</p>
+<div class="flex items-center gap-2">
+<button onclick="reviewSubmission(event, 2)" class="text-xs bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary/90 transition">
+مراجعة الآن
+</button>
+<span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">تسليم</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Campaign Expiring Soon - URGENT UNREAD -->
+<div class="notification-item notification-unread notification-urgent bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="urgent" data-time="30m" onclick="openNotification(this, 3)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
+<span class="material-icons text-orange-400 text-2xl">schedule</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">حملة توشك على الانتهاء ⏰</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ 30 دقيقة</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">حملة "إطلاق المنتج الصيفي" تنتهي خلال 24 ساعة - 3 تسليمات معلقة</p>
+<div class="flex items-center gap-2">
+<button onclick="viewCampaign(event, 3)" class="text-xs bg-orange-500 text-white px-3 py-1 rounded-lg hover:bg-orange-600 transition">
+عرض الحملة
+</button>
+<span class="text-xs text-orange-400">عاجل</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Creator Accepted Invitation - UNREAD -->
+<div class="notification-item notification-unread bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="creator" data-time="1h" onclick="openNotification(this, 4)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+<span class="material-icons text-green-400 text-2xl">person_add</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">منشئ قبل دعوتك ✅</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ ساعة</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">أمينة الحسني قبلت دعوتك للعمل على حملة "الموضة الربيعية"</p>
+<div class="flex items-center gap-2">
+<span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">منشئ</span>
+<button onclick="contactCreator(event, 4)" class="text-xs text-primary hover:underline">إرسال رسالة</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Multiple Submissions - UNREAD -->
+<div class="notification-item notification-unread bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="submission" data-time="2h" onclick="openNotification(this, 5)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+<span class="material-icons text-blue-400 text-2xl">collections</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">5 تسليمات جديدة 📦</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ ساعتين</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">لديك 5 فيديوهات جديدة تنتظر المراجعة من حملات مختلفة</p>
+<div class="flex items-center gap-2">
+<button onclick="reviewAll(event)" class="text-xs bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary/90 transition">
+مراجعة الكل
+</button>
+<span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">تسليم</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Campaign Expired - UNREAD -->
+<div class="notification-item notification-unread bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="campaign" data-time="3h" onclick="openNotification(this, 6)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-gray-500/20 flex items-center justify-center">
+<span class="material-icons text-gray-400 text-2xl">event_busy</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">انتهت حملة 🏁</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ 3 ساعات</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">حملة "مراجعة منتج تقني" انتهت - تم استلام 12/15 فيديو</p>
+<div class="flex items-center gap-2">
+<span class="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded-full">حملة</span>
+<button onclick="viewCampaignResults(event, 6)" class="text-xs text-primary hover:underline">عرض النتائج</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Creator Message - UNREAD -->
+<div class="notification-item notification-unread bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="creator" data-time="4h" onclick="openNotification(this, 7)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+<span class="material-icons text-purple-400 text-2xl">chat</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">رسالة من منشئ محتوى 💬</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ 4 ساعات</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">كريم المالكي: "هل يمكن تمديد الموعد النهائي بيوم واحد؟"</p>
+<div class="flex items-center gap-2">
+<button onclick="replyMessage(event, 7)" class="text-xs bg-purple-500 text-white px-3 py-1 rounded-lg hover:bg-purple-600 transition">
+رد
+</button>
+<span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full">رسالة</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- New Submission - UNREAD -->
+<div class="notification-item notification-unread bg-card-dark rounded-lg p-4 cursor-pointer" data-read="false" data-type="submission" data-time="5h" onclick="openNotification(this, 8)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+<span class="material-icons text-blue-400 text-2xl">video_library</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">تسليم معاد 🔄</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ 5 ساعات</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">فاطمة بن علي قدمت نسخة محدثة من الفيديو بعد ملاحظاتك</p>
+<div class="flex items-center gap-2">
+<button onclick="reviewSubmission(event, 8)" class="text-xs bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary/90 transition">
+مراجعة
+</button>
+<span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">تسليم</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Campaign Statistics - READ -->
+<div class="notification-item notification-read bg-card-dark rounded-lg p-4 cursor-pointer" data-read="true" data-type="campaign" data-time="1d" onclick="openNotification(this, 9)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+<span class="material-icons text-green-400 text-2xl">trending_up</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">حملتك تحقق نتائج رائعة! 📈</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">البارحة</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">حملة "مراجعة المنتج" حققت 45,000 مشاهدة و 2,300 تفاعل</p>
+<span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">حملة</span>
+</div>
+</div>
+</div>
+
+<!-- Submission Approved - READ -->
+<div class="notification-item notification-read bg-card-dark rounded-lg p-4 cursor-pointer" data-read="true" data-type="submission" data-time="1d" onclick="openNotification(this, 10)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+<span class="material-icons text-green-400 text-2xl">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">تم الموافقة على 3 فيديوهات</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">البارحة</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">تمت الموافقة على جميع التسليمات من حملة "الموضة الصيفية"</p>
+<span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">تسليم</span>
+</div>
+</div>
+</div>
+
+<!-- Payment Processed - READ -->
+<div class="notification-item notification-read bg-card-dark rounded-lg p-4 cursor-pointer" data-read="true" data-type="payment" data-time="2d" onclick="openNotification(this, 11)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+<span class="material-icons text-yellow-400 text-2xl">payments</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">تم معالجة الدفعات 💳</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ يومين</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">تم دفع 4,500 د.م لـ 6 منشئين من حملاتك</p>
+<span class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full">دفع</span>
+</div>
+</div>
+</div>
+
+<!-- Creator Applied - READ -->
+<div class="notification-item notification-read bg-card-dark rounded-lg p-4 cursor-pointer" data-read="true" data-type="creator" data-time="3d" onclick="openNotification(this, 12)">
+<div class="flex items-start gap-3">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+<span class="material-icons text-blue-400 text-2xl">person</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between mb-1">
+<h3 class="font-bold text-white">منشئون جدد تقدموا لحملتك</h3>
+<span class="text-xs text-gray-500 flex-shrink-0 mr-2">منذ 3 أيام</span>
+</div>
+<p class="text-sm text-gray-300 mb-2">8 منشئين محتوى تقدموا لحملة "إطلاق المنتج الجديد"</p>
+<span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">منشئ</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Empty State (Hidden by default) -->
+<div id="emptyState" class="hidden p-8 text-center">
+<span class="material-icons text-6xl text-gray-600 mb-4 block">notifications_off</span>
+<h3 class="text-xl font-bold text-white mb-2">لا توجد إشعارات</h3>
+<p class="text-gray-400">ستظهر هنا جميع تحديثات حملاتك وإشعاراتك</p>
+</div>
+</main>
+
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-card-dark border-t border-primary/20 px-4 py-3 z-40">
+<div class="flex items-center justify-around">
+<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<span class="material-icons">dashboard</span>
+<span class="text-xs mt-1">الرئيسية</span>
+</a>
+<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<span class="material-icons">campaign</span>
+<span class="text-xs mt-1">حملاتي</span>
+</a>
+<a href="#" class="flex flex-col items-center text-primary transition relative">
+<span class="material-icons">notifications</span>
+<span class="text-xs mt-1">الإشعارات</span>
+<span class="absolute -top-1 -right-2 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">8</span>
+</a>
+<a href="#" class="flex flex-col items-center text-gray-400 hover:text-primary transition">
+<span class="material-icons">person</span>
+<span class="text-xs mt-1">الملف</span>
+</a>
+</div>
+</nav>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed top-6 left-6 hidden toast z-50"></div>
+
+<script>
+let unreadCount = 8;
+
+function filterNotifications(type) {
+    const notifications = document.querySelectorAll('.notification-item');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    filterBtns.forEach(btn => {
+        btn.classList.remove('filter-active');
+        if (btn.dataset.filter === type) {
+            btn.classList.add('filter-active');
+        }
+    });
+    
+    notifications.forEach(notification => {
+        const notifType = notification.dataset.type;
+        const isRead = notification.dataset.read === 'true';
+        const isUrgent = notification.classList.contains('notification-urgent');
+        
+        if (type === 'all') {
+            notification.style.display = 'block';
+        } else if (type === 'unread') {
+            notification.style.display = isRead ? 'none' : 'block';
+        } else if (type === 'urgent') {
+            notification.style.display = isUrgent ? 'block' : 'none';
+        } else {
+            notification.style.display = notifType === type ? 'block' : 'none';
+        }
+    });
+    
+    checkEmptyState();
+}
+
+function openNotification(element, id) {
+    if (element.dataset.read === 'false') {
+        element.dataset.read = 'true';
+        element.classList.remove('notification-unread');
+        element.classList.add('notification-read');
+        updateUnreadCount(-1);
+    }
+    
+    showToast('📱 فتح تفاصيل الإشعار...', 'info');
+}
+
+function markAllAsRead() {
+    const unreadNotifications = document.querySelectorAll('.notification-unread');
+    unreadNotifications.forEach(notif => {
+        notif.dataset.read = 'true';
+        notif.classList.remove('notification-unread');
+        notif.classList.add('notification-read');
+    });
+    
+    unreadCount = 0;
+    updateUnreadBadge();
+    showToast('✅ تم تعيين جميع الإشعارات كمقروءة', 'success');
+}
+
+function rechargeBalance(event) {
+    event.stopPropagation();
+    showToast('💳 فتح صفحة إعادة الشحن...', 'info');
+}
+
+function reviewSubmission(event, id) {
+    event.stopPropagation();
+    showToast('🎬 فتح الفيديو للمراجعة...', 'info');
+}
+
+function viewCampaign(event, id) {
+    event.stopPropagation();
+    showToast('📋 فتح تفاصيل الحملة...', 'info');
+}
+
+function contactCreator(event, id) {
+    event.stopPropagation();
+    showToast('💬 فتح نافذة الرسائل...', 'info');
+}
+
+function reviewAll(event) {
+    event.stopPropagation();
+    showToast('📦 فتح جميع التسليمات...', 'info');
+}
+
+function viewCampaignResults(event, id) {
+    event.stopPropagation();
+    showToast('📊 عرض نتائج الحملة...', 'info');
+}
+
+function replyMessage(event, id) {
+    event.stopPropagation();
+    showToast('✉️ فتح نافذة الرد...', 'info');
+}
+
+function updateUnreadCount(change) {
+    unreadCount += change;
+    if (unreadCount < 0) unreadCount = 0;
+    updateUnreadBadge();
+}
+
+function updateUnreadBadge() {
+    const badge = document.getElementById('unreadBadge');
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function checkEmptyState() {
+    const visibleNotifications = Array.from(document.querySelectorAll('.notification-item')).filter(n => n.style.display !== 'none');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (visibleNotifications.length === 0) {
+        emptyState.classList.remove('hidden');
+    } else {
+        emptyState.classList.add('hidden');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.getElementById('toast');
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    toast.className = `fixed top-6 left-6 toast px-6 py-4 rounded-lg font-semibold shadow-lg ${colors[type] || colors.info} text-white z-50`;
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+</script>
+</body>
+</html>
