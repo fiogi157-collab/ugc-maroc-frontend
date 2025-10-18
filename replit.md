@@ -74,6 +74,68 @@ Implemented universal clickable logo functionality across the platform:
 4. **Script Path Fix**: Corrected 9 pages from relative `./js/nav-links.js` to absolute `/js/nav-links.js`
 5. **Benefits**: Maintainable (single file), extensible (auto-applies to future pages), non-invasive
 
+### Cloudflare R2 Video Storage + Automatic Watermarking (October 18, 2025)
+
+Integrated production-ready video upload system using Cloudflare R2 with automatic watermarking:
+
+1. **Architecture Change**: Moved from Supabase Storage to Cloudflare R2 for video assets
+   - **Why**: Better performance, lower costs, unlimited bandwidth for video delivery
+   - **R2 Bucket**: `ugc-maroc-assets` configured with AWS S3-compatible API
+   
+2. **Backend Services** (`/api/services/`):
+   - **r2.js**: Full R2 integration with streaming uploads (memory-efficient for 500MB videos)
+     - `uploadFileToR2()` - Streams from disk using `fs.createReadStream()` (no RAM overflow)
+     - `uploadToR2()` - Legacy buffer-based method for small files
+     - `getSignedUrlFromR2()` - Generate temporary private URLs (1 hour expiry)
+     - `deleteFromR2()` - Delete videos from R2
+     - `getPublicUrl()` - Generate public CDN URLs
+   - **watermark.js**: FFmpeg-based automatic watermarking
+     - Applies "UGC Maroc" logo (bottom-right corner, 60% opacity)
+     - Adds campaign name overlay (top-left, customizable)
+     - Input sanitization to prevent FFmpeg command injection
+     - Text-only fallback if logo missing
+
+3. **Upload Pipeline** (`POST /api/upload-video`):
+   ```
+   User uploads → Multer saves to disk → FFmpeg watermarks → Stream to R2 → Cleanup → Return URL
+   ```
+   - **Disk Storage**: Uses `/api/temp/` directory (created on startup)
+   - **Memory Safety**: Entire pipeline avoids loading 500MB videos into RAM
+   - **Security**: Campaign names sanitized (`.replace(/['"\\]/g, '')`) before FFmpeg
+   - **Cleanup**: Temp files deleted after successful R2 upload
+
+4. **Frontend Module** (`/js/video-uploader.js`):
+   - **Class**: `VideoUploader` - Reusable upload handler
+   - **UI Component**: `createVideoUploadUI()` - Complete upload interface with:
+     - Drag-and-drop + click-to-select
+     - Video preview with duration/size/resolution info
+     - **Real progress bar** (XMLHttpRequest tracks actual upload %, not simulated)
+     - Error handling with retry button
+     - Success state with public R2 URL
+   - **Validation**: File type (MP4/MOV/WebM), max size (500MB)
+   - **Arabic UI**: All messages and labels in Arabic
+
+5. **Production Features**:
+   - ✅ Handles videos up to 500MB without server crash
+   - ✅ Automatic watermarking on all uploads (logo + campaign name)
+   - ✅ Real-time upload progress tracking
+   - ✅ Public CDN URLs for video playback
+   - ✅ FFmpeg injection protection
+   - ✅ Comprehensive error handling
+   - ✅ Automatic temp file cleanup
+
+6. **Watermark Assets**:
+   - Logo stored at: `api/assets/watermark-logo.png`
+   - Generated using AI (clean "UGC Maroc" text on transparent background)
+   - Fallback to text-only watermark if logo missing
+
+**Technical Stack:**
+- FFmpeg (system package) - Video processing
+- AWS SDK S3 Client - R2 communication
+- Multer - Multipart file uploads
+- fluent-ffmpeg - Node.js FFmpeg wrapper
+- XMLHttpRequest - Real upload progress tracking
+
 ## Project Architecture
 
 ### Frontend
@@ -101,12 +163,19 @@ Implemented universal clickable logo functionality across the platform:
   - `POST /api/ai/predict-performance` - تحليل الأداء - Predict video performance
   - `POST /api/ai/generate-brief` - مولد البريف - Auto-generate campaign briefs
   - `POST /api/ai/match-creators` - توصيات المبدعين - Match creators to campaigns
+- **Video Upload Endpoint** (Cloudflare R2):
+  - `POST /api/upload-video` - Upload videos with automatic watermarking to R2 (supports up to 500MB)
 
-### Database & Authentication
+### Database & Storage
 - **Supabase**: PostgreSQL database with authentication
-- **Tables**: profiles, creators, brands, wallets, campaigns, submissions
-- **Authentication**: Email/password with role-based access (creator, brand, admin)
-- **Auth Architecture**: 100% client-side via Supabase Auth (no backend auth routes for security)
+  - **Tables**: profiles, creators, brands, wallets, campaigns, submissions
+  - **Authentication**: Email/password with role-based access (creator, brand, admin)
+  - **Auth Architecture**: 100% client-side via Supabase Auth (no backend auth routes for security)
+- **Cloudflare R2**: Video asset storage (S3-compatible)
+  - **Bucket**: ugc-maroc-assets
+  - **Purpose**: Store creator-submitted UGC videos with automatic watermarking
+  - **CDN**: Public URLs via `https://pub-{ACCOUNT_ID}.r2.dev/`
+  - **Features**: Unlimited bandwidth, no egress fees, automatic watermarking
 
 ## Environment Variables
 
@@ -115,6 +184,10 @@ Required secrets (stored in Replit Secrets):
 - `SUPABASE_ANON_KEY` - Supabase anonymous/public key
 - `RESEND_API_KEY` - Email service API key
 - `DEEPSEEK_API_KEY` - DeepSeek V3.1 AI API key for intelligent features
+- `R2_ACCOUNT_ID` - Cloudflare account ID for R2 storage
+- `R2_ACCESS_KEY_ID` - R2 API access key ID
+- `R2_SECRET_ACCESS_KEY` - R2 API secret access key
+- `R2_BUCKET_NAME` - R2 bucket name (ugc-maroc-assets)
 
 ## Key Technical Decisions
 
@@ -156,8 +229,11 @@ Critical order in HTML pages:
 - Server running on port 5000
 - Frontend displaying correctly with Arabic RTL
 - Supabase authentication working
-- API endpoints responding
+- All API endpoints responding (AI + video upload)
 - Email service configured
+- Cloudflare R2 video storage integrated
+- Automatic video watermarking operational
+- FFmpeg processing pipeline ready
 
 ## User Roles
 
