@@ -7,12 +7,11 @@ import { sql } from "drizzle-orm";
  */
 
 // ===== PROFILES TABLE =====
-// Main user profiles (linked to Supabase auth.users)
+// Main user profiles (linked to Supabase auth.users via UUID)
 export const profiles = pgTable("profiles", {
-  id: varchar("id").primaryKey(), // Matches Supabase auth.users.id (UUID)
+  id: varchar("id").primaryKey(), // Supabase auth.users.id (UUID) - unique identifier
   email: varchar("email").notNull().unique(),
   full_name: varchar("full_name").notNull(),
-  username: varchar("username").unique(),
   role: varchar("role").notNull(), // 'creator' | 'brand' | 'admin'
   avatar_url: text("avatar_url"),
   phone: varchar("phone"),
