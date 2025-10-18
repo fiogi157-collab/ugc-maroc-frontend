@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Resend } from "resend";
 import deepseekService from "../services/deepseek.js";
+// import authRoutes from "../routes/auth.js"; // DISABLED - Auth handled client-side via Supabase
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +19,13 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// =====================================================
+// 🔐 AUTHENTICATION
+// =====================================================
+// Auth handled client-side via Supabase Auth (js/auth.js)
+// Backend routes disabled due to session leakage security issue
+// app.use("/api/auth", authRoutes);
 
 // API Routes
 app.get("/api", (req, res) => {

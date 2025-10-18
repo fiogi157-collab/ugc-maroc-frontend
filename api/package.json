@@ -8,8 +8,9 @@
     "dev": "node src/index.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "@supabase/supabase-js": "^2.75.1",
     "cors": "^2.8.5",
+    "express": "^4.19.2",
     "resend": "^4.0.1"
   },
   "engines": {

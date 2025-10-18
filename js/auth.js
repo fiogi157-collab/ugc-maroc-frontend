@@ -40,42 +40,53 @@ async function getUserProfile() {
 // Connexion
 async function loginUser(email, password) {
   try {
-    // 1. Appeler l'endpoint backend pour authentification + vérification profil
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+    console.log('🔐 Tentative de connexion:', email);
+    
+    // 1. Se connecter avec Supabase Auth directement (côté client)
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+      email,
+      password
     });
 
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      throw new Error(data.error || 'Erreur de connexion');
+    if (error) {
+      console.error('Erreur Supabase Auth:', error);
+      throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
     }
 
-    // 2. Sauvegarder la session Supabase
-    await supabaseClient.auth.setSession({
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token
-    });
+    console.log('✅ Authentification réussie:', data.user.email);
+
+    // 2. Récupérer le profil depuis la base de données
+    const { data: profile, error: profileError } = await window.supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Erreur récupération profil:', profileError);
+      throw new Error('خطأ في تحميل معلومات المستخدم');
+    }
+
+    console.log('✅ Profil chargé:', profile.role);
 
     // 3. Sauvegarder infos dans localStorage
-    localStorage.setItem('user_role', data.profile.role);
-    localStorage.setItem('user_name', data.profile.full_name || email);
-    localStorage.setItem('user_id', data.profile.user_id);
+    localStorage.setItem('user_role', profile.role);
+    localStorage.setItem('user_name', profile.full_name || email);
+    localStorage.setItem('user_id', profile.user_id);
 
     // 4. Redirection selon rôle
     const dashboards = {
       'creator': '/creator/creator_dashboard.html',
-      'brand': '/brand/brand_dashboard_-_variant_2.html',
+      'brand': '/brand/brand_dashboard_premium.html',
       'admin': '/admin/إدارة_المستخدمين_(للمسؤولين)_3.html'
     };
 
-    window.location.href = dashboards[data.profile.role] || '/index.html';
+    console.log('📍 Redirection vers:', dashboards[profile.role]);
+    window.location.href = dashboards[profile.role] || '/index.html';
     
-    return { success: true, user: data.session.user, profile: data.profile };
+    return { success: true, user: data.user, profile };
   } catch (err) {
-    console.error('Erreur login:', err);
+    console.error('❌ Erreur login:', err);
     return { success: false, error: err.message };
   }
 }
