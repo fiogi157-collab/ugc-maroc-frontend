@@ -6,6 +6,10 @@
   <title>إنشاء حملة جديدة | UGC Maroc</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    // Configuration API - définir l'URL de base
+    window.API_URL = window.location.origin;
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -124,13 +128,25 @@
     // Initialize Supabase client globally - wait for library to load
     let supabase;
     
-    function initSupabase() {
-      const SUPABASE_URL = 'https://arfmvtfkibjadxwnbqjl.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZm12dGZraWJqYWR4d25icWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODI0MjAsImV4cCI6MjA3NTY1ODQyMH0.PIWR6lWml5iliG4658nZdaNy1aiF7hgZZUR__NUDOT0';
-      
-      if (window.supabase && window.supabase.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        return true;
+    async function initSupabase() {
+      try {
+        // Fetch Supabase config from backend instead of hardcoding
+        const configResponse = await fetch(`${window.API_URL}/api/config`);
+        const config = await configResponse.json();
+        
+        if (!config.supabaseUrl || !config.supabaseAnonKey) {
+          console.error('❌ Supabase configuration missing');
+          return false;
+        }
+        
+        if (window.supabase && window.supabase.createClient) {
+          supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+          window.supabase = supabase; // Make it globally accessible
+          console.log('✅ Supabase client initialized');
+          return true;
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize Supabase:', error);
       }
       return false;
     }
@@ -602,7 +618,15 @@
       nextBtn.innerHTML = '<svg class="animate-spin h-5 w-5 inline ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري النشر...';
       
       try {
-        const { data: { session } } = await window.supabase.auth.getSession();
+        if (!window.supabase) {
+          throw new Error('الرجاء الانتظار حتى يتم تحميل النظام...');
+        }
+        
+        const { data: { session }, error: sessionError } = await window.supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          throw new Error('يجب تسجيل الدخول أولاً');
+        }
         
         let mediaUrls = [];
         if (uploadedMediaFiles.length > 0) {
@@ -617,9 +641,15 @@
             body: formData
           });
           
+          if (!uploadResponse.ok) {
+            throw new Error('فشل تحميل الملفات');
+          }
+          
           const uploadResult = await uploadResponse.json();
           if (uploadResult.success) {
             mediaUrls = uploadResult.urls;
+          } else {
+            throw new Error(uploadResult.message || 'فشل تحميل الملفات');
           }
         }
         
@@ -634,6 +664,11 @@
             mediaFiles: mediaUrls
           })
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'فشل الاتصال بالخادم');
+        }
         
         const result = await response.json();
         
@@ -650,7 +685,7 @@
         }
       } catch (error) {
         console.error('Publish error:', error);
-        errorDiv.textContent = 'خطأ في الاتصال بالخادم';
+        errorDiv.textContent = error.message || 'خطأ في الاتصال بالخادم';
         errorDiv.classList.remove('hidden');
         nextBtn.disabled = false;
         nextBtn.textContent = '🚀 نشر الحملة';
