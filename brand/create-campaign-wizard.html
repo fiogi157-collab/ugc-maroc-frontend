@@ -163,7 +163,8 @@
       productName: '',
       productLink: '',
       deliveryMethod: 'no_product',
-      mediaFiles: []
+      mediaFiles: [],
+      additionalNotes: ''
     };
     
     let uploadedMediaFiles = [];
@@ -235,10 +236,12 @@
               <div>
                 <label class="block text-gray-700 font-semibold mb-2">لغة المحتوى *</label>
                 <select id="campaignLanguage" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none">
-                  <option value="arabic" ${campaignData.language === 'arabic' ? 'selected' : ''}>عربية</option>
-                  <option value="darija" ${campaignData.language === 'darija' ? 'selected' : ''}>دارجة مغربية</option>
-                  <option value="french" ${campaignData.language === 'french' ? 'selected' : ''}>فرنسية</option>
-                  <option value="english" ${campaignData.language === 'english' ? 'selected' : ''}>إنجليزية</option>
+                  <option value="arabic" ${campaignData.language === 'arabic' ? 'selected' : ''}>العربية (Arabic)</option>
+                  <option value="amazigh" ${campaignData.language === 'amazigh' ? 'selected' : ''}>ⵜⴰⵎⴰⵣⵉⵖⵜ (Amazigh)</option>
+                  <option value="darija" ${campaignData.language === 'darija' ? 'selected' : ''}>الدارجة المغربية (Darija)</option>
+                  <option value="french" ${campaignData.language === 'french' ? 'selected' : ''}>Français</option>
+                  <option value="english" ${campaignData.language === 'english' ? 'selected' : ''}>English</option>
+                  <option value="spanish" ${campaignData.language === 'spanish' ? 'selected' : ''}>Español</option>
                 </select>
               </div>
             </div>
@@ -247,11 +250,16 @@
               <label class="block text-gray-700 font-semibold mb-2">نوع المحتوى المطلوب *</label>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 ${['video', 'image', 'story', 'reel'].map(type => {
-                  const labels = {video: 'فيديو', image: 'صور', story: 'قصة', reel: 'ريلز/تيك توك'};
+                  const labels = {
+                    video: 'فيديو (Video)', 
+                    image: 'صور (Images)', 
+                    story: 'قصة (Story)', 
+                    reel: 'ريلز/تيك توك (Reels/TikTok)'
+                  };
                   return `
                     <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer hover:bg-indigo-50 ${campaignData.contentTypes.includes(type) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'}">
                       <input type="checkbox" class="content-type-checkbox" value="${type}" ${campaignData.contentTypes.includes(type) ? 'checked' : ''}>
-                      <span class="font-semibold">${labels[type]}</span>
+                      <span class="font-semibold text-sm">${labels[type]}</span>
                     </label>
                   `;
                 }).join('')}
@@ -403,6 +411,17 @@
               
               <div id="mediaPreview" class="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4"></div>
             </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">
+                ملاحظات أو متطلبات إضافية 
+                <span class="text-sm text-gray-500 font-normal">(اختياري)</span>
+              </label>
+              <textarea id="additionalNotes" rows="4" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                        placeholder="مثال: يجب أن تكون الإضاءة جيدة، استخدام موسيقى هادئة، تجنب الألوان الداكنة...">${campaignData.additionalNotes || ''}</textarea>
+              <p class="text-sm text-gray-500 mt-1">أي ملاحظات أو متطلبات خاصة تريد من المبدع أن يأخذها بعين الاعتبار</p>
+            </div>
           </div>
         `;
         
@@ -547,6 +566,7 @@
         campaignData.productName = document.getElementById('productName').value.trim();
         campaignData.productLink = document.getElementById('productLink').value.trim();
         campaignData.deliveryMethod = document.getElementById('deliveryMethod').value;
+        campaignData.additionalNotes = document.getElementById('additionalNotes').value.trim();
       }
       
       return true;
@@ -658,5 +678,8 @@
     renderStep(currentStep);
     }
   </script>
+  
+  <!-- Dark Mode Toggle -->
+  <script src="/js/dark-mode-toggle.js"></script>
 </body>
 </html>

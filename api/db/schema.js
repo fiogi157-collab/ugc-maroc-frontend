@@ -90,6 +90,7 @@ export const campaigns = pgTable("campaigns", {
   product_link: text("product_link"), // Link to product/website
   delivery_method: varchar("delivery_method"), // 'free_delivery', 'pickup', 'no_product'
   media_files: text("media_files"), // JSON array of R2 URLs for product images/videos
+  additional_notes: text("additional_notes"), // Optional notes/requirements from brand
   max_creators: integer("max_creators").default(10),
   current_creators: integer("current_creators").default(0),
   created_at: timestamp("created_at").defaultNow().notNull(),

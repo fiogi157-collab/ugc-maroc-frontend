@@ -515,7 +515,7 @@ app.post("/api/campaigns", authMiddleware, async (req, res) => {
     const { 
       title, description, category, contentTypes, language,
       budget, pricePerUgc, platforms, startDate, endDate,
-      productName, productLink, deliveryMethod, mediaFiles
+      productName, productLink, deliveryMethod, mediaFiles, additionalNotes
     } = req.body;
 
     // Validation
@@ -549,6 +549,7 @@ app.post("/api/campaigns", authMiddleware, async (req, res) => {
       product_link: productLink || null,
       delivery_method: deliveryMethod || 'no_product',
       media_files: mediaFiles && mediaFiles.length > 0 ? JSON.stringify(mediaFiles) : null,
+      additional_notes: additionalNotes || null,
       status: 'active',
       difficulty: 'intermediate',
       created_at: new Date(),
