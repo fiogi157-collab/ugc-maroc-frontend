@@ -11,8 +11,10 @@ This section has been intentionally left blank as no user preferences were speci
 ### UI/UX Decisions
 The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font, ensuring a localized and user-friendly experience for Moroccan users. The design utilizes modern card-based displays with skeleton loaders for improved perceived performance. Key UI/UX elements include:
 - **Responsive Layout**: Adapts to different screen sizes (mobile, tablet, desktop).
-- **Dark Mode Support**: Available throughout the application.
+- **Dark Mode Support**: Global dark/light mode toggle (moon/sun icon) with localStorage persistence (`js/dark-mode-toggle.js`). Users can switch themes from any page with a fixed top-left button.
 - **Localized Content**: All messages, labels, and date formats are in Arabic.
+- **Bilingual Labels**: Content types and key fields display Arabic with English translations in parentheses for clarity (e.g., "فيديو (Video)", "صور (Images)").
+- **Native Script Support**: Language options shown in their native scripts (العربية, ⵜⴰⵎⴰⵣⵉⵖⵜ Amazigh, Français, English, Español) for authentic multilingual experience.
 - **Intuitive Navigation**: Clickable logos and clear navigation paths.
 - **Interactive Elements**: Advanced filtering, search, and sorting options for campaigns.
 
@@ -40,9 +42,11 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 - **Campaign Creation Wizard**: Professional 4-step wizard for creating campaigns featuring:
     - Step 1: Basic information with AI-powered description generation (auto-detects language from title)
     - Step 2: Budget configuration, platform selection, and optional dates
-    - Step 3: Product details with drag-and-drop media upload (images/videos, optional but recommended)
+    - Step 3: Product details with drag-and-drop media upload (images/videos, optional but recommended) and additional notes field for brand-specific requirements
     - Step 4: Preview and publish with terms acceptance
     - Real-time validation, progress tracking, and elegant RTL design
+    - Bilingual content types (فيديو/Video, صور/Images, قصة/Story, ريلز/Reels)
+    - Native script language options (العربية, ⵜⴰⵎⴰⵣⵉⵖⵜ Amazigh, Darija, Français, English, Español)
 - **AI-Powered Tools**:
     - Script Generator
     - Content Suggestion for campaigns
