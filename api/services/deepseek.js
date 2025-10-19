@@ -8,12 +8,15 @@ const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
 class DeepSeekService {
   constructor() {
-    // Simple trim only - don't corrupt the API key
-    this.apiKey = (process.env.DEEPSEEK_API_KEY || '').trim();
+    // Remove ALL whitespace and line breaks from API key
+    const rawKey = process.env.DEEPSEEK_API_KEY || '';
+    this.apiKey = rawKey.replace(/\s+/g, '');
     
     if (!this.apiKey) {
       console.error("⚠️ DEEPSEEK_API_KEY manquante dans les variables d'environnement");
     }
+    
+    console.log(`🔑 DeepSeek API Key loaded: ${this.apiKey.length} chars, starts with "${this.apiKey.substring(0, 4)}", ends with "${this.apiKey.substring(this.apiKey.length - 4)}"`);
   }
 
   // Méthode générique pour appeler DeepSeek (utilise axios au lieu de fetch)

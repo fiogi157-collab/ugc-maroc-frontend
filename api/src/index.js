@@ -67,6 +67,28 @@ app.get("/api/ping", (req, res) => {
   });
 });
 
+// DEBUG ENDPOINT - Temporary
+app.get("/api/debug/deepseek-key", (req, res) => {
+  const key = process.env.DEEPSEEK_API_KEY || '';
+  const chars = Array.from(key).map((c, i) => ({
+    index: i,
+    char: c,
+    code: c.charCodeAt(0),
+    hex: c.charCodeAt(0).toString(16)
+  }));
+  
+  res.json({
+    exists: !!key,
+    length: key.length,
+    first20chars: chars.slice(0, 20),
+    last20chars: chars.slice(-20),
+    hasLineBreaks: key.includes('\n'),
+    hasCarriageReturns: key.includes('\r'),
+    trimmedLength: key.trim().length,
+    allWhitespaceRemoved: key.replace(/\s+/g, '').length
+  });
+});
+
 app.post("/api/send-email", async (req, res) => {
   try {
     const { to, subject, message } = req.body;
