@@ -318,3 +318,19 @@ export const bankChangeRequests = pgTable("bank_change_requests", {
   created_at: timestamp("created_at").defaultNow().notNull(),
   reviewed_at: timestamp("reviewed_at"),
 });
+
+// ===== PLATFORM SETTINGS TABLE (NEW) =====
+// Platform-wide settings (singleton table - only 1 row)
+// Contains UGC Maroc bank details for brand deposits
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  bank_name: varchar("bank_name").notNull(), // e.g., "Attijariwafa Bank"
+  account_holder: varchar("account_holder").notNull(), // e.g., "UGC MAROC SARL"
+  rib: varchar("rib").notNull(), // Moroccan RIB (24 digits)
+  swift: varchar("swift"), // Optional SWIFT/BIC code
+  iban: varchar("iban"), // Optional IBAN format
+  bank_address: text("bank_address"), // Bank branch address
+  special_instructions: text("special_instructions"), // Additional notes for wire transfers
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  updated_by: varchar("updated_by").references(() => profiles.id, { onDelete: "set null" }), // Admin who last updated
+});

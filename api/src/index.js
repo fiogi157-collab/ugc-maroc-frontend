@@ -30,7 +30,8 @@ import {
   disputeCases,
   ratings,
   creatorBankDetails,
-  bankChangeRequests
+  bankChangeRequests,
+  platformSettings
 } from "../db/schema.js";
 import { eq, and, sql, desc } from "drizzle-orm";
 
@@ -4614,8 +4615,129 @@ app.get("*", (req, res) => {
 });
 
 // =====================================================
+// ========================================
+// PLATFORM SETTINGS ENDPOINTS
+// ========================================
+
+/**
+ * GET /api/platform/bank-info
+ * Get UGC Maroc bank details for deposits (PUBLIC)
+ */
+app.get("/api/platform/bank-info", async (req, res) => {
+  try {
+    // Get platform settings (should only be 1 row)
+    const [settings] = await db.select().from(platformSettings).limit(1);
+
+    if (!settings) {
+      return res.status(404).json({
+        success: false,
+        message: "معلومات البنك غير متوفرة حالياً"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        bank_name: settings.bank_name,
+        account_holder: settings.account_holder,
+        rib: settings.rib,
+        swift: settings.swift,
+        iban: settings.iban,
+        bank_address: settings.bank_address,
+        special_instructions: settings.special_instructions,
+        updated_at: settings.updated_at
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error fetching bank info:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في جلب معلومات البنك"
+    });
+  }
+});
+
+/**
+ * PUT /api/platform/bank-info
+ * Update UGC Maroc bank details (ADMIN ONLY)
+ */
+app.put("/api/platform/bank-info", authMiddleware, async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { bank_name, account_holder, rib, swift, iban, bank_address, special_instructions } = req.body;
+
+    // Admin role check
+    const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(id => id);
+    if (!ADMIN_USER_IDS.includes(adminId)) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتعديل إعدادات المنصة (إداريون فقط)"
+      });
+    }
+
+    // Validate required fields
+    if (!bank_name || !account_holder || !rib) {
+      return res.status(400).json({
+        success: false,
+        message: "يجب إدخال اسم البنك، صاحب الحساب، والRIB"
+      });
+    }
+
+    // Check if settings exist
+    const [existingSettings] = await db.select().from(platformSettings).limit(1);
+
+    let updatedSettings;
+    if (existingSettings) {
+      // Update existing settings
+      [updatedSettings] = await db.update(platformSettings)
+        .set({
+          bank_name,
+          account_holder,
+          rib,
+          swift,
+          iban,
+          bank_address,
+          special_instructions,
+          updated_at: new Date(),
+          updated_by: adminId
+        })
+        .where(eq(platformSettings.id, existingSettings.id))
+        .returning();
+    } else {
+      // Insert new settings (first time)
+      [updatedSettings] = await db.insert(platformSettings)
+        .values({
+          bank_name,
+          account_holder,
+          rib,
+          swift,
+          iban,
+          bank_address,
+          special_instructions,
+          updated_by: adminId
+        })
+        .returning();
+    }
+
+    console.log(`✅ Platform bank info updated by admin ${adminId}`);
+
+    res.json({
+      success: true,
+      message: "تم تحديث معلومات البنك بنجاح",
+      data: updatedSettings
+    });
+  } catch (error) {
+    console.error("❌ Error updating bank info:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في تحديث معلومات البنك"
+    });
+  }
+});
+
+// ========================================
 // 💬 SOCKET.IO - REAL-TIME NEGOTIATION
-// =====================================================
+// ========================================
 
 io.on("connection", (socket) => {
   console.log(`🔌 User connected: ${socket.id}`);
