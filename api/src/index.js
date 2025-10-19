@@ -21,13 +21,16 @@ import {
   campaigns, 
   submissions, 
   wallets,
+  profiles,
   campaignAgreements,
   walletReservations,
   agreementEscrow,
   agreementEarnings,
   negotiationMessages,
   disputeCases,
-  ratings
+  ratings,
+  creatorBankDetails,
+  bankChangeRequests
 } from "../db/schema.js";
 import { eq, and, sql, desc } from "drizzle-orm";
 
@@ -2431,6 +2434,7 @@ app.post("/api/agreements/create", authMiddleware, async (req, res) => {
         final_price: priceFloat.toFixed(2), // Initially same as offered
         deadline: deadline ? new Date(deadline) : null,
         custom_terms: custom_terms || null,
+        invitation_type: 'brand_invite',
         status: 'invited',
         created_at: new Date(),
         updated_at: new Date()
@@ -2443,10 +2447,8 @@ app.post("/api/agreements/create", authMiddleware, async (req, res) => {
 
     await db.insert(walletReservations)
       .values({
-        brand_id: brandId,
+        user_id: brandId,
         agreement_id: newAgreement.id,
-        campaign_id: parseInt(campaign_id),
-        creator_id: creator_id,
         amount: priceFloat.toFixed(2),
         status: 'active',
         expires_at: expiresAt,
@@ -2602,6 +2604,286 @@ app.patch("/api/agreements/:id/accept", authMiddleware, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "خطأ في قبول الاتفاق",
+      error: error.message
+    });
+  }
+});
+
+// POST /api/agreements/apply - Creator applies to campaign (NO reservation until brand accepts)
+app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
+  try {
+    const creatorId = req.user.id;
+    const { campaign_id, proposed_price, message } = req.body;
+
+    // SECURITY: Load role from profiles table (server-side source of truth)
+    const [userProfile] = await db.select()
+      .from(profiles)
+      .where(eq(profiles.id, creatorId));
+
+    if (!userProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "الملف الشخصي غير موجود"
+      });
+    }
+
+    // Verify user is a creator
+    if (userProfile.role !== 'creator') {
+      return res.status(403).json({
+        success: false,
+        message: "هذه الميزة متاحة فقط للمبدعين"
+      });
+    }
+
+    // Validate required fields
+    if (!campaign_id || !proposed_price) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الحملة والسعر المقترح مطلوبان"
+      });
+    }
+
+    // Validate price
+    const priceFloat = parseFloat(proposed_price);
+    if (isNaN(priceFloat) || priceFloat <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "السعر المقترح يجب أن يكون أكبر من صفر"
+      });
+    }
+
+    // Check campaign exists and is active
+    const [campaign] = await db.select()
+      .from(campaigns)
+      .where(eq(campaigns.id, campaign_id));
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    if (campaign.status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        message: "الحملة غير نشطة حالياً"
+      });
+    }
+
+    // Check if creator already has an application/agreement for this campaign
+    const existingAgreement = await db.select()
+      .from(campaignAgreements)
+      .where(
+        and(
+          eq(campaignAgreements.campaign_id, campaign_id),
+          eq(campaignAgreements.creator_id, creatorId)
+        )
+      );
+
+    if (existingAgreement.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "لديك بالفعل طلب أو اتفاق لهذه الحملة"
+      });
+    }
+
+    // Create application agreement (status: 'pending' = awaiting brand approval)
+    const [newApplication] = await db.insert(campaignAgreements)
+      .values({
+        campaign_id: parseInt(campaign_id),
+        brand_id: campaign.brand_id,
+        creator_id: creatorId,
+        price_offered: priceFloat.toFixed(2),
+        final_price: priceFloat.toFixed(2), // Initially same as proposed
+        invitation_type: 'creator_application', // Key: this is a creator application, not brand invite
+        status: 'pending', // Awaiting brand approval
+        custom_terms: message || null,
+        created_at: new Date(),
+        updated_at: new Date()
+      })
+      .returning();
+
+    console.log(`📝 Creator application submitted: Creator ${creatorId} → Campaign ${campaign_id}, Proposed: ${priceFloat} MAD`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم تقديم طلبك بنجاح! في انتظار موافقة العلامة التجارية ✨",
+      application: {
+        id: newApplication.id,
+        campaign_id: newApplication.campaign_id,
+        campaign_title: campaign.title,
+        proposed_price: parseFloat(newApplication.price_offered),
+        status: newApplication.status,
+        created_at: newApplication.created_at
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error submitting creator application:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تقديم الطلب",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/agreements/:id/approve - Brand approves creator application
+app.patch("/api/agreements/:id/approve", authMiddleware, async (req, res) => {
+  try {
+    const brandId = req.user.id;
+    const agreementId = parseInt(req.params.id);
+
+    // SECURITY: Load role from profiles table (server-side source of truth)
+    const [userProfile] = await db.select()
+      .from(profiles)
+      .where(eq(profiles.id, brandId));
+
+    if (!userProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "الملف الشخصي غير موجود"
+      });
+    }
+
+    // Verify user is a brand
+    if (userProfile.role !== 'brand') {
+      return res.status(403).json({
+        success: false,
+        message: "هذه الميزة متاحة فقط للعلامات التجارية"
+      });
+    }
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الطلب غير موجود"
+      });
+    }
+
+    // Verify brand
+    if (agreement.brand_id !== brandId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالموافقة على هذا الطلب"
+      });
+    }
+
+    // Check invitation type
+    if (agreement.invitation_type !== 'creator_application') {
+      return res.status(400).json({
+        success: false,
+        message: "هذا ليس طلب من منشئ محتوى"
+      });
+    }
+
+    // Check status
+    if (agreement.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن الموافقة على الطلب. الحالة الحالية: " + agreement.status
+      });
+    }
+
+    // Get brand wallet
+    const [wallet] = await db.select()
+      .from(wallets)
+      .where(eq(wallets.user_id, brandId));
+
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: "المحفظة غير موجودة"
+      });
+    }
+
+    // Calculate available balance (total - reserved)
+    const activeReservations = await db.select()
+      .from(walletReservations)
+      .where(
+        and(
+          eq(walletReservations.user_id, brandId),
+          eq(walletReservations.status, 'active')
+        )
+      );
+
+    const totalReserved = activeReservations.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+    const availableBalance = parseFloat(wallet.balance) - totalReserved;
+    const agreementPrice = parseFloat(agreement.final_price);
+
+    if (availableBalance < agreementPrice) {
+      return res.status(400).json({
+        success: false,
+        message: `رصيد غير كافي. المتوفر: ${availableBalance.toFixed(2)} د.م، المطلوب: ${agreementPrice.toFixed(2)} د.م`,
+        available_balance: availableBalance,
+        required_amount: agreementPrice
+      });
+    }
+
+    // ATOMIC TRANSACTION: Create reservation + escrow + debit wallet
+    await db.transaction(async (tx) => {
+      // 1. Update agreement status to negotiating
+      await tx.update(campaignAgreements)
+        .set({ 
+          status: 'negotiating',
+          updated_at: new Date()
+        })
+        .where(eq(campaignAgreements.id, agreementId));
+
+      // 2. Create reservation (already converted immediately)
+      const [reservation] = await tx.insert(walletReservations)
+        .values({
+          user_id: brandId,
+          agreement_id: agreementId,
+          amount: agreement.final_price,
+          status: 'converted', // Immediately converted
+          created_at: new Date(),
+          expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48h (for tracking)
+        })
+        .returning();
+
+      // 3. Debit brand wallet (escrow funds locked)
+      await tx.update(wallets)
+        .set({ 
+          balance: sql`balance - ${agreementPrice}`,
+          updated_at: new Date()
+        })
+        .where(eq(wallets.user_id, brandId));
+
+      // 4. Create escrow entry
+      await tx.insert(agreementEscrow)
+        .values({
+          agreement_id: agreementId,
+          brand_id: agreement.brand_id,
+          creator_id: agreement.creator_id,
+          amount: agreement.final_price,
+          status: 'active',
+          created_at: new Date(),
+          updated_at: new Date()
+        });
+    });
+
+    console.log(`✅ Creator application approved: Agreement #${agreementId}, Escrow created for ${agreementPrice} MAD`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم قبول الطلب بنجاح! يمكنكم الآن البدء في التفاوض 🎉",
+      agreement: {
+        id: agreement.id,
+        status: 'negotiating',
+        final_price: agreementPrice
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error approving creator application:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في الموافقة على الطلب",
       error: error.message
     });
   }
@@ -3078,6 +3360,23 @@ app.patch("/api/submissions/:id/approve", authMiddleware, async (req, res) => {
       });
     }
 
+    // Get creator's active bank details (for payment traceability)
+    const [activeBankDetail] = await db.select()
+      .from(creatorBankDetails)
+      .where(
+        and(
+          eq(creatorBankDetails.creator_id, submission.creator_id),
+          eq(creatorBankDetails.status, 'active')
+        )
+      );
+
+    if (!activeBankDetail) {
+      return res.status(400).json({
+        success: false,
+        message: "المنشئ ليس لديه معلومات بنكية نشطة. لا يمكن تحويل الأرباح"
+      });
+    }
+
     // ATOMIC TRANSACTION: Release escrow + create earnings
     const finalPrice = parseFloat(agreement.final_price);
     const platformFee = finalPrice * 0.15; // 15% commission
@@ -3101,12 +3400,13 @@ app.patch("/api/submissions/:id/approve", authMiddleware, async (req, res) => {
         })
         .where(eq(agreementEscrow.agreement_id, submission.agreement_id));
 
-      // 3. Create earnings for creator
+      // 3. Create earnings for creator (WITH BANK DETAIL LINK)
       await tx.insert(agreementEarnings)
         .values({
           creator_id: submission.creator_id,
           agreement_id: submission.agreement_id,
           submission_id: submissionId,
+          bank_detail_id: activeBankDetail.id, // 🏦 Immutable link to RIB used for payment
           gross_amount: finalPrice.toFixed(2),
           platform_fee: platformFee.toFixed(2),
           net_amount: netAmount.toFixed(2),
@@ -3468,6 +3768,23 @@ app.patch("/api/disputes/:id/resolve", authMiddleware, async (req, res) => {
       });
     }
 
+    // Get creator's active bank details (for payment traceability)
+    const [activeBankDetail] = await db.select()
+      .from(creatorBankDetails)
+      .where(
+        and(
+          eq(creatorBankDetails.creator_id, agreement.creator_id),
+          eq(creatorBankDetails.status, 'active')
+        )
+      );
+
+    if (!activeBankDetail && (award_to === 'creator' || award_to === 'split')) {
+      return res.status(400).json({
+        success: false,
+        message: "المنشئ ليس لديه معلومات بنكية نشطة. لا يمكن تحويل الأرباح"
+      });
+    }
+
     const totalAmount = parseFloat(escrow.amount);
     const platformFee = totalAmount * 0.15;
 
@@ -3482,6 +3799,7 @@ app.patch("/api/disputes/:id/resolve", authMiddleware, async (req, res) => {
             creator_id: agreement.creator_id,
             agreement_id: agreement.id,
             submission_id: null, // No submission in dispute
+            bank_detail_id: activeBankDetail.id, // 🏦 Immutable link to RIB
             gross_amount: totalAmount.toFixed(2),
             platform_fee: platformFee.toFixed(2),
             net_amount: netAmount.toFixed(2),
@@ -3508,6 +3826,7 @@ app.patch("/api/disputes/:id/resolve", authMiddleware, async (req, res) => {
             creator_id: agreement.creator_id,
             agreement_id: agreement.id,
             submission_id: null,
+            bank_detail_id: activeBankDetail.id, // 🏦 Immutable link to RIB
             gross_amount: (totalAmount * 0.5).toFixed(2),
             platform_fee: (platformFee * 0.5).toFixed(2),
             net_amount: creatorShare.toFixed(2),
@@ -3844,6 +4163,435 @@ app.get("/api/wallet/reservations", authMiddleware, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "خطأ في جلب الحجوزات",
+      error: error.message
+    });
+  }
+});
+
+// =====================================================
+// 🏦 BANK DETAILS ENDPOINTS - SECURE RIB MANAGEMENT
+// =====================================================
+
+// POST /api/creator/bank-details/initial - Add initial RIB (signup only, IMMUTABLE after)
+app.post("/api/creator/bank-details/initial", authMiddleware, async (req, res) => {
+  try {
+    const creatorId = req.user.id;
+    const { iban, account_holder, bank_name, bank_code } = req.body;
+
+    // Validate required fields
+    if (!iban || !account_holder || !bank_name) {
+      return res.status(400).json({
+        success: false,
+        message: "IBAN، اسم صاحب الحساب، واسم البنك مطلوبة"
+      });
+    }
+
+    // Check if creator already has bank details
+    const existingBankDetails = await db.select()
+      .from(creatorBankDetails)
+      .where(eq(creatorBankDetails.creator_id, creatorId));
+
+    if (existingBankDetails.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "لديك بالفعل معلومات بنكية. لتغييرها، يرجى تقديم طلب تغيير"
+      });
+    }
+
+    // Validate IBAN format (Moroccan: MA + 24 digits)
+    const ibanRegex = /^MA\d{24}$/;
+    if (!ibanRegex.test(iban.replace(/\s/g, ''))) {
+      return res.status(400).json({
+        success: false,
+        message: "صيغة IBAN غير صحيحة (MA + 24 رقماً)"
+      });
+    }
+
+    // Create initial bank details
+    const [newBankDetail] = await db.insert(creatorBankDetails)
+      .values({
+        creator_id: creatorId,
+        iban: iban.replace(/\s/g, ''), // Remove spaces
+        account_holder: account_holder,
+        bank_name: bank_name,
+        bank_code: bank_code || null,
+        status: 'active',
+        is_verified: false,
+        change_reason: null, // First RIB, no reason
+        created_at: new Date()
+      })
+      .returning();
+
+    console.log(`🏦 Initial RIB added for creator ${creatorId}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم إضافة معلوماتك البنكية بنجاح ✅",
+      bank_detail: {
+        id: newBankDetail.id,
+        iban: newBankDetail.iban,
+        account_holder: newBankDetail.account_holder,
+        bank_name: newBankDetail.bank_name,
+        status: newBankDetail.status,
+        is_verified: newBankDetail.is_verified,
+        created_at: newBankDetail.created_at
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error adding bank details:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إضافة المعلومات البنكية",
+      error: error.message
+    });
+  }
+});
+
+// POST /api/creator/bank-details/change-request - Request RIB change (ticket system)
+app.post("/api/creator/bank-details/change-request", authMiddleware, async (req, res) => {
+  try {
+    const creatorId = req.user.id;
+    const { new_iban, new_account_holder, new_bank_name, reason, supporting_documents } = req.body;
+
+    // Validate required fields
+    if (!new_iban || !new_account_holder || !new_bank_name || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "جميع الحقول مطلوبة (IBAN الجديد، اسم صاحب الحساب، البنك، والسبب)"
+      });
+    }
+
+    // Get current active bank details
+    const [currentBankDetail] = await db.select()
+      .from(creatorBankDetails)
+      .where(
+        and(
+          eq(creatorBankDetails.creator_id, creatorId),
+          eq(creatorBankDetails.status, 'active')
+        )
+      );
+
+    if (!currentBankDetail) {
+      return res.status(404).json({
+        success: false,
+        message: "لا توجد معلومات بنكية حالية"
+      });
+    }
+
+    // Check if there's already a pending request
+    const pendingRequest = await db.select()
+      .from(bankChangeRequests)
+      .where(
+        and(
+          eq(bankChangeRequests.creator_id, creatorId),
+          eq(bankChangeRequests.status, 'pending')
+        )
+      );
+
+    if (pendingRequest.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "لديك بالفعل طلب تغيير قيد المراجعة"
+      });
+    }
+
+    // Validate new IBAN format
+    const ibanRegex = /^MA\d{24}$/;
+    if (!ibanRegex.test(new_iban.replace(/\s/g, ''))) {
+      return res.status(400).json({
+        success: false,
+        message: "صيغة IBAN الجديد غير صحيحة (MA + 24 رقماً)"
+      });
+    }
+
+    // Create change request
+    const [changeRequest] = await db.insert(bankChangeRequests)
+      .values({
+        creator_id: creatorId,
+        current_bank_detail_id: currentBankDetail.id,
+        new_iban: new_iban.replace(/\s/g, ''),
+        new_account_holder: new_account_holder,
+        new_bank_name: new_bank_name,
+        reason: reason,
+        supporting_documents: supporting_documents ? JSON.stringify(supporting_documents) : null,
+        status: 'pending',
+        created_at: new Date()
+      })
+      .returning();
+
+    console.log(`📋 Bank change request created: Request #${changeRequest.id} by creator ${creatorId}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم تقديم طلب التغيير بنجاح. سيتم مراجعته من قبل الإدارة",
+      request: {
+        id: changeRequest.id,
+        status: changeRequest.status,
+        created_at: changeRequest.created_at
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error creating bank change request:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تقديم طلب التغيير",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/creator/bank-details/history - Get all RIB history (active + archived)
+app.get("/api/creator/bank-details/history", authMiddleware, async (req, res) => {
+  try {
+    const creatorId = req.user.id;
+
+    // Get all bank details for creator
+    const bankHistory = await db.select()
+      .from(creatorBankDetails)
+      .where(eq(creatorBankDetails.creator_id, creatorId))
+      .orderBy(desc(creatorBankDetails.created_at));
+
+    return res.status(200).json({
+      success: true,
+      bank_details: bankHistory.map(bd => ({
+        id: bd.id,
+        iban: bd.iban,
+        account_holder: bd.account_holder,
+        bank_name: bd.bank_name,
+        status: bd.status,
+        is_verified: bd.is_verified,
+        change_reason: bd.change_reason,
+        created_at: bd.created_at,
+        archived_at: bd.archived_at
+      })),
+      count: bankHistory.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching bank history:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب السجل البنكي",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/admin/bank-change-requests - Get all change requests (admin only)
+app.get("/api/admin/bank-change-requests", authMiddleware, async (req, res) => {
+  try {
+    const adminId = req.user.id;
+
+    // Admin role check
+    const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(id => id);
+    if (!ADMIN_USER_IDS.includes(adminId)) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول (إداريون فقط)"
+      });
+    }
+
+    const { status } = req.query; // Filter: 'pending', 'approved', 'rejected'
+
+    let query = db.select({
+      request: bankChangeRequests,
+      creator_profile: profiles,
+      current_bank: creatorBankDetails
+    })
+      .from(bankChangeRequests)
+      .leftJoin(profiles, eq(bankChangeRequests.creator_id, profiles.id))
+      .leftJoin(creatorBankDetails, eq(bankChangeRequests.current_bank_detail_id, creatorBankDetails.id));
+
+    // Optional status filter
+    if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+      query = query.where(eq(bankChangeRequests.status, status));
+    }
+
+    const requests = await query.orderBy(desc(bankChangeRequests.created_at));
+
+    return res.status(200).json({
+      success: true,
+      requests: requests.map(r => ({
+        id: r.request.id,
+        creator_id: r.request.creator_id,
+        creator_name: r.creator_profile?.full_name,
+        creator_email: r.creator_profile?.email,
+        current_iban: r.current_bank?.iban,
+        new_iban: r.request.new_iban,
+        new_account_holder: r.request.new_account_holder,
+        new_bank_name: r.request.new_bank_name,
+        reason: r.request.reason,
+        supporting_documents: r.request.supporting_documents ? JSON.parse(r.request.supporting_documents) : [],
+        status: r.request.status,
+        admin_notes: r.request.admin_notes,
+        created_at: r.request.created_at,
+        reviewed_at: r.request.reviewed_at
+      })),
+      count: requests.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching bank change requests:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب طلبات التغيير",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/admin/bank-change-requests/:id/approve - Approve change request (admin only, ATOMIC)
+app.patch("/api/admin/bank-change-requests/:id/approve", authMiddleware, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const adminId = req.user.id;
+    const { admin_notes } = req.body;
+
+    // Admin role check
+    const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(id => id);
+    if (!ADMIN_USER_IDS.includes(adminId)) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالموافقة (إداريون فقط)"
+      });
+    }
+
+    // Get request
+    const [request] = await db.select()
+      .from(bankChangeRequests)
+      .where(eq(bankChangeRequests.id, requestId));
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "الطلب غير موجود"
+      });
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: "الطلب تمت مراجعته بالفعل"
+      });
+    }
+
+    // ATOMIC TRANSACTION: Archive old RIB + Activate new RIB + Update request
+    await db.transaction(async (tx) => {
+      // 1. Archive old bank details
+      await tx.update(creatorBankDetails)
+        .set({
+          status: 'archived',
+          archived_at: new Date()
+        })
+        .where(eq(creatorBankDetails.id, request.current_bank_detail_id));
+
+      // 2. Create new active bank details
+      const [newBankDetail] = await tx.insert(creatorBankDetails)
+        .values({
+          creator_id: request.creator_id,
+          iban: request.new_iban,
+          account_holder: request.new_account_holder,
+          bank_name: request.new_bank_name,
+          status: 'active',
+          is_verified: true, // Admin approved
+          change_reason: request.reason,
+          created_at: new Date()
+        })
+        .returning();
+
+      // 3. Link old RIB to new one
+      await tx.update(creatorBankDetails)
+        .set({ replaced_by: newBankDetail.id })
+        .where(eq(creatorBankDetails.id, request.current_bank_detail_id));
+
+      // 4. Update request status
+      await tx.update(bankChangeRequests)
+        .set({
+          status: 'approved',
+          admin_notes: admin_notes || 'تمت الموافقة',
+          reviewed_by: adminId,
+          reviewed_at: new Date()
+        })
+        .where(eq(bankChangeRequests.id, requestId));
+    });
+
+    console.log(`✅ Bank change request approved: Request #${requestId} by admin ${adminId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تمت الموافقة على طلب التغيير بنجاح"
+    });
+  } catch (error) {
+    console.error("❌ Error approving bank change request:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في الموافقة على الطلب",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/admin/bank-change-requests/:id/reject - Reject change request (admin only)
+app.patch("/api/admin/bank-change-requests/:id/reject", authMiddleware, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const adminId = req.user.id;
+    const { admin_notes } = req.body;
+
+    // Admin role check
+    const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(id => id);
+    if (!ADMIN_USER_IDS.includes(adminId)) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالرفض (إداريون فقط)"
+      });
+    }
+
+    if (!admin_notes) {
+      return res.status(400).json({
+        success: false,
+        message: "يرجى توفير سبب الرفض"
+      });
+    }
+
+    // Get request
+    const [request] = await db.select()
+      .from(bankChangeRequests)
+      .where(eq(bankChangeRequests.id, requestId));
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "الطلب غير موجود"
+      });
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: "الطلب تمت مراجعته بالفعل"
+      });
+    }
+
+    // Update request status
+    await db.update(bankChangeRequests)
+      .set({
+        status: 'rejected',
+        admin_notes: admin_notes,
+        reviewed_by: adminId,
+        reviewed_at: new Date()
+      })
+      .where(eq(bankChangeRequests.id, requestId));
+
+    console.log(`❌ Bank change request rejected: Request #${requestId} by admin ${adminId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم رفض طلب التغيير"
+    });
+  } catch (error) {
+    console.error("❌ Error rejecting bank change request:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في رفض الطلب",
       error: error.message
     });
   }

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - تقديم طلب على الحملة</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet"/>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7C3AED',
+            'background-light': '#F3F4F6',
+            'background-dark': '#0F172A',
+            'card-light': '#FFFFFF',
+            'card-dark': '#1A1A2E',
+          },
+          fontFamily: {
+            display: ["Cairo", "sans-serif"],
+            body: ["Cairo", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+<style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 400;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      min-width: 300px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      animation: slideInRight 0.3s ease-out;
+      direction: rtl;
+    }
+    
+    .toast.success { background: #10B981; color: white; }
+    .toast.error { background: #EF4444; color: white; }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .skeleton {
+      background: linear-gradient(to right, #f0f0f0 8%, #f8f8f8 18%, #f0f0f0 33%);
+      background-size: 1000px 100%;
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<script>
+  document.documentElement.classList.add('dark');
+</script>
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="/creator/creator_dashboard_1.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <div class="text-primary text-2xl font-bold">UGC Maroc</div>
+      </a>
+      
+      <nav class="hidden md:flex items-center gap-2 text-sm">
+        <a href="/creator/creator_dashboard_1.html" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">الرئيسية</a>
+        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_left</span>
+        <a href="/creator/تصفح_الحملات_(للمبدعين).html" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">تصفح الحملات</a>
+        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_left</span>
+        <span class="text-gray-900 dark:text-white font-semibold">تقديم طلب</span>
+      </nav>
+      
+      <div class="flex items-center gap-3">
+        <a href="/creator/creator_dashboard_1.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img id="user-avatar" class="h-9 w-9 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" src="https://ui-avatars.com/api/?name=Creator&background=7C3AED&color=fff&rounded=true" alt="Profile"/>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-5xl">
+  
+  <!-- Campaign Preview -->
+  <div id="campaign-preview" class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-gray-200 dark:border-gray-700 mb-8">
+    <!-- Skeleton Loading -->
+    <div id="loading-skeleton" class="space-y-4">
+      <div class="skeleton h-8 w-2/3 rounded"></div>
+      <div class="skeleton h-4 w-full rounded"></div>
+      <div class="skeleton h-4 w-5/6 rounded"></div>
+      <div class="flex gap-4">
+        <div class="skeleton h-20 w-32 rounded"></div>
+        <div class="skeleton h-20 w-32 rounded"></div>
+        <div class="skeleton h-20 w-32 rounded"></div>
+      </div>
+    </div>
+    
+    <!-- Campaign Data (hidden initially) -->
+    <div id="campaign-data" class="hidden">
+      <div class="flex items-start justify-between mb-6">
+        <div class="flex-1">
+          <h1 id="campaign-title" class="text-3xl font-bold text-gray-900 dark:text-white mb-2"></h1>
+          <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <span id="campaign-category" class="bg-primary/10 text-primary px-3 py-1 rounded-full"></span>
+            <span class="material-symbols-outlined text-sm">schedule</span>
+            <span id="campaign-created"></span>
+          </div>
+        </div>
+      </div>
+      
+      <p id="campaign-description" class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed"></p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-primary/10 to-purple-500/10 p-4 rounded-xl border border-primary/20">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary">payments</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">الميزانية المقترحة</span>
+          </div>
+          <div id="campaign-price" class="text-2xl font-bold text-gray-900 dark:text-white"></div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-4 rounded-xl border border-blue-500/20">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-blue-600">videocam</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">نوع المحتوى</span>
+          </div>
+          <div id="campaign-content-type" class="text-lg font-semibold text-gray-900 dark:text-white"></div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-4 rounded-xl border border-green-500/20">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-green-600">outlined_flag</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">المنصة</span>
+          </div>
+          <div id="campaign-platforms" class="text-lg font-semibold text-gray-900 dark:text-white"></div>
+        </div>
+      </div>
+      
+      <div id="requirements-section" class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">checklist</span>
+          <span>المتطلبات</span>
+        </h3>
+        <p id="campaign-requirements" class="text-gray-700 dark:text-gray-300 text-sm"></p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Application Form -->
+  <div class="bg-card-light dark:bg-card-dark p-8 rounded-2xl border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-3 mb-6">
+      <span class="material-symbols-outlined text-primary text-3xl">send</span>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">تقديم طلبك</h2>
+    </div>
+    
+    <form id="application-form" class="space-y-6">
+      <!-- Proposed Price -->
+      <div>
+        <label for="proposed-price" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          السعر المقترح (د.م) *
+        </label>
+        <input type="number" id="proposed-price" min="50" step="10" required
+               class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+               placeholder="مثال: 500"/>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">💡 اقترح سعراً عادلاً بناءً على خبرتك ومتابعيك</p>
+      </div>
+      
+      <!-- Message -->
+      <div>
+        <label for="message" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          رسالة تقديمية (اختياري)
+        </label>
+        <textarea id="message" rows="5"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                  placeholder="أخبر العلامة التجارية لماذا أنت الأنسب لهذه الحملة...&#10;&#10;مثال: لدي خبرة 3 سنوات في تصوير المنتجات، ومتابعيني يحبون هذا النوع من المحتوى. شاهد أعمالي السابقة على..."></textarea>
+      </div>
+      
+      <!-- Submit Button -->
+      <button type="submit" id="submit-btn"
+              class="w-full bg-gradient-to-r from-primary to-purple-600 text-white px-6 py-4 rounded-xl font-bold hover:shadow-2xl transition-all flex items-center justify-center gap-3 group">
+        <span class="material-symbols-outlined group-hover:scale-110 transition-transform">rocket_launch</span>
+        <span>تقديم الطلب</span>
+      </button>
+    </form>
+  </div>
+  
+</main>
+
+<script src="/js/config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/dark-mode-toggle.js"></script>
+<script>
+  let currentUser = null;
+  let campaignId = null;
+  
+  // Show toast
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : 'error'}</span>
+      <span>${message}</span>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.classList.add('hiding');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+  
+  // Get campaign ID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  campaignId = urlParams.get('campaign_id');
+  
+  if (!campaignId) {
+    showToast('معرف الحملة مفقود', 'error');
+    setTimeout(() => window.location.href = '/creator/تصفح_الحملات_(للمبدعين).html', 2000);
+  }
+  
+  // Load campaign data
+  async function loadCampaign() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/campaigns/${campaignId}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'فشل في تحميل الحملة');
+      }
+      
+      const campaign = data.campaign;
+      
+      // Populate campaign preview
+      document.getElementById('campaign-title').textContent = campaign.title;
+      document.getElementById('campaign-description').textContent = campaign.description;
+      document.getElementById('campaign-category').textContent = campaign.category || 'عام';
+      document.getElementById('campaign-created').textContent = new Date(campaign.created_at).toLocaleDateString('ar-MA');
+      document.getElementById('campaign-price').textContent = campaign.price_per_ugc ? `${campaign.price_per_ugc} د.م` : 'غير محدد';
+      
+      // Content type
+      const contentTypes = campaign.content_type ? JSON.parse(campaign.content_type).join(', ') : 'فيديو';
+      document.getElementById('campaign-content-type').textContent = contentTypes;
+      
+      // Platforms
+      const platforms = campaign.platforms ? JSON.parse(campaign.platforms).join(', ') : 'Instagram';
+      document.getElementById('campaign-platforms').textContent = platforms;
+      
+      // Requirements
+      document.getElementById('campaign-requirements').textContent = campaign.requirements || 'لا توجد متطلبات محددة';
+      
+      // Show campaign data
+      document.getElementById('loading-skeleton').classList.add('hidden');
+      document.getElementById('campaign-data').classList.remove('hidden');
+      
+      // Pre-fill suggested price
+      if (campaign.price_per_ugc) {
+        document.getElementById('proposed-price').value = campaign.price_per_ugc;
+      }
+      
+    } catch (error) {
+      console.error('Error loading campaign:', error);
+      showToast(error.message || 'خطأ في تحميل الحملة', 'error');
+    }
+  }
+  
+  // Submit application
+  document.getElementById('application-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const proposedPrice = document.getElementById('proposed-price').value;
+    const message = document.getElementById('message').value;
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (!proposedPrice || parseFloat(proposedPrice) <= 0) {
+      showToast('يرجى إدخال سعر صحيح', 'error');
+      return;
+    }
+    
+    try {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> جاري التقديم...';
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        showToast('يجب تسجيل الدخول أولاً', 'error');
+        setTimeout(() => window.location.href = '/index.html', 1500);
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/agreements/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          campaign_id: parseInt(campaignId),
+          proposed_price: parseFloat(proposedPrice),
+          message: message || null
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'فشل في تقديم الطلب');
+      }
+      
+      showToast(data.message || 'تم تقديم طلبك بنجاح! ✨', 'success');
+      
+      // Redirect after success
+      setTimeout(() => {
+        window.location.href = '/creator/creator_dashboard_1.html';
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      showToast(error.message || 'خطأ في تقديم الطلب', 'error');
+      
+      // Re-enable button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined">rocket_launch</span> <span>تقديم الطلب</span>';
+    }
+  });
+  
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Check auth
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = '/index.html';
+      return;
+    }
+    
+    currentUser = session.user;
+    
+    // Load campaign
+    await loadCampaign();
+  });
+</script>
+
+</body>
+</html>

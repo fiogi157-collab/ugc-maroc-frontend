@@ -105,10 +105,12 @@ export const campaignAgreements = pgTable("campaign_agreements", {
   campaign_id: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
   brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
   creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Negotiated price
-  deadline: timestamp("deadline").notNull(), // Delivery deadline
-  status: varchar("status").default("pending_creator").notNull(), // 'pending_creator', 'negotiating', 'pending_payment', 'active', 'pending_review', 'completed', 'rejected', 'expired', 'disputed'
+  price_offered: decimal("price_offered", { precision: 10, scale: 2 }), // Initially offered price
+  final_price: decimal("final_price", { precision: 10, scale: 2 }), // Final negotiated price
+  deadline: timestamp("deadline"), // Delivery deadline (optional)
+  status: varchar("status").default("pending").notNull(), // 'pending', 'invited', 'negotiating', 'active', 'completed', 'rejected', 'expired', 'disputed', 'dispute_resolved'
   invitation_type: varchar("invitation_type").notNull(), // 'brand_invite' | 'creator_application'
+  custom_terms: text("custom_terms"), // Message/terms from creator or brand
   custom_clauses: text("custom_clauses"), // Custom contract conditions
   template_clauses: text("template_clauses"), // JSON array of selected template clauses
   submission_id: integer("submission_id").references(() => submissions.id, { onDelete: "set null" }),
@@ -253,7 +255,8 @@ export const agreementEarnings = pgTable("agreement_earnings", {
   id: serial("id").primaryKey(),
   creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
   agreement_id: integer("agreement_id").notNull().unique().references(() => campaignAgreements.id, { onDelete: "cascade" }),
-  submission_id: integer("submission_id").notNull().unique().references(() => submissions.id, { onDelete: "cascade" }),
+  submission_id: integer("submission_id").references(() => submissions.id, { onDelete: "cascade" }), // Nullable for dispute resolutions
+  bank_detail_id: integer("bank_detail_id").notNull().references(() => creatorBankDetails.id, { onDelete: "restrict" }), // RIB used for this payment (immutable link)
   gross_amount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(), // Original payment
   platform_fee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(), // 15% commission
   net_amount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(), // After commission
@@ -279,4 +282,39 @@ export const creatorWithdrawals = pgTable("creator_withdrawals", {
   requested_at: timestamp("requested_at").defaultNow().notNull(),
   approved_at: timestamp("approved_at"),
   completed_at: timestamp("completed_at"),
+});
+
+// ===== CREATOR BANK DETAILS TABLE (NEW) =====
+// Secure RIB storage with versioning - IMMUTABLE after creation
+export const creatorBankDetails = pgTable("creator_bank_details", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  iban: varchar("iban").notNull(), // Moroccan IBAN (MA + 24 digits)
+  account_holder: varchar("account_holder").notNull(), // Must match creator's legal name
+  bank_name: varchar("bank_name").notNull(), // Bank name
+  bank_code: varchar("bank_code"), // Optional bank identifier
+  status: varchar("status").default("active").notNull(), // 'active' | 'archived' (only one active per creator)
+  is_verified: boolean("is_verified").default(false), // Admin verified
+  change_reason: text("change_reason"), // Reason for change (null for first RIB)
+  replaced_by: integer("replaced_by").references(() => creatorBankDetails.id, { onDelete: "set null" }), // Link to new RIB if replaced
+  created_at: timestamp("created_at").defaultNow().notNull(), // When RIB was added
+  archived_at: timestamp("archived_at"), // When RIB was replaced
+});
+
+// ===== BANK CHANGE REQUESTS TABLE (NEW) =====
+// Tickets for requesting RIB change (admin approval required)
+export const bankChangeRequests = pgTable("bank_change_requests", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  current_bank_detail_id: integer("current_bank_detail_id").notNull().references(() => creatorBankDetails.id, { onDelete: "cascade" }),
+  new_iban: varchar("new_iban").notNull(), // Requested new IBAN
+  new_account_holder: varchar("new_account_holder").notNull(),
+  new_bank_name: varchar("new_bank_name").notNull(),
+  reason: text("reason").notNull(), // Creator's explanation for change
+  supporting_documents: text("supporting_documents"), // JSON array of R2 URLs (CIN, bank statement, etc.)
+  status: varchar("status").default("pending").notNull(), // 'pending' | 'approved' | 'rejected'
+  admin_notes: text("admin_notes"), // Admin comments on decision
+  reviewed_by: varchar("reviewed_by").references(() => profiles.id, { onDelete: "set null" }), // Admin who reviewed
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  reviewed_at: timestamp("reviewed_at"),
 });
