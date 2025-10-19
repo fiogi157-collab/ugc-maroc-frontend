@@ -658,24 +658,34 @@ app.get("/api/campaigns/:id", authMiddleware, async (req, res) => {
       });
     }
 
-    // Parse JSON fields
+    // Parse JSON fields with fallback for legacy data
+    const parseJsonField = (field, fallback = []) => {
+      if (!field) return fallback;
+      try {
+        return JSON.parse(field);
+      } catch (e) {
+        // If parsing fails, treat as single value and wrap in array
+        return [field];
+      }
+    };
+
     const campaignDetails = {
       id: campaign.id,
       brand_id: campaign.brand_id,
       title: campaign.title,
       description: campaign.description,
       category: campaign.category,
-      content_types: campaign.content_type ? JSON.parse(campaign.content_type) : [],
+      content_types: parseJsonField(campaign.content_type, []),
       language: campaign.language,
       budget: parseFloat(campaign.budget || 0),
       price_per_ugc: parseFloat(campaign.price_per_ugc || 0),
-      platforms: campaign.platforms ? JSON.parse(campaign.platforms) : [],
+      platforms: parseJsonField(campaign.platforms, []),
       start_date: campaign.start_date,
       end_date: campaign.deadline,
       product_name: campaign.product_name,
       product_link: campaign.product_link,
       delivery_method: campaign.delivery_method,
-      media: campaign.media_files ? JSON.parse(campaign.media_files) : [],
+      media: parseJsonField(campaign.media_files, []),
       additional_notes: campaign.additional_notes,
       status: campaign.status,
       difficulty: campaign.difficulty,
