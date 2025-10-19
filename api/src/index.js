@@ -4936,6 +4936,56 @@ app.put("/api/platform/bank-info", authMiddleware, async (req, res) => {
 // 💬 MESSAGING & CONVERSATIONS ENDPOINTS
 // ========================================
 
+// GET /api/conversations/unread-count/:user_id - Get total unread messages count
+app.get("/api/conversations/unread-count/:user_id", authMiddleware, async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    // SECURITY: Verify requester is accessing their own count
+    if (req.user.id !== user_id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول"
+      });
+    }
+
+    // Get all conversations and sum unread counts
+    const userConversations = await db
+      .select({
+        brand_unread_count: conversations.brand_unread_count,
+        creator_unread_count: conversations.creator_unread_count,
+        brand_id: conversations.brand_id,
+        creator_id: conversations.creator_id
+      })
+      .from(conversations)
+      .where(
+        sql`${conversations.brand_id} = ${user_id} OR ${conversations.creator_id} = ${user_id}`
+      );
+
+    // Calculate total unread based on user role
+    let totalUnread = 0;
+    userConversations.forEach(conv => {
+      if (conv.brand_id === user_id) {
+        totalUnread += parseInt(conv.brand_unread_count) || 0;
+      } else if (conv.creator_id === user_id) {
+        totalUnread += parseInt(conv.creator_unread_count) || 0;
+      }
+    });
+
+    res.json({
+      success: true,
+      unread_count: totalUnread,
+      conversations_count: userConversations.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching unread count:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في جلب عدد الرسائل غير المقروءة"
+    });
+  }
+});
+
 // GET /api/conversations/:user_id - Get all conversations for a user
 app.get("/api/conversations/:user_id", authMiddleware, async (req, res) => {
   try {
