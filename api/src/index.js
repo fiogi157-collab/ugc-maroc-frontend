@@ -666,6 +666,95 @@ app.get("/api/campaigns/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// Update campaign (full update) - protected route
+app.patch("/api/campaigns/:id", authMiddleware, async (req, res) => {
+  try {
+    const campaignId = parseInt(req.params.id);
+    
+    if (!campaignId || isNaN(campaignId)) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم الحملة غير صحيح"
+      });
+    }
+
+    const { 
+      title, description, category, contentTypes, language,
+      budget, pricePerUgc, platforms, startDate, endDate,
+      productName, productLink, deliveryMethod, mediaFiles, additionalNotes
+    } = req.body;
+
+    // Validation
+    if (!title || !description || !pricePerUgc) {
+      return res.status(400).json({
+        success: false,
+        message: "المعلومات الأساسية مطلوبة"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+    
+    // Get campaign and check ownership
+    const campaignData = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
+    
+    if (!campaignData || campaignData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    const campaign = campaignData[0];
+    
+    if (campaign.brand_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "ليس لديك صلاحية لتعديل هذه الحملة"
+      });
+    }
+
+    // Update campaign
+    await db.update(campaigns)
+      .set({
+        title: title.trim(),
+        description: description.trim(),
+        category: category || campaign.category,
+        content_type: contentTypes ? JSON.stringify(contentTypes) : campaign.content_type,
+        language: language || campaign.language,
+        budget: budget ? parseFloat(budget) : null,
+        price_per_ugc: parseFloat(pricePerUgc),
+        platforms: platforms ? JSON.stringify(platforms) : campaign.platforms,
+        start_date: startDate ? new Date(startDate) : null,
+        deadline: endDate ? new Date(endDate) : null,
+        product_name: productName || null,
+        product_link: productLink || null,
+        delivery_method: deliveryMethod || campaign.delivery_method,
+        media_files: mediaFiles && mediaFiles.length > 0 ? JSON.stringify(mediaFiles) : campaign.media_files,
+        additional_notes: additionalNotes || null,
+        updated_at: new Date()
+      })
+      .where(eq(campaigns.id, campaignId));
+
+    console.log(`✅ Campaign ${campaignId} updated successfully`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحديث الحملة بنجاح! ✨",
+      campaignId
+    });
+
+  } catch (error) {
+    console.error("❌ Error updating campaign:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحديث الحملة",
+      error: error.message
+    });
+  }
+});
+
 // Update campaign status (pause/resume/close)
 app.patch("/api/campaigns/:id/status", authMiddleware, async (req, res) => {
   try {

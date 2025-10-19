@@ -86,8 +86,8 @@
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
       
       <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
-        <h1 class="text-3xl font-bold">🚀 إنشاء حملة جديدة</h1>
-        <p class="text-indigo-100 mt-2">أنشئ حملة احترافية في 4 خطوات بسيطة</p>
+        <h1 id="wizardTitle" class="text-3xl font-bold">🚀 إنشاء حملة جديدة</h1>
+        <p id="wizardSubtitle" class="text-indigo-100 mt-2">أنشئ حملة احترافية في 4 خطوات بسيطة</p>
       </div>
 
       <div class="px-6 py-8">
@@ -165,6 +165,8 @@
     
     function startWizard() {
     let currentStep = 1;
+    let isEditMode = false;
+    let editingCampaignId = null;
     let campaignData = {
       title: '',
       description: '',
@@ -184,6 +186,102 @@
     };
     
     let uploadedMediaFiles = [];
+    let existingMediaUrls = [];
+    
+    // Detect edit mode from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const editParam = urlParams.get('edit');
+    
+    if (editParam) {
+      isEditMode = true;
+      editingCampaignId = parseInt(editParam);
+      console.log('🔧 Edit mode detected for campaign ID:', editingCampaignId);
+      
+      // Update UI for edit mode
+      document.getElementById('wizardTitle').textContent = '✏️ تعديل الحملة';
+      document.getElementById('wizardSubtitle').textContent = 'قم بتحديث بيانات حملتك';
+      
+      // Load campaign data
+      loadCampaignData(editingCampaignId);
+    }
+    
+    async function loadCampaignData(campaignId) {
+      try {
+        if (!window.supabase) {
+          showToast('الرجاء الانتظار حتى يتم تحميل النظام...', 'error');
+          return;
+        }
+        
+        const { data: { session }, error: sessionError } = await window.supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          showToast('يجب تسجيل الدخول أولاً', 'error');
+          setTimeout(() => {
+            window.location.href = '/auth/brand-login.html';
+          }, 2000);
+          return;
+        }
+        
+        const response = await fetch(`${window.API_URL}/api/campaigns/${campaignId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'فشل تحميل بيانات الحملة');
+        }
+        
+        const campaign = await response.json();
+        console.log('✅ Campaign data loaded:', campaign);
+        
+        // Pre-fill campaignData with loaded values
+        campaignData.title = campaign.title || '';
+        campaignData.description = campaign.description || '';
+        campaignData.category = campaign.category || 'beauty';
+        campaignData.contentTypes = Array.isArray(campaign.content_types) ? campaign.content_types : [];
+        campaignData.language = campaign.language || 'arabic';
+        campaignData.budget = campaign.budget || '';
+        campaignData.pricePerUgc = campaign.price_per_ugc || '';
+        campaignData.platforms = Array.isArray(campaign.platforms) ? campaign.platforms : [];
+        
+        // Handle dates - convert to YYYY-MM-DD format for input fields
+        if (campaign.start_date) {
+          const startDate = new Date(campaign.start_date);
+          campaignData.startDate = startDate.toISOString().split('T')[0];
+        }
+        if (campaign.end_date) {
+          const endDate = new Date(campaign.end_date);
+          campaignData.endDate = endDate.toISOString().split('T')[0];
+        }
+        
+        campaignData.productName = campaign.product_name || '';
+        campaignData.productLink = campaign.product_link || '';
+        campaignData.deliveryMethod = campaign.delivery_method || 'no_product';
+        campaignData.additionalNotes = campaign.additional_notes || '';
+        
+        // Handle existing media
+        if (campaign.media && Array.isArray(campaign.media)) {
+          existingMediaUrls = campaign.media;
+          campaignData.mediaFiles = campaign.media;
+        }
+        
+        // Re-render current step to show loaded data
+        renderStep(currentStep);
+        
+        showToast('تم تحميل بيانات الحملة بنجاح ✨', 'success');
+        
+      } catch (error) {
+        console.error('❌ Error loading campaign:', error);
+        showToast(error.message || 'خطأ في تحميل بيانات الحملة', 'error');
+        setTimeout(() => {
+          window.location.href = '/brand/brand_dashboard_premium.html';
+        }, 2000);
+      }
+    }
     
     async function renderStep(step) {
       const container = document.getElementById('wizard-container');
@@ -433,6 +531,14 @@
                 صور أو فيديوهات المنتج 
                 <span class="inline-block px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">مستحسن</span>
               </label>
+              
+              ${existingMediaUrls.length > 0 ? `
+                <div class="mb-4">
+                  <p class="text-sm text-gray-600 mb-2">الملفات الحالية (${existingMediaUrls.length})</p>
+                  <div id="existingMediaPreview" class="grid grid-cols-3 md:grid-cols-5 gap-3"></div>
+                </div>
+              ` : ''}
+              
               <div id="dragDropZone" class="drag-drop-zone rounded-lg p-8 text-center cursor-pointer">
                 <div class="text-4xl mb-3">📁</div>
                 <p class="text-gray-600 font-semibold mb-2">اسحب الملفات هنا أو انقر للتحميل</p>
@@ -523,7 +629,37 @@
           });
         }
         
+        // Render existing media (URLs from database)
+        function renderExistingMedia() {
+          const existingContainer = document.getElementById('existingMediaPreview');
+          if (!existingContainer) return;
+          
+          existingContainer.innerHTML = existingMediaUrls.map((url, index) => {
+            const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
+            
+            return `
+              <div class="preview-card aspect-square rounded-lg border-2 border-green-300 relative bg-green-50">
+                ${isVideo 
+                  ? `<video src="${url}" class="rounded-lg"></video>`
+                  : `<img src="${url}" alt="Existing media" class="rounded-lg">`
+                }
+                <button class="remove-media-btn bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center" data-index="${index}">×</button>
+                <div class="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-2 py-1 rounded">موجود</div>
+              </div>
+            `;
+          }).join('');
+          
+          document.querySelectorAll('#existingMediaPreview .remove-media-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const index = parseInt(e.target.dataset.index);
+              existingMediaUrls.splice(index, 1);
+              renderExistingMedia();
+            });
+          });
+        }
+        
         renderMediaPreview();
+        renderExistingMedia();
         
       } else if (step === 4) {
         container.innerHTML = `
@@ -596,7 +732,11 @@
       
       document.getElementById('prevBtn').classList.toggle('hidden', step === 1);
       const nextBtn = document.getElementById('nextBtn');
-      nextBtn.textContent = step === 4 ? '🚀 نشر الحملة' : 'التالي →';
+      if (step === 4) {
+        nextBtn.textContent = isEditMode ? '💾 حفظ التعديلات' : '🚀 نشر الحملة';
+      } else {
+        nextBtn.textContent = 'التالي →';
+      }
     }
     
     function collectStepData(step) {
@@ -644,7 +784,8 @@
       
       const nextBtn = document.getElementById('nextBtn');
       nextBtn.disabled = true;
-      nextBtn.innerHTML = '<svg class="animate-spin h-5 w-5 inline ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري النشر...';
+      const loadingText = isEditMode ? 'جاري الحفظ...' : 'جاري النشر...';
+      nextBtn.innerHTML = `<svg class="animate-spin h-5 w-5 inline ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${loadingText}`;
       
       try {
         if (!window.supabase) {
@@ -657,7 +798,8 @@
           throw new Error('يجب تسجيل الدخول أولاً');
         }
         
-        let mediaUrls = [];
+        // Upload new media files if any
+        let newMediaUrls = [];
         if (uploadedMediaFiles.length > 0) {
           const formData = new FormData();
           uploadedMediaFiles.forEach(file => formData.append('media', file));
@@ -676,21 +818,30 @@
           
           const uploadResult = await uploadResponse.json();
           if (uploadResult.success) {
-            mediaUrls = uploadResult.urls;
+            newMediaUrls = uploadResult.urls;
           } else {
             throw new Error(uploadResult.message || 'فشل تحميل الملفات');
           }
         }
         
-        const response = await fetch(`${window.API_URL}/api/campaigns`, {
-          method: 'POST',
+        // Combine existing media URLs with newly uploaded ones
+        const allMediaUrls = [...existingMediaUrls, ...newMediaUrls];
+        
+        // Determine API endpoint and method
+        const apiUrl = isEditMode 
+          ? `${window.API_URL}/api/campaigns/${editingCampaignId}`
+          : `${window.API_URL}/api/campaigns`;
+        const method = isEditMode ? 'PATCH' : 'POST';
+        
+        const response = await fetch(apiUrl, {
+          method: method,
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`
           },
           body: JSON.stringify({
             ...campaignData,
-            mediaFiles: mediaUrls
+            mediaFiles: allMediaUrls
           })
         });
         
@@ -701,23 +852,32 @@
         
         const result = await response.json();
         
-        if (result.success) {
-          showToast('تم نشر الحملة بنجاح! 🎉', 'success');
+        if (result.success || result.campaignId || result.campaign) {
+          const successMessage = isEditMode ? 'تم حفظ التعديلات بنجاح! ✨' : 'تم نشر الحملة بنجاح! 🎉';
+          showToast(successMessage, 'success');
+          
+          // Get campaign ID for redirection
+          const campaignId = isEditMode ? editingCampaignId : (result.campaignId || result.campaign?.id);
+          
           setTimeout(() => {
-            window.location.href = '/brand/brand_dashboard_premium.html';
+            if (campaignId) {
+              window.location.href = `/brand/campaign-details.html?id=${campaignId}`;
+            } else {
+              window.location.href = '/brand/brand_dashboard_premium.html';
+            }
           }, 1500);
         } else {
-          errorDiv.textContent = result.message || 'حدث خطأ أثناء النشر';
+          errorDiv.textContent = result.message || 'حدث خطأ أثناء الحفظ';
           errorDiv.classList.remove('hidden');
           nextBtn.disabled = false;
-          nextBtn.textContent = '🚀 نشر الحملة';
+          nextBtn.textContent = isEditMode ? '💾 حفظ التعديلات' : '🚀 نشر الحملة';
         }
       } catch (error) {
-        console.error('Publish error:', error);
+        console.error('Publish/Update error:', error);
         errorDiv.textContent = error.message || 'خطأ في الاتصال بالخادم';
         errorDiv.classList.remove('hidden');
         nextBtn.disabled = false;
-        nextBtn.textContent = '🚀 نشر الحملة';
+        nextBtn.textContent = isEditMode ? '💾 حفظ التعديلات' : '🚀 نشر الحملة';
       }
     }
     

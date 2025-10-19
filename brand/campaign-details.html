@@ -432,17 +432,19 @@
 
     function renderMedia(mediaUrls) {
       const container = document.getElementById('media-container');
-      container.innerHTML = mediaUrls.map(url => {
-        const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
-        return `
-          <div class="media-item" onclick="window.open('${url}', '_blank')">
-            ${isVideo 
-              ? `<video src="${url}" muted loop></video>`
-              : `<img src="${url}" alt="Campaign media">`
-            }
-          </div>
-        `;
-      }).join('');
+      container.innerHTML = mediaUrls
+        .filter(url => url && typeof url === 'string') // Filter out invalid URLs
+        .map(url => {
+          const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
+          return `
+            <div class="media-item" onclick="window.open('${url}', '_blank')">
+              ${isVideo 
+                ? `<video src="${url}" muted loop></video>`
+                : `<img src="${url}" alt="Campaign media">`
+              }
+            </div>
+          `;
+        }).join('');
     }
 
     function renderActionButtons() {
