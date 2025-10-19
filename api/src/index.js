@@ -71,6 +71,10 @@ app.use((req, res, next) => {
 const TEMP_DIR = path.join(__dirname, "../temp");
 await fs.mkdir(TEMP_DIR, { recursive: true }).catch(() => {});
 
+// Ensure chat uploads directory exists
+const CHAT_UPLOADS_DIR = path.join(__dirname, "../../uploads/chat");
+await fs.mkdir(CHAT_UPLOADS_DIR, { recursive: true }).catch(() => {});
+
 // Configure multer for video uploads (UGC submissions - videos only)
 const uploadVideo = multer({
   storage: multer.diskStorage({
@@ -115,6 +119,40 @@ const uploadMedia = multer({
       cb(null, true);
     } else {
       cb(new Error("فقط الصور والفيديوهات مسموح بها"), false);
+    }
+  },
+});
+
+// Configure multer for chat attachments (images, videos, documents)
+const uploadChatFile = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, CHAT_UPLOADS_DIR);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `chat-${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    }
+  }),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max file size for chat attachments
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images, videos, and common document formats
+    const allowedMimes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'video/mp4', 'video/webm', 'video/quicktime',
+      'application/pdf',
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("نوع الملف غير مدعوم. الرجاء إرسال صور، فيديوهات، أو مستندات"), false);
     }
   },
 });
@@ -5030,6 +5068,163 @@ app.put("/api/conversations/:conversation_id/mark-read", authMiddleware, async (
     res.status(500).json({
       success: false,
       message: "خطأ في تحديث الرسائل"
+    });
+  }
+});
+
+// POST /api/conversations/:conversation_id/upload - Upload file attachment to conversation
+app.post("/api/conversations/:conversation_id/upload", authMiddleware, uploadChatFile.single('file'), async (req, res) => {
+  try {
+    const { conversation_id } = req.params;
+    const { sender_id, message_text } = req.body;
+
+    // SECURITY: Verify sender_id matches authenticated user
+    if (sender_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإرسال ملفات بهوية مستخدم آخر"
+      });
+    }
+
+    // SECURITY: Verify user is participant of this conversation
+    const [uploadConversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, parseInt(conversation_id)));
+
+    if (!uploadConversation) {
+      return res.status(404).json({
+        success: false,
+        message: "المحادثة غير موجودة"
+      });
+    }
+
+    if (uploadConversation.brand_id !== req.user.id && uploadConversation.creator_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإرسال ملفات في هذه المحادثة"
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "لم يتم إرفاق ملف"
+      });
+    }
+
+    // Enforce type-specific file size limits
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_DOCUMENT_SIZE = 20 * 1024 * 1024; // 20MB
+    const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+    if (req.file.mimetype.startsWith('image/') && req.file.size > MAX_IMAGE_SIZE) {
+      // Delete uploaded file
+      await fs.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({
+        success: false,
+        message: "حجم الصورة كبير جداً. الحد الأقصى 10 ميغابايت"
+      });
+    }
+
+    if (req.file.mimetype.startsWith('video/') && req.file.size > MAX_VIDEO_SIZE) {
+      await fs.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({
+        success: false,
+        message: "حجم الفيديو كبير جداً. الحد الأقصى 50 ميغابايت"
+      });
+    }
+
+    if (!req.file.mimetype.startsWith('image/') && !req.file.mimetype.startsWith('video/') && req.file.size > MAX_DOCUMENT_SIZE) {
+      await fs.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({
+        success: false,
+        message: "حجم المستند كبير جداً. الحد الأقصى 20 ميغابايت"
+      });
+    }
+
+    // Determine message type based on file mimetype
+    let messageType = 'file';
+    if (req.file.mimetype.startsWith('image/')) {
+      messageType = 'image';
+    } else if (req.file.mimetype.startsWith('video/')) {
+      messageType = 'video';
+    }
+
+    // Build file URL (publicly accessible)
+    const fileUrl = `/uploads/chat/${req.file.filename}`;
+
+    // Create metadata object
+    const metadata = {
+      filename: req.file.originalname,
+      fileUrl: fileUrl,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype
+    };
+
+    // Insert the message with file attachment
+    const [newMessage] = await db.insert(messages)
+      .values({
+        conversation_id: parseInt(conversation_id),
+        sender_id,
+        message: message_text || `📎 ${req.file.originalname}`,
+        message_type: messageType,
+        metadata: JSON.stringify(metadata),
+        is_read: false,
+        created_at: new Date()
+      })
+      .returning();
+
+    // Update conversation last_message and timestamp
+    const lastMessageText = message_text || `📎 ${req.file.originalname}`;
+    await db.update(conversations)
+      .set({
+        last_message: lastMessageText,
+        last_message_at: new Date(),
+        updated_at: new Date()
+      })
+      .where(eq(conversations.id, parseInt(conversation_id)));
+
+    // Increment unread count for the other party
+    if (sender_id === uploadConversation.brand_id) {
+      await db.update(conversations)
+        .set({
+          creator_unread_count: sql`${conversations.creator_unread_count} + 1`
+        })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+    } else {
+      await db.update(conversations)
+        .set({
+          brand_unread_count: sql`${conversations.brand_unread_count} + 1`
+        })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+    }
+
+    // Broadcast via Socket.IO
+    const roomName = `conversation_${conversation_id}`;
+    io.to(roomName).emit("new_message", {
+      id: newMessage.id,
+      conversation_id: newMessage.conversation_id,
+      sender_id: newMessage.sender_id,
+      message: newMessage.message,
+      message_type: newMessage.message_type,
+      metadata: metadata,
+      is_read: newMessage.is_read,
+      created_at: newMessage.created_at
+    });
+
+    console.log(`📎 File uploaded in conversation ${conversation_id}: ${req.file.originalname}`);
+
+    res.json({
+      success: true,
+      message: newMessage,
+      fileUrl: fileUrl
+    });
+  } catch (error) {
+    console.error("❌ Error uploading file:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في رفع الملف"
     });
   }
 });

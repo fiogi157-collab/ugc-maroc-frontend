@@ -62,13 +62,47 @@
 
           <!-- Message Input -->
           <div id="message-input-area" class="p-6 border-t border-gray-200 hidden">
+            <!-- File preview area -->
+            <div id="file-preview-area" class="mb-3 hidden">
+              <div id="file-preview" class="flex items-center gap-3 p-3 bg-purple-50 rounded-xl border border-purple-200">
+                <span class="material-symbols-outlined text-purple-600">attach_file</span>
+                <div class="flex-1">
+                  <p id="file-preview-name" class="text-sm font-medium text-gray-800"></p>
+                  <p id="file-preview-size" class="text-xs text-gray-500"></p>
+                </div>
+                <button onclick="cancelFileUpload()" class="text-red-500 hover:bg-red-50 p-1 rounded">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              <div id="upload-progress" class="mt-2 hidden">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="upload-progress-bar" class="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="upload-progress-text" class="text-xs text-gray-500 mt-1">جاري الرفع...</p>
+              </div>
+            </div>
+
             <form id="send-message-form" class="flex gap-3">
+              <input 
+                type="file" 
+                id="file-input" 
+                class="hidden" 
+                accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx"
+                onchange="handleFileSelect(event)"
+              />
+              <button 
+                type="button"
+                onclick="document.getElementById('file-input').click()"
+                class="bg-gray-100 text-gray-600 px-4 py-3 rounded-xl hover:bg-gray-200 transition flex items-center"
+                title="إرفاق ملف (صور: 10MB، مستندات: 20MB، فيديو: 50MB)"
+              >
+                <span class="material-symbols-outlined">attach_file</span>
+              </button>
               <input 
                 type="text" 
                 id="message-input" 
                 placeholder="اكتب رسالتك هنا..."
                 class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
               />
               <button 
                 type="submit"
@@ -93,6 +127,7 @@
     let currentUser = null;
     let socket = null;
     let selectedConversation = null;
+    let selectedFile = null;
 
     // Initialize on page load
     window.addEventListener('DOMContentLoaded', async () => {
@@ -250,6 +285,49 @@
       }
     }
 
+    // Render attachment based on type
+    function renderAttachment(message, isMe) {
+      if (!message.metadata) return '';
+      
+      let metadata;
+      try {
+        metadata = typeof message.metadata === 'string' ? JSON.parse(message.metadata) : message.metadata;
+      } catch (e) {
+        return '';
+      }
+
+      const fileUrl = metadata.fileUrl;
+      if (!fileUrl) return '';
+
+      if (message.message_type === 'image') {
+        return `
+          <a href="${fileUrl}" target="_blank" class="block mb-2">
+            <img src="${fileUrl}" alt="${metadata.filename}" class="max-w-xs rounded-lg shadow-md hover:opacity-90 transition" />
+          </a>
+        `;
+      } else if (message.message_type === 'video') {
+        return `
+          <video controls class="max-w-xs rounded-lg shadow-md mb-2">
+            <source src="${fileUrl}" type="${metadata.mimeType || 'video/mp4'}">
+            متصفحك لا يدعم عرض الفيديو
+          </video>
+        `;
+      } else {
+        // Generic file
+        return `
+          <a href="${fileUrl}" target="_blank" download="${metadata.filename}" 
+             class="flex items-center gap-2 p-2 bg-${isMe ? 'purple-700' : 'gray-200'} rounded-lg hover:opacity-80 transition mb-2">
+            <span class="material-symbols-outlined">description</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm truncate">${metadata.filename}</p>
+              <p class="text-xs opacity-70">${formatFileSize(metadata.fileSize)}</p>
+            </div>
+            <span class="material-symbols-outlined">download</span>
+          </a>
+        `;
+      }
+    }
+
     // Render messages
     function renderMessages(messages) {
       const container = document.getElementById('messages-container');
@@ -267,11 +345,13 @@
       container.innerHTML = messages.map(msg => {
         const isMe = msg.sender_id === currentUser.id;
         const time = new Date(msg.created_at).toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
+        const attachment = renderAttachment(msg, isMe);
 
         return `
           <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
             <div class="${isMe ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-800'} px-4 py-3 rounded-2xl max-w-md">
-              <p class="text-sm">${msg.message}</p>
+              ${attachment}
+              ${msg.message ? `<p class="text-sm">${msg.message}</p>` : ''}
               <p class="text-xs ${isMe ? 'text-purple-200' : 'text-gray-500'} mt-1">${time}</p>
             </div>
           </div>
@@ -287,11 +367,13 @@
       const container = document.getElementById('messages-container');
       const isMe = message.sender_id === currentUser.id;
       const time = new Date(message.created_at).toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
+      const attachment = renderAttachment(message, isMe);
 
       const messageHTML = `
         <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
           <div class="${isMe ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-800'} px-4 py-3 rounded-2xl max-w-md">
-            <p class="text-sm">${message.message}</p>
+            ${attachment}
+            ${message.message ? `<p class="text-sm">${message.message}</p>` : ''}
             <p class="text-xs ${isMe ? 'text-purple-200' : 'text-gray-500'} mt-1">${time}</p>
           </div>
         </div>
@@ -309,6 +391,12 @@
           e.preventDefault();
           
           if (!selectedConversation) return;
+
+          // Check if file is selected
+          if (selectedFile) {
+            await uploadFile();
+            return;
+          }
 
           const input = document.getElementById('message-input');
           const messageText = input.value.trim();
@@ -337,6 +425,115 @@
           <p>اختر محادثة من القائمة لبدء المحادثة</p>
         </div>
       `;
+    }
+
+    // Handle file selection
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Type-specific file size validation
+      const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+      const MAX_DOCUMENT_SIZE = 20 * 1024 * 1024; // 20MB
+      const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+      if (file.type.startsWith('image/') && file.size > MAX_IMAGE_SIZE) {
+        alert('حجم الصورة كبير جداً. الحد الأقصى 10 ميغابايت');
+        return;
+      }
+
+      if (file.type.startsWith('video/') && file.size > MAX_VIDEO_SIZE) {
+        alert('حجم الفيديو كبير جداً. الحد الأقصى 50 ميغابايت');
+        return;
+      }
+
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/') && file.size > MAX_DOCUMENT_SIZE) {
+        alert('حجم المستند كبير جداً. الحد الأقصى 20 ميغابايت');
+        return;
+      }
+
+      selectedFile = file;
+
+      // Show preview
+      document.getElementById('file-preview-area').classList.remove('hidden');
+      document.getElementById('file-preview-name').textContent = file.name;
+      document.getElementById('file-preview-size').textContent = formatFileSize(file.size);
+    }
+
+    // Cancel file upload
+    function cancelFileUpload() {
+      selectedFile = null;
+      document.getElementById('file-input').value = '';
+      document.getElementById('file-preview-area').classList.add('hidden');
+    }
+
+    // Format file size
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // Upload file
+    async function uploadFile() {
+      if (!selectedFile || !selectedConversation) return;
+
+      try {
+        // Show progress
+        document.getElementById('upload-progress').classList.remove('hidden');
+        document.getElementById('upload-progress-bar').style.width = '0%';
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('sender_id', currentUser.id);
+        formData.append('message_text', document.getElementById('message-input').value.trim() || '');
+
+        const headers = await getAuthHeaders();
+        delete headers['Content-Type']; // Let browser set multipart boundary
+
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            document.getElementById('upload-progress-bar').style.width = percentComplete + '%';
+            document.getElementById('upload-progress-text').textContent = `جاري الرفع... ${Math.round(percentComplete)}%`;
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            console.log('✅ File uploaded:', response);
+            
+            // Reset form
+            cancelFileUpload();
+            document.getElementById('message-input').value = '';
+            document.getElementById('upload-progress').classList.add('hidden');
+          } else {
+            alert('فشل رفع الملف. حاول مرة أخرى.');
+            document.getElementById('upload-progress').classList.add('hidden');
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          alert('حدث خطأ في رفع الملف');
+          document.getElementById('upload-progress').classList.add('hidden');
+        });
+
+        xhr.open('POST', `${window.API_BASE_URL}/api/conversations/${selectedConversation.id}/upload`);
+        
+        // Add auth header
+        for (const [key, value] of Object.entries(headers)) {
+          xhr.setRequestHeader(key, value);
+        }
+
+        xhr.send(formData);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('حدث خطأ في رفع الملف');
+        document.getElementById('upload-progress').classList.add('hidden');
+      }
     }
   </script>
 </body>

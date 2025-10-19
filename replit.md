@@ -104,6 +104,16 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
         - Auto-scroll to latest messages
         - Direct link from campaign-details: clicking "محادثة" button redirects to `/brand/chat.html?agreement_id=X`
         - URL parameter support: opens specific conversation automatically when `agreement_id` provided
+    - **File Attachments in Chat**:
+        - POST `/api/conversations/:conversation_id/upload` endpoint for uploading attachments
+        - Type-specific file size limits: images (10MB), documents (20MB), videos (50MB)
+        - Supported formats: JPEG, PNG, GIF, WebP images; MP4, WebM, MOV videos; PDF, DOC, DOCX, XLS, XLSX documents
+        - Files stored in `/uploads/chat/` directory with unique filenames
+        - Security: sender_id verification, participant validation, file type filtering, automatic cleanup on size violations
+        - Messages table supports metadata (filename, fileUrl, fileSize, mimeType) for attachments
+        - UI features: file picker button (📎), preview before upload, progress bar, cancel option
+        - Real-time broadcast via Socket.IO with metadata included
+        - Inline display: images show as lightbox, videos as player, documents as download links
 
 ### System Design Choices
 - **Unified Server Architecture**: A single Express server serves both static files and API endpoints.
@@ -113,7 +123,7 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 - **Multer Configuration**: Separate upload middlewares for different file types:
   - `uploadVideo`: Creator UGC submissions (videos only, 500MB max)
   - `uploadMedia`: Campaign media assets (images + videos, 100MB max)
-  - `uploadReceipt`: Wallet recharge receipts (images only, 10MB max)
+  - `uploadChatFile`: Chat attachments with type-specific limits enforced post-upload (images: 10MB, videos: 50MB, documents: 20MB)
 - **Secure API Key Management**: API keys never logged with fragments; only status messages shown.
 
 ## External Dependencies
