@@ -1,6 +1,6 @@
 import { db } from './client.js';
-import { profiles, creators, brands, wallets } from './schema.js';
-import { eq } from 'drizzle-orm';
+import { profiles, creators, brands, wallets, escrowTransactions, creatorEarnings, creatorWithdrawals } from './schema.js';
+import { eq, and, sql } from 'drizzle-orm';
 
 /**
  * UGC Maroc - Database Storage Functions

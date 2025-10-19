@@ -11,6 +11,9 @@ import r2Service from "../services/r2.js";
 import watermarkService from "../services/watermark.js";
 import { createCompleteProfile } from "../db/storage.js";
 import { authMiddleware, ownershipMiddleware } from "../middleware/auth.js";
+import { db } from "../db/client.js";
+import { escrowTransactions, creatorEarnings, creatorWithdrawals, campaigns, submissions, wallets } from "../db/schema.js";
+import { eq, and, sql, desc } from "drizzle-orm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1401,6 +1404,890 @@ app.post("/api/ai/match-creators", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "خطأ في إيجاد المبدعين. حاول مرة أخرى.",
+      error: error.message
+    });
+  }
+});
+
+// ========================================
+// ESCROW & WITHDRAWAL ENDPOINTS
+// ========================================
+
+// POST /api/escrow/deposit - Block funds when campaign created
+app.post("/api/escrow/deposit", authMiddleware, async (req, res) => {
+  try {
+    const { campaign_id, amount } = req.body;
+    const brand_id = req.user.id;
+
+    if (!campaign_id || !amount) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "معرف الحملة والمبلغ مطلوبان" 
+      });
+    }
+
+    // Check if escrow already exists for this campaign
+    const existingEscrow = await db.select().from(escrowTransactions).where(eq(escrowTransactions.campaign_id, campaign_id));
+    
+    if (existingEscrow.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "الأموال محجوزة بالفعل لهذه الحملة" 
+      });
+    }
+
+    // Create escrow transaction
+    const [escrow] = await db.insert(escrowTransactions).values({
+      campaign_id: parseInt(campaign_id),
+      brand_id: brand_id,
+      amount: amount.toString(),
+      remaining_amount: amount.toString(),
+      status: 'pending_funds'
+    }).returning();
+
+    return res.status(200).json({
+      success: true,
+      message: "تم حجز الأموال بنجاح 🔒",
+      escrow: escrow
+    });
+  } catch (error) {
+    console.error("❌ Error depositing escrow:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في حجز الأموال",
+      error: error.message
+    });
+  }
+});
+
+// POST /api/escrow/release - Release funds when brand validates UGC
+app.post("/api/escrow/release", authMiddleware, async (req, res) => {
+  try {
+    const { campaign_id, creator_id, submission_id } = req.body;
+    const brand_id = req.user.id;
+
+    if (!campaign_id || !creator_id || !submission_id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "معرف الحملة والمبدع والمحتوى مطلوبة" 
+      });
+    }
+
+    // Get escrow transaction
+    const [escrow] = await db.select().from(escrowTransactions)
+      .where(and(
+        eq(escrowTransactions.campaign_id, parseInt(campaign_id)),
+        eq(escrowTransactions.brand_id, brand_id)
+      ));
+
+    if (!escrow) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "لم يتم العثور على الأموال المحجوزة" 
+      });
+    }
+
+    if (escrow.status === 'released') {
+      return res.status(400).json({ 
+        success: false, 
+        message: "تم تحرير الأموال بالفعل" 
+      });
+    }
+
+    // Calculate fees: 15% platform fee
+    const grossAmount = parseFloat(escrow.amount);
+    const platformFee = grossAmount * 0.15;
+    const netAmount = grossAmount - platformFee;
+
+    // Update escrow status
+    await db.update(escrowTransactions)
+      .set({ 
+        status: 'released', 
+        creator_id: creator_id,
+        released_at: new Date(),
+        updated_at: new Date()
+      })
+      .where(eq(escrowTransactions.id, escrow.id));
+
+    // Create creator earning record
+    const [earning] = await db.insert(creatorEarnings).values({
+      creator_id: creator_id,
+      campaign_id: parseInt(campaign_id),
+      submission_id: parseInt(submission_id),
+      gross_amount: grossAmount.toFixed(2),
+      platform_fee: platformFee.toFixed(2),
+      net_amount: netAmount.toFixed(2),
+      status: 'available'
+    }).returning();
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحرير الأموال للمبدع بنجاح 💰",
+      earning: earning
+    });
+  } catch (error) {
+    console.error("❌ Error releasing escrow:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحرير الأموال",
+      error: error.message
+    });
+  }
+});
+
+// POST /api/escrow/dispute - Report a dispute
+app.post("/api/escrow/dispute", authMiddleware, async (req, res) => {
+  try {
+    const { campaign_id, reason } = req.body;
+    const user_id = req.user.id;
+
+    if (!campaign_id || !reason) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "معرف الحملة وسبب النزاع مطلوبان" 
+      });
+    }
+
+    // Update escrow status to disputed
+    const [escrow] = await db.update(escrowTransactions)
+      .set({ 
+        status: 'disputed',
+        dispute_reason: reason,
+        updated_at: new Date()
+      })
+      .where(eq(escrowTransactions.campaign_id, parseInt(campaign_id)))
+      .returning();
+
+    if (!escrow) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "لم يتم العثور على الأموال المحجوزة" 
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تسجيل النزاع بنجاح ⚠️",
+      escrow: escrow
+    });
+  } catch (error) {
+    console.error("❌ Error reporting dispute:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تسجيل النزاع",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/creator/balance - Get available balance for creator
+app.get("/api/creator/balance", authMiddleware, async (req, res) => {
+  try {
+    const creator_id = req.user.id;
+
+    // Sum all available earnings (not withdrawn yet)
+    const result = await db.select({
+      total: sql`COALESCE(SUM(${creatorEarnings.net_amount}), 0)`
+    })
+    .from(creatorEarnings)
+    .where(and(
+      eq(creatorEarnings.creator_id, creator_id),
+      eq(creatorEarnings.status, 'available')
+    ));
+
+    const availableBalance = parseFloat(result[0]?.total || 0);
+
+    // Sum all pending withdrawals
+    const pendingResult = await db.select({
+      total: sql`COALESCE(SUM(${creatorWithdrawals.amount}), 0)`
+    })
+    .from(creatorWithdrawals)
+    .where(and(
+      eq(creatorWithdrawals.creator_id, creator_id),
+      sql`${creatorWithdrawals.status} IN ('pending', 'approved', 'processing')`
+    ));
+
+    const pendingBalance = parseFloat(pendingResult[0]?.total || 0);
+
+    // Calculate total earned
+    const totalResult = await db.select({
+      total: sql`COALESCE(SUM(${creatorEarnings.net_amount}), 0)`
+    })
+    .from(creatorEarnings)
+    .where(eq(creatorEarnings.creator_id, creator_id));
+
+    const totalEarned = parseFloat(totalResult[0]?.total || 0);
+
+    return res.status(200).json({
+      success: true,
+      balance: {
+        available: availableBalance.toFixed(2),
+        pending: pendingBalance.toFixed(2),
+        total_earned: totalEarned.toFixed(2),
+        currency: 'MAD'
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error getting creator balance:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب الرصيد",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/creator/earnings - Get earnings history
+app.get("/api/creator/earnings", authMiddleware, async (req, res) => {
+  try {
+    const creator_id = req.user.id;
+
+    const earnings = await db.select({
+      id: creatorEarnings.id,
+      campaign_id: creatorEarnings.campaign_id,
+      campaign_title: campaigns.title,
+      gross_amount: creatorEarnings.gross_amount,
+      platform_fee: creatorEarnings.platform_fee,
+      net_amount: creatorEarnings.net_amount,
+      status: creatorEarnings.status,
+      earned_at: creatorEarnings.earned_at
+    })
+    .from(creatorEarnings)
+    .leftJoin(campaigns, eq(creatorEarnings.campaign_id, campaigns.id))
+    .where(eq(creatorEarnings.creator_id, creator_id))
+    .orderBy(desc(creatorEarnings.earned_at));
+
+    return res.status(200).json({
+      success: true,
+      earnings: earnings
+    });
+  } catch (error) {
+    console.error("❌ Error getting earnings:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب الأرباح",
+      error: error.message
+    });
+  }
+});
+
+// POST /api/creator/withdrawal - Request withdrawal
+app.post("/api/creator/withdrawal", authMiddleware, async (req, res) => {
+  try {
+    const creator_id = req.user.id;
+    const { amount, bank_name, rib, account_holder } = req.body;
+
+    if (!amount || !bank_name || !rib || !account_holder) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "جميع بيانات البنك مطلوبة" 
+      });
+    }
+
+    const requestedAmount = parseFloat(amount);
+
+    // Check minimum withdrawal (200 MAD)
+    if (requestedAmount < 200) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "الحد الأدنى للسحب هو 200 درهم" 
+      });
+    }
+
+    // Get available balance
+    const result = await db.select({
+      total: sql`COALESCE(SUM(${creatorEarnings.net_amount}), 0)`
+    })
+    .from(creatorEarnings)
+    .where(and(
+      eq(creatorEarnings.creator_id, creator_id),
+      eq(creatorEarnings.status, 'available')
+    ));
+
+    const availableBalance = parseFloat(result[0]?.total || 0);
+
+    // Check if sufficient balance
+    if (requestedAmount > availableBalance) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `رصيدك المتاح هو ${availableBalance.toFixed(2)} درهم فقط` 
+      });
+    }
+
+    // Calculate fees
+    const platformFee = requestedAmount * 0.15; // 15% commission
+    const bankFee = 17.00; // Fixed 17 MAD
+    const netAmount = requestedAmount - platformFee - bankFee;
+
+    if (netAmount <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "المبلغ المطلوب صغير جداً بعد خصم الرسوم" 
+      });
+    }
+
+    // Create withdrawal request
+    const [withdrawal] = await db.insert(creatorWithdrawals).values({
+      creator_id: creator_id,
+      amount: requestedAmount.toFixed(2),
+      platform_fee: platformFee.toFixed(2),
+      bank_fee: bankFee.toFixed(2),
+      net_amount: netAmount.toFixed(2),
+      bank_name: bank_name,
+      rib: rib,
+      account_holder: account_holder,
+      status: 'pending'
+    }).returning();
+
+    return res.status(200).json({
+      success: true,
+      message: "تم إرسال طلب السحب بنجاح ⏳",
+      withdrawal: withdrawal
+    });
+  } catch (error) {
+    console.error("❌ Error creating withdrawal:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إنشاء طلب السحب",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/creator/withdrawals - Get creator's withdrawal history
+app.get("/api/creator/withdrawals", authMiddleware, async (req, res) => {
+  try {
+    const creator_id = req.user.id;
+
+    const withdrawals = await db.select({
+      id: creatorWithdrawals.id,
+      amount: creatorWithdrawals.amount,
+      platform_fee: creatorWithdrawals.platform_fee,
+      bank_fee: creatorWithdrawals.bank_fee,
+      net_amount: creatorWithdrawals.net_amount,
+      bank_name: creatorWithdrawals.bank_name,
+      rib: creatorWithdrawals.rib,
+      account_holder: creatorWithdrawals.account_holder,
+      status: creatorWithdrawals.status,
+      rejection_reason: creatorWithdrawals.rejection_reason,
+      requested_at: creatorWithdrawals.requested_at,
+      approved_at: creatorWithdrawals.approved_at,
+      completed_at: creatorWithdrawals.completed_at
+    })
+    .from(creatorWithdrawals)
+    .where(eq(creatorWithdrawals.creator_id, creator_id))
+    .orderBy(desc(creatorWithdrawals.requested_at));
+
+    return res.status(200).json({
+      success: true,
+      withdrawals: withdrawals
+    });
+  } catch (error) {
+    console.error("❌ Error getting creator withdrawals:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب طلبات السحب",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/admin/withdrawals - List all withdrawal requests (admin only)
+app.get("/api/admin/withdrawals", authMiddleware, async (req, res) => {
+  try {
+    const user_role = req.user.user_metadata?.role;
+
+    if (user_role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "غير مصرح لك بالوصول" 
+      });
+    }
+
+    const { status, limit = 50 } = req.query;
+
+    let query = db.select({
+      id: creatorWithdrawals.id,
+      creator_id: creatorWithdrawals.creator_id,
+      creator_email: sql`profiles.email`,
+      creator_name: sql`profiles.full_name`,
+      amount: creatorWithdrawals.amount,
+      platform_fee: creatorWithdrawals.platform_fee,
+      bank_fee: creatorWithdrawals.bank_fee,
+      net_amount: creatorWithdrawals.net_amount,
+      bank_name: creatorWithdrawals.bank_name,
+      rib: creatorWithdrawals.rib,
+      account_holder: creatorWithdrawals.account_holder,
+      status: creatorWithdrawals.status,
+      rejection_reason: creatorWithdrawals.rejection_reason,
+      admin_notes: creatorWithdrawals.admin_notes,
+      requested_at: creatorWithdrawals.requested_at,
+      approved_at: creatorWithdrawals.approved_at,
+      completed_at: creatorWithdrawals.completed_at
+    })
+    .from(creatorWithdrawals)
+    .leftJoin(sql`profiles`, sql`profiles.id = ${creatorWithdrawals.creator_id}`)
+    .orderBy(desc(creatorWithdrawals.requested_at))
+    .limit(parseInt(limit));
+
+    if (status) {
+      query = query.where(eq(creatorWithdrawals.status, status));
+    }
+
+    const withdrawals = await query;
+
+    return res.status(200).json({
+      success: true,
+      withdrawals: withdrawals
+    });
+  } catch (error) {
+    console.error("❌ Error getting withdrawals:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب طلبات السحب",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/admin/withdrawals/:id/approve - Approve withdrawal
+app.patch("/api/admin/withdrawals/:id/approve", authMiddleware, async (req, res) => {
+  try {
+    const user_role = req.user.user_metadata?.role;
+
+    if (user_role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "غير مصرح لك بالوصول" 
+      });
+    }
+
+    const { id } = req.params;
+    const { admin_notes } = req.body;
+
+    const [withdrawal] = await db.update(creatorWithdrawals)
+      .set({ 
+        status: 'approved',
+        approved_at: new Date(),
+        admin_notes: admin_notes || null
+      })
+      .where(eq(creatorWithdrawals.id, parseInt(id)))
+      .returning();
+
+    if (!withdrawal) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "طلب السحب غير موجود" 
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم الموافقة على طلب السحب ✅",
+      withdrawal: withdrawal
+    });
+  } catch (error) {
+    console.error("❌ Error approving withdrawal:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في الموافقة على الطلب",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/admin/withdrawals/:id/reject - Reject withdrawal
+app.patch("/api/admin/withdrawals/:id/reject", authMiddleware, async (req, res) => {
+  try {
+    const user_role = req.user.user_metadata?.role;
+
+    if (user_role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "غير مصرح لك بالوصول" 
+      });
+    }
+
+    const { id } = req.params;
+    const { rejection_reason, admin_notes } = req.body;
+
+    if (!rejection_reason) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "سبب الرفض مطلوب" 
+      });
+    }
+
+    const [withdrawal] = await db.update(creatorWithdrawals)
+      .set({ 
+        status: 'rejected',
+        rejection_reason: rejection_reason,
+        admin_notes: admin_notes || null
+      })
+      .where(eq(creatorWithdrawals.id, parseInt(id)))
+      .returning();
+
+    if (!withdrawal) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "طلب السحب غير موجود" 
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم رفض طلب السحب ❌",
+      withdrawal: withdrawal
+    });
+  } catch (error) {
+    console.error("❌ Error rejecting withdrawal:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في رفض الطلب",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/admin/withdrawals/:id/complete - Mark as completed (paid)
+app.patch("/api/admin/withdrawals/:id/complete", authMiddleware, async (req, res) => {
+  try {
+    const user_role = req.user.user_metadata?.role;
+
+    if (user_role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "غير مصرح لك بالوصول" 
+      });
+    }
+
+    const { id } = req.params;
+    const { admin_notes } = req.body;
+
+    // Get withdrawal details
+    const [withdrawal] = await db.select().from(creatorWithdrawals)
+      .where(eq(creatorWithdrawals.id, parseInt(id)));
+
+    if (!withdrawal) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "طلب السحب غير موجود" 
+      });
+    }
+
+    // Update withdrawal status
+    const [updatedWithdrawal] = await db.update(creatorWithdrawals)
+      .set({ 
+        status: 'completed',
+        completed_at: new Date(),
+        admin_notes: admin_notes || null
+      })
+      .where(eq(creatorWithdrawals.id, parseInt(id)))
+      .returning();
+
+    // Mark earnings as withdrawn
+    await db.update(creatorEarnings)
+      .set({ status: 'withdrawn' })
+      .where(and(
+        eq(creatorEarnings.creator_id, withdrawal.creator_id),
+        eq(creatorEarnings.status, 'available')
+      ));
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تأكيد إتمام التحويل البنكي 💸",
+      withdrawal: updatedWithdrawal
+    });
+  } catch (error) {
+    console.error("❌ Error completing withdrawal:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تأكيد الدفع",
+      error: error.message
+    });
+  }
+});
+
+// ========================================
+// SUBMISSIONS ENDPOINTS (with Escrow integration)
+// ========================================
+
+// GET /api/campaigns/:id/submissions - Get all submissions for a campaign
+app.get("/api/campaigns/:id/submissions", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const campaignId = parseInt(id);
+
+    // Get submissions with creator details
+    const submissionsData = await db.select({
+      id: submissions.id,
+      campaign_id: submissions.campaign_id,
+      creator_id: submissions.creator_id,
+      creator_name: sql`profiles.full_name`,
+      creator_email: sql`profiles.email`,
+      video_url: submissions.video_url,
+      r2_key: submissions.r2_key,
+      file_size: submissions.file_size,
+      status: submissions.status,
+      feedback: submissions.feedback,
+      submitted_at: submissions.submitted_at,
+      reviewed_at: submissions.reviewed_at
+    })
+    .from(submissions)
+    .leftJoin(sql`profiles`, sql`profiles.id = ${submissions.creator_id}`)
+    .where(eq(submissions.campaign_id, campaignId))
+    .orderBy(desc(submissions.submitted_at));
+
+    return res.status(200).json({
+      success: true,
+      submissions: submissionsData
+    });
+  } catch (error) {
+    console.error("❌ Error getting submissions:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب المحتويات",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/submissions/:id/approve - Approve submission (with Escrow release)
+app.patch("/api/submissions/:id/approve", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { feedback } = req.body;
+    const brand_id = req.user.id;
+    const submissionId = parseInt(id);
+
+    // Get submission details
+    const [submission] = await db.select().from(submissions)
+      .where(eq(submissions.id, submissionId));
+
+    if (!submission) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "المحتوى غير موجود" 
+      });
+    }
+
+    // Prevent double approval
+    if (submission.status === 'approved') {
+      return res.status(400).json({ 
+        success: false, 
+        message: "تم قبول هذا المحتوى بالفعل" 
+      });
+    }
+
+    // Get campaign to verify ownership
+    const [campaign] = await db.select().from(campaigns)
+      .where(eq(campaigns.id, submission.campaign_id));
+
+    if (!campaign || campaign.brand_id !== brand_id) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "غير مصرح لك بالوصول" 
+      });
+    }
+
+    // Check if earning already exists for this submission
+    const existingEarning = await db.select().from(creatorEarnings)
+      .where(eq(creatorEarnings.submission_id, submissionId));
+    
+    if (existingEarning.length > 0) {
+      return res.status(409).json({ 
+        success: false, 
+        message: "تم إنشاء دفعة لهذا المحتوى بالفعل" 
+      });
+    }
+
+    // Update submission status
+    await db.update(submissions)
+      .set({ 
+        status: 'approved',
+        feedback: feedback || null,
+        reviewed_at: new Date()
+      })
+      .where(eq(submissions.id, submissionId));
+
+    // Release Escrow funds to creator (price_per_ugc only, not entire budget)
+    // Use price_per_ugc from campaign
+    const pricePerUgc = parseFloat(campaign.price_per_ugc);
+
+    try {
+      // ATOMIC TRANSACTION: Lock escrow, check budget, decrement, create earning
+      await db.transaction(async (tx) => {
+        // Lock escrow row for update (prevents concurrent approvals)
+        const [escrow] = await tx.select().from(escrowTransactions)
+          .where(and(
+            eq(escrowTransactions.campaign_id, submission.campaign_id),
+            eq(escrowTransactions.brand_id, brand_id)
+          ))
+          .for('update');
+
+        if (!escrow) {
+          throw new Error('NO_ESCROW_FOUND');
+        }
+
+        if (escrow.status !== 'pending_funds' && escrow.status !== 'under_review') {
+          throw new Error('INVALID_ESCROW_STATUS');
+        }
+
+        const remainingAmount = parseFloat(escrow.remaining_amount);
+
+        // Check if enough funds remain
+        if (remainingAmount < pricePerUgc) {
+          throw new Error(`INSUFFICIENT_BUDGET:${remainingAmount}:${pricePerUgc}`);
+        }
+
+        const platformFee = pricePerUgc * 0.15;
+        const netAmount = pricePerUgc - platformFee;
+        const newRemainingAmount = remainingAmount - pricePerUgc;
+
+        // Assert: never allow negative balance
+        if (newRemainingAmount < 0) {
+          throw new Error('NEGATIVE_BALANCE_DETECTED');
+        }
+
+        // Update escrow status to under_review and decrement remaining_amount
+        await tx.update(escrowTransactions)
+          .set({ 
+            status: 'under_review',
+            creator_id: submission.creator_id,
+            remaining_amount: newRemainingAmount.toFixed(2),
+            updated_at: new Date()
+          })
+          .where(eq(escrowTransactions.id, escrow.id));
+
+        // Create creator earning record
+        await tx.insert(creatorEarnings).values({
+          creator_id: submission.creator_id,
+          campaign_id: submission.campaign_id,
+          submission_id: submissionId,
+          gross_amount: pricePerUgc.toFixed(2),
+          platform_fee: platformFee.toFixed(2),
+          net_amount: netAmount.toFixed(2),
+          status: 'available'
+        });
+
+        console.log(`✅ Escrow released: ${netAmount.toFixed(2)} MAD to creator ${submission.creator_id} | Remaining budget: ${newRemainingAmount.toFixed(2)} MAD`);
+      });
+    } catch (escrowError) {
+      console.error("⚠️ Error releasing escrow:", escrowError);
+      
+      // Rollback submission approval on escrow failure
+      await db.update(submissions)
+        .set({ 
+          status: 'pending',
+          reviewed_at: null
+        })
+        .where(eq(submissions.id, submissionId));
+      
+      // Handle specific error cases
+      if (escrowError.message === 'NO_ESCROW_FOUND') {
+        return res.status(200).json({
+          success: true,
+          message: "تم قبول المحتوى بنجاح (تحذير: لا توجد أموال محجوزة) ⚠️"
+        });
+      }
+      
+      if (escrowError.message === 'INVALID_ESCROW_STATUS') {
+        return res.status(400).json({
+          success: false,
+          message: "حالة الضمان غير صالحة للتحرير"
+        });
+      }
+      
+      if (escrowError.message.startsWith('INSUFFICIENT_BUDGET:')) {
+        const [_, remaining, required] = escrowError.message.split(':');
+        return res.status(400).json({
+          success: false,
+          message: `ميزانية الحملة غير كافية. المتبقي: ${remaining} MAD، المطلوب: ${required} MAD`
+        });
+      }
+      
+      if (escrowError.message === 'NEGATIVE_BALANCE_DETECTED') {
+        return res.status(409).json({
+          success: false,
+          message: "خطأ: رصيد الضمان سلبي. يرجى الاتصال بالدعم."
+        });
+      }
+      
+      return res.status(500).json({
+        success: false,
+        message: "خطأ في تحرير الأموال. تم التراجع عن القبول."
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم قبول المحتوى بنجاح ✅"
+    });
+  } catch (error) {
+    console.error("❌ Error approving submission:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في قبول المحتوى",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/submissions/:id/reject - Reject submission
+app.patch("/api/submissions/:id/reject", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const brand_id = req.user.id;
+    const submissionId = parseInt(id);
+
+    if (!reason) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "سبب الرفض مطلوب" 
+      });
+    }
+
+    // Get submission details
+    const [submission] = await db.select().from(submissions)
+      .where(eq(submissions.id, submissionId));
+
+    if (!submission) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "المحتوى غير موجود" 
+      });
+    }
+
+    // Get campaign to verify ownership
+    const [campaign] = await db.select().from(campaigns)
+      .where(eq(campaigns.id, submission.campaign_id));
+
+    if (!campaign || campaign.brand_id !== brand_id) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "غير مصرح لك بالوصول" 
+      });
+    }
+
+    // Update submission status
+    await db.update(submissions)
+      .set({ 
+        status: 'rejected',
+        feedback: reason,
+        reviewed_at: new Date()
+      })
+      .where(eq(submissions.id, submissionId));
+
+    return res.status(200).json({
+      success: true,
+      message: "تم رفض المحتوى ❌"
+    });
+  } catch (error) {
+    console.error("❌ Error rejecting submission:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في رفض المحتوى",
       error: error.message
     });
   }

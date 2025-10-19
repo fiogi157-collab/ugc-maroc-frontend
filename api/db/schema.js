@@ -124,3 +124,53 @@ export const transactions = pgTable("transactions", {
   related_campaign_id: integer("related_campaign_id").references(() => campaigns.id),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
+
+// ===== ESCROW TRANSACTIONS TABLE =====
+// Escrow funds blocked per campaign (released when UGC validated)
+export const escrowTransactions = pgTable("escrow_transactions", {
+  id: serial("id").primaryKey(),
+  campaign_id: integer("campaign_id").notNull().unique().references(() => campaigns.id, { onDelete: "cascade" }),
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").references(() => profiles.id, { onDelete: "set null" }), // Set when creator assigned
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  remaining_amount: decimal("remaining_amount", { precision: 10, scale: 2 }).notNull(),
+  status: varchar("status").default("pending_funds").notNull(), // 'pending_funds', 'under_review', 'released', 'disputed', 'refunded'
+  released_at: timestamp("released_at"),
+  dispute_reason: text("dispute_reason"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== CREATOR EARNINGS TABLE =====
+// Track earnings per UGC submission (after validation)
+export const creatorEarnings = pgTable("creator_earnings", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  campaign_id: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  submission_id: integer("submission_id").notNull().unique().references(() => submissions.id, { onDelete: "cascade" }),
+  gross_amount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(), // Original payment
+  platform_fee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(), // 15% commission
+  net_amount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(), // After commission
+  status: varchar("status").default("pending").notNull(), // 'pending', 'available', 'withdrawn'
+  earned_at: timestamp("earned_at").defaultNow().notNull(),
+});
+
+// ===== CREATOR WITHDRAWALS TABLE =====
+// Withdrawal requests from creators (manual bank transfer)
+export const creatorWithdrawals = pgTable("creator_withdrawals", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // Requested amount
+  platform_fee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(), // 15% on total earnings
+  bank_fee: decimal("bank_fee", { precision: 10, scale: 2 }).default("17.00").notNull(), // Fixed 17 MAD
+  net_amount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(), // Final amount to transfer
+  status: varchar("status").default("pending").notNull(), // 'pending', 'approved', 'processing', 'completed', 'rejected', 'cancelled'
+  bank_name: varchar("bank_name"),
+  rib: varchar("rib"), // Moroccan bank account (RIB)
+  account_holder: varchar("account_holder"),
+  rejection_reason: text("rejection_reason"),
+  admin_notes: text("admin_notes"),
+  requested_at: timestamp("requested_at").defaultNow().notNull(),
+  approved_at: timestamp("approved_at"),
+  completed_at: timestamp("completed_at"),
+});

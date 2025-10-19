@@ -859,6 +859,36 @@
           // Get campaign ID for redirection
           const campaignId = isEditMode ? editingCampaignId : (result.campaignId || result.campaign?.id);
           
+          // Block Escrow funds for new campaigns (not edits)
+          if (!isEditMode && campaignData.budget && parseFloat(campaignData.budget) > 0) {
+            try {
+              const escrowResponse = await fetch(`${window.API_URL}/api/escrow/deposit`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                  campaign_id: campaignId,
+                  amount: parseFloat(campaignData.budget)
+                })
+              });
+              
+              const escrowResult = await escrowResponse.json();
+              
+              if (!escrowResponse.ok || !escrowResult.success) {
+                // Escrow failed - warn user but continue (campaign already created)
+                console.error('⚠️ Escrow deposit failed:', escrowResult.message);
+                showToast('⚠️ تم إنشاء الحملة لكن حجز الأموال فشل. يرجى المحاولة مرة أخرى من لوحة التحكم', 'error');
+              } else {
+                console.log('✅ Escrow funds blocked:', escrowResult.escrow);
+              }
+            } catch (escrowError) {
+              console.error('⚠️ Escrow error:', escrowError);
+              showToast('⚠️ تم إنشاء الحملة لكن حدث خطأ في حجز الأموال', 'error');
+            }
+          }
+          
           setTimeout(() => {
             if (campaignId) {
               window.location.href = `/brand/campaign-details.html?id=${campaignId}`;

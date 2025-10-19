@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة طلبات السحب - UGC Maroc Admin</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Google Fonts - Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    * {
+      font-family: 'Cairo', sans-serif;
+    }
+    
+    .badge {
+      @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+    }
+    
+    .badge-pending {
+      @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+    }
+    
+    .badge-approved {
+      @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+    }
+    
+    .badge-processing {
+      @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+    }
+    
+    .badge-completed {
+      @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200;
+    }
+    
+    .badge-rejected {
+      @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+    }
+    
+    .badge-cancelled {
+      @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
+    }
+    
+    .btn-primary {
+      @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold;
+    }
+    
+    .btn-success {
+      @apply px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200 text-sm;
+    }
+    
+    .btn-danger {
+      @apply px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm;
+    }
+    
+    .btn-secondary {
+      @apply px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm;
+    }
+    
+    .stat-card {
+      @apply bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-gray-700;
+    }
+    
+    .modal-overlay {
+      @apply fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center;
+    }
+    
+    .modal-content {
+      @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen" x-data="withdrawalsManager()" x-init="init()">
+  
+  <!-- Header Admin -->
+  <header class="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-4">
+          <a href="/admin/إدارة_المستخدمين_(للمسؤولين)_3.html" class="text-2xl font-bold text-blue-600">
+            💼 UGC Maroc
+          </a>
+          <span class="text-gray-400">|</span>
+          <h1 class="text-xl font-bold text-gray-800 dark:text-white">إدارة طلبات السحب</h1>
+        </div>
+        
+        <!-- Admin Profile -->
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-600 dark:text-gray-400" x-text="adminName"></span>
+          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+            A
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-8">
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Pending -->
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-3xl">💰</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">قيد المراجعة</span>
+        </div>
+        <div class="text-2xl font-bold text-gray-800 dark:text-white" x-text="formatAmount(stats.totalPending)"></div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">إجمالي المبالغ المعلقة</div>
+      </div>
+      
+      <!-- Total Approved This Month -->
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-3xl">✅</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">هذا الشهر</span>
+        </div>
+        <div class="text-2xl font-bold text-green-600" x-text="formatAmount(stats.approvedThisMonth)"></div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">إجمالي الموافق عليه</div>
+      </div>
+      
+      <!-- Total Paid This Month -->
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-3xl">💸</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">هذا الشهر</span>
+        </div>
+        <div class="text-2xl font-bold text-blue-600" x-text="formatAmount(stats.paidThisMonth)"></div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">إجمالي المدفوع</div>
+      </div>
+      
+      <!-- Pending Count -->
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-3xl">⏳</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">طلبات</span>
+        </div>
+        <div class="text-2xl font-bold text-yellow-600" x-text="stats.pendingCount"></div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">عدد الطلبات المعلقة</div>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <!-- Status Filter -->
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            تصفية حسب الحالة
+          </label>
+          <select x-model="filteredStatus" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+            <option value="all">الكل</option>
+            <option value="pending">قيد المراجعة</option>
+            <option value="approved">موافق عليه</option>
+            <option value="processing">قيد المعالجة</option>
+            <option value="completed">مكتمل</option>
+            <option value="rejected">مرفوض</option>
+            <option value="cancelled">ملغى</option>
+          </select>
+        </div>
+        
+        <!-- Search -->
+        <div class="flex-1">
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            البحث (اسم أو بريد إلكتروني)
+          </label>
+          <input 
+            type="text" 
+            x-model="searchQuery" 
+            placeholder="ابحث عن مبدع..."
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+        
+        <!-- Refresh Button -->
+        <div class="flex items-end">
+          <button @click="loadWithdrawals()" class="btn-primary flex items-center gap-2">
+            <span>🔄</span>
+            <span>تحديث</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Withdrawals Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">ID</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">المبدع</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">المبلغ المطلوب</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">العمولة (15%)</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">الرسوم (17 DH)</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">الصافي</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">البنك + RIB</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">صاحب الحساب</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">الحالة</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">تاريخ الطلب</th>
+              <th class="px-4 py-3 text-right text-sm font-bold text-gray-700 dark:text-gray-300">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <template x-for="withdrawal in filteredWithdrawals" :key="withdrawal.id">
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                <td class="px-4 py-3 text-sm text-gray-800 dark:text-gray-300" x-text="withdrawal.id"></td>
+                
+                <!-- Creator Info -->
+                <td class="px-4 py-3">
+                  <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="withdrawal.creator_name"></div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400" x-text="withdrawal.creator_email"></div>
+                </td>
+                
+                <!-- Amount -->
+                <td class="px-4 py-3 text-sm font-bold text-gray-800 dark:text-white" x-text="formatAmount(withdrawal.amount)"></td>
+                
+                <!-- Platform Fee -->
+                <td class="px-4 py-3 text-sm text-red-600 dark:text-red-400" x-text="formatAmount(withdrawal.platform_fee)"></td>
+                
+                <!-- Bank Fee -->
+                <td class="px-4 py-3 text-sm text-orange-600 dark:text-orange-400" x-text="formatAmount(withdrawal.bank_fee)"></td>
+                
+                <!-- Net Amount -->
+                <td class="px-4 py-3 text-sm font-bold text-green-600 dark:text-green-400" x-text="formatAmount(withdrawal.net_amount)"></td>
+                
+                <!-- Bank + RIB -->
+                <td class="px-4 py-3">
+                  <div class="text-sm text-gray-800 dark:text-white" x-text="withdrawal.bank_name || 'غير محدد'"></div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400" x-text="withdrawal.rib || 'غير محدد'"></div>
+                </td>
+                
+                <!-- Account Holder -->
+                <td class="px-4 py-3 text-sm text-gray-800 dark:text-white" x-text="withdrawal.account_holder || 'غير محدد'"></td>
+                
+                <!-- Status -->
+                <td class="px-4 py-3">
+                  <span :class="getStatusBadgeClass(withdrawal.status)" x-text="getStatusText(withdrawal.status)"></span>
+                </td>
+                
+                <!-- Date -->
+                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400" x-text="formatDate(withdrawal.requested_at)"></td>
+                
+                <!-- Actions -->
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <!-- Approve (only if pending) -->
+                    <button 
+                      x-show="withdrawal.status === 'pending'" 
+                      @click="approveWithdrawal(withdrawal.id)"
+                      class="btn-success"
+                      title="موافقة"
+                    >
+                      ✅
+                    </button>
+                    
+                    <!-- Reject (only if pending) -->
+                    <button 
+                      x-show="withdrawal.status === 'pending'" 
+                      @click="openRejectModal(withdrawal)"
+                      class="btn-danger"
+                      title="رفض"
+                    >
+                      ❌
+                    </button>
+                    
+                    <!-- Mark as Paid (only if approved) -->
+                    <button 
+                      x-show="withdrawal.status === 'approved'" 
+                      @click="openCompleteModal(withdrawal)"
+                      class="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 text-white rounded-md transition-colors duration-200 text-sm"
+                      title="تأكيد الدفع"
+                    >
+                      💸
+                    </button>
+                    
+                    <!-- Details -->
+                    <button 
+                      @click="openDetailsModal(withdrawal)"
+                      class="btn-secondary"
+                      title="التفاصيل"
+                    >
+                      👁️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+            
+            <!-- Empty State -->
+            <tr x-show="filteredWithdrawals.length === 0">
+              <td colspan="11" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                <div class="text-5xl mb-4">📭</div>
+                <div class="text-lg font-semibold">لا توجد طلبات سحب</div>
+                <div class="text-sm mt-2">جرب تغيير الفلاتر أو البحث</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Details -->
+  <div x-show="showDetailsModal" x-cloak class="modal-overlay" @click.self="showDetailsModal = false">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">تفاصيل طلب السحب</h2>
+        <button @click="showDetailsModal = false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl">
+          ×
+        </button>
+      </div>
+      
+      <div class="space-y-4" x-show="selectedWithdrawal">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">رقم الطلب</div>
+            <div class="text-lg font-semibold text-gray-800 dark:text-white" x-text="selectedWithdrawal?.id"></div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">الحالة</div>
+            <div>
+              <span :class="getStatusBadgeClass(selectedWithdrawal?.status)" x-text="getStatusText(selectedWithdrawal?.status)"></span>
+            </div>
+          </div>
+        </div>
+        
+        <hr class="border-gray-200 dark:border-gray-700">
+        
+        <div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">اسم المبدع</div>
+          <div class="text-lg font-semibold text-gray-800 dark:text-white" x-text="selectedWithdrawal?.creator_name"></div>
+        </div>
+        
+        <div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">البريد الإلكتروني</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="selectedWithdrawal?.creator_email"></div>
+        </div>
+        
+        <hr class="border-gray-200 dark:border-gray-700">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">المبلغ المطلوب</div>
+            <div class="text-lg font-bold text-gray-800 dark:text-white" x-text="formatAmount(selectedWithdrawal?.amount)"></div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">العمولة (15%)</div>
+            <div class="text-lg font-bold text-red-600" x-text="formatAmount(selectedWithdrawal?.platform_fee)"></div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">الرسوم البنكية</div>
+            <div class="text-lg font-bold text-orange-600" x-text="formatAmount(selectedWithdrawal?.bank_fee)"></div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">المبلغ الصافي</div>
+            <div class="text-lg font-bold text-green-600" x-text="formatAmount(selectedWithdrawal?.net_amount)"></div>
+          </div>
+        </div>
+        
+        <hr class="border-gray-200 dark:border-gray-700">
+        
+        <div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">البنك</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="selectedWithdrawal?.bank_name || 'غير محدد'"></div>
+        </div>
+        
+        <div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">RIB</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="selectedWithdrawal?.rib || 'غير محدد'"></div>
+        </div>
+        
+        <div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">صاحب الحساب</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="selectedWithdrawal?.account_holder || 'غير محدد'"></div>
+        </div>
+        
+        <hr class="border-gray-200 dark:border-gray-700">
+        
+        <div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">تاريخ الطلب</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="formatDate(selectedWithdrawal?.requested_at)"></div>
+        </div>
+        
+        <div x-show="selectedWithdrawal?.approved_at">
+          <div class="text-sm text-gray-500 dark:text-gray-400">تاريخ الموافقة</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="formatDate(selectedWithdrawal?.approved_at)"></div>
+        </div>
+        
+        <div x-show="selectedWithdrawal?.completed_at">
+          <div class="text-sm text-gray-500 dark:text-gray-400">تاريخ الإتمام</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="formatDate(selectedWithdrawal?.completed_at)"></div>
+        </div>
+        
+        <div x-show="selectedWithdrawal?.rejection_reason">
+          <div class="text-sm text-gray-500 dark:text-gray-400">سبب الرفض</div>
+          <div class="text-lg text-red-600" x-text="selectedWithdrawal?.rejection_reason"></div>
+        </div>
+        
+        <div x-show="selectedWithdrawal?.admin_notes">
+          <div class="text-sm text-gray-500 dark:text-gray-400">ملاحظات الإدارة</div>
+          <div class="text-lg text-gray-800 dark:text-white" x-text="selectedWithdrawal?.admin_notes"></div>
+        </div>
+      </div>
+      
+      <div class="mt-6 flex justify-end">
+        <button @click="showDetailsModal = false" class="btn-secondary">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Reject -->
+  <div x-show="showRejectModal" x-cloak class="modal-overlay" @click.self="showRejectModal = false">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-red-600">رفض طلب السحب</h2>
+        <button @click="showRejectModal = false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl">
+          ×
+        </button>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          سبب الرفض <span class="text-red-500">*</span>
+        </label>
+        <textarea 
+          x-model="rejectionReason" 
+          rows="4" 
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-red-500"
+          placeholder="أدخل سبب رفض الطلب..."
+        ></textarea>
+      </div>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          ملاحظات إضافية (اختياري)
+        </label>
+        <textarea 
+          x-model="adminNotes" 
+          rows="3" 
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+          placeholder="ملاحظات داخلية..."
+        ></textarea>
+      </div>
+      
+      <div class="flex gap-3 justify-end">
+        <button @click="showRejectModal = false" class="btn-secondary">إلغاء</button>
+        <button @click="confirmReject()" class="btn-danger">تأكيد الرفض</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Complete Payment -->
+  <div x-show="showCompleteModal" x-cloak class="modal-overlay" @click.self="showCompleteModal = false">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-green-600">تأكيد الدفع</h2>
+        <button @click="showCompleteModal = false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl">
+          ×
+        </button>
+      </div>
+      
+      <div class="mb-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+        <div class="text-sm text-blue-800 dark:text-blue-200">
+          <strong>المبلغ الصافي للتحويل:</strong> <span x-text="formatAmount(selectedWithdrawal?.net_amount)"></span>
+        </div>
+      </div>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          ملاحظات التحويل (اختياري)
+        </label>
+        <textarea 
+          x-model="adminNotes" 
+          rows="4" 
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-green-500"
+          placeholder="رقم التحويل، تاريخ التحويل، ملاحظات..."
+        ></textarea>
+      </div>
+      
+      <div class="flex gap-3 justify-end">
+        <button @click="showCompleteModal = false" class="btn-secondary">إلغاء</button>
+        <button @click="confirmComplete()" class="bg-green-600 hover:bg-green-700 px-4 py-2 text-white rounded-lg transition-colors duration-200 font-semibold">
+          تأكيد الدفع 💸
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div 
+    x-show="toast.show" 
+    x-transition
+    :class="toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'"
+    class="fixed bottom-6 left-6 right-6 md:right-auto md:w-96 text-white px-6 py-4 rounded-lg shadow-xl z-50"
+  >
+    <div class="flex items-center justify-between">
+      <span x-text="toast.message"></span>
+      <button @click="toast.show = false" class="text-white hover:text-gray-200 text-xl ml-4">×</button>
+    </div>
+  </div>
+
+  <!-- Config & Auth Scripts -->
+  <script src="/js/config.js"></script>
+  
+  <script>
+    function withdrawalsManager() {
+      return {
+        withdrawals: [],
+        filteredStatus: 'all',
+        searchQuery: '',
+        adminName: 'المسؤول',
+        supabaseReady: false,
+        
+        // Statistics
+        stats: {
+          totalPending: 0,
+          approvedThisMonth: 0,
+          paidThisMonth: 0,
+          pendingCount: 0
+        },
+        
+        // Modals
+        showDetailsModal: false,
+        showRejectModal: false,
+        showCompleteModal: false,
+        selectedWithdrawal: null,
+        rejectionReason: '',
+        adminNotes: '',
+        
+        // Toast
+        toast: {
+          show: false,
+          message: '',
+          type: 'success'
+        },
+        
+        async init() {
+          console.log('🔧 Initializing withdrawals manager...');
+          
+          // Wait for Supabase to be ready
+          if (!window.supabaseClient) {
+            console.log('⏳ Waiting for Supabase to initialize...');
+            await new Promise((resolve) => {
+              window.addEventListener('supabaseReady', () => {
+                console.log('✅ Supabase is ready!');
+                resolve();
+              }, { once: true });
+              
+              // Timeout fallback
+              setTimeout(() => {
+                if (!window.supabaseClient) {
+                  console.error('❌ Supabase initialization timeout');
+                  resolve();
+                }
+              }, 5000);
+            });
+          }
+          
+          // Check authentication
+          const isAuth = await this.checkAuth();
+          if (!isAuth) {
+            window.location.href = '/auth/brand-login.html'; // Or admin login page
+            return;
+          }
+          
+          // Load withdrawals
+          await this.loadWithdrawals();
+        },
+        
+        async checkAuth() {
+          try {
+            const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+            
+            if (error || !user) {
+              console.error('❌ User not authenticated');
+              return false;
+            }
+            
+            // Get user profile to check role
+            const response = await fetch(`${window.API_BASE_URL}/api/profile/${user.id}`);
+            const result = await response.json();
+            
+            if (!result.success || result.profile.role !== 'admin') {
+              console.error('❌ User is not admin');
+              this.showToast('ليس لديك صلاحية للوصول لهذه الصفحة', 'error');
+              return false;
+            }
+            
+            this.adminName = result.profile.full_name || 'المسؤول';
+            return true;
+          } catch (error) {
+            console.error('❌ Auth check error:', error);
+            return false;
+          }
+        },
+        
+        async loadWithdrawals() {
+          try {
+            console.log('📥 Loading withdrawals...');
+            
+            // Get auth token
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (!session) {
+              throw new Error('No session found');
+            }
+            
+            const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals?limit=100`, {
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+              throw new Error(result.message || 'Failed to load withdrawals');
+            }
+            
+            this.withdrawals = result.withdrawals;
+            this.calculateStats();
+            
+            console.log('✅ Withdrawals loaded:', this.withdrawals.length);
+          } catch (error) {
+            console.error('❌ Error loading withdrawals:', error);
+            this.showToast('خطأ في تحميل طلبات السحب', 'error');
+          }
+        },
+        
+        calculateStats() {
+          const now = new Date();
+          const currentMonth = now.getMonth();
+          const currentYear = now.getFullYear();
+          
+          this.stats.totalPending = this.withdrawals
+            .filter(w => w.status === 'pending')
+            .reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
+          
+          this.stats.approvedThisMonth = this.withdrawals
+            .filter(w => {
+              if (w.status !== 'approved' || !w.approved_at) return false;
+              const date = new Date(w.approved_at);
+              return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            })
+            .reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
+          
+          this.stats.paidThisMonth = this.withdrawals
+            .filter(w => {
+              if (w.status !== 'completed' || !w.completed_at) return false;
+              const date = new Date(w.completed_at);
+              return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            })
+            .reduce((sum, w) => sum + parseFloat(w.net_amount || 0), 0);
+          
+          this.stats.pendingCount = this.withdrawals.filter(w => w.status === 'pending').length;
+        },
+        
+        get filteredWithdrawals() {
+          let filtered = this.withdrawals;
+          
+          // Filter by status
+          if (this.filteredStatus !== 'all') {
+            filtered = filtered.filter(w => w.status === this.filteredStatus);
+          }
+          
+          // Search by name or email
+          if (this.searchQuery.trim()) {
+            const query = this.searchQuery.toLowerCase();
+            filtered = filtered.filter(w => 
+              (w.creator_name && w.creator_name.toLowerCase().includes(query)) ||
+              (w.creator_email && w.creator_email.toLowerCase().includes(query))
+            );
+          }
+          
+          return filtered;
+        },
+        
+        async approveWithdrawal(id) {
+          if (!confirm('هل أنت متأكد من الموافقة على هذا الطلب؟')) {
+            return;
+          }
+          
+          try {
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (!session) throw new Error('No session');
+            
+            const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals/${id}/approve`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+              },
+              body: JSON.stringify({})
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+              throw new Error(result.message);
+            }
+            
+            this.showToast('تم الموافقة على الطلب بنجاح ✅', 'success');
+            await this.loadWithdrawals();
+          } catch (error) {
+            console.error('❌ Error approving withdrawal:', error);
+            this.showToast('خطأ في الموافقة على الطلب', 'error');
+          }
+        },
+        
+        openRejectModal(withdrawal) {
+          this.selectedWithdrawal = withdrawal;
+          this.rejectionReason = '';
+          this.adminNotes = '';
+          this.showRejectModal = true;
+        },
+        
+        async confirmReject() {
+          if (!this.rejectionReason.trim()) {
+            this.showToast('يجب إدخال سبب الرفض', 'error');
+            return;
+          }
+          
+          try {
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (!session) throw new Error('No session');
+            
+            const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals/${this.selectedWithdrawal.id}/reject`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+              },
+              body: JSON.stringify({
+                rejection_reason: this.rejectionReason,
+                admin_notes: this.adminNotes || null
+              })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+              throw new Error(result.message);
+            }
+            
+            this.showToast('تم رفض الطلب ❌', 'success');
+            this.showRejectModal = false;
+            await this.loadWithdrawals();
+          } catch (error) {
+            console.error('❌ Error rejecting withdrawal:', error);
+            this.showToast('خطأ في رفض الطلب', 'error');
+          }
+        },
+        
+        openCompleteModal(withdrawal) {
+          this.selectedWithdrawal = withdrawal;
+          this.adminNotes = '';
+          this.showCompleteModal = true;
+        },
+        
+        async confirmComplete() {
+          if (!confirm('هل أنت متأكد من إتمام التحويل البنكي؟')) {
+            return;
+          }
+          
+          try {
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (!session) throw new Error('No session');
+            
+            const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals/${this.selectedWithdrawal.id}/complete`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+              },
+              body: JSON.stringify({
+                admin_notes: this.adminNotes || null
+              })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+              throw new Error(result.message);
+            }
+            
+            this.showToast('تم تأكيد الدفع بنجاح 💸', 'success');
+            this.showCompleteModal = false;
+            await this.loadWithdrawals();
+          } catch (error) {
+            console.error('❌ Error completing withdrawal:', error);
+            this.showToast('خطأ في تأكيد الدفع', 'error');
+          }
+        },
+        
+        openDetailsModal(withdrawal) {
+          this.selectedWithdrawal = withdrawal;
+          this.showDetailsModal = true;
+        },
+        
+        formatAmount(amount) {
+          if (!amount) return '0.00 DH';
+          return parseFloat(amount).toFixed(2) + ' DH';
+        },
+        
+        formatDate(dateString) {
+          if (!dateString) return '-';
+          const date = new Date(dateString);
+          return date.toLocaleDateString('ar-MA', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        },
+        
+        getStatusText(status) {
+          const statusMap = {
+            'pending': '🟡 قيد المراجعة',
+            'approved': '🟢 موافق عليه',
+            'processing': '🔵 قيد المعالجة',
+            'completed': '✅ مكتمل',
+            'rejected': '🔴 مرفوض',
+            'cancelled': '⚫ ملغى'
+          };
+          return statusMap[status] || status;
+        },
+        
+        getStatusBadgeClass(status) {
+          const baseClass = 'badge ';
+          const statusClasses = {
+            'pending': 'badge-pending',
+            'approved': 'badge-approved',
+            'processing': 'badge-processing',
+            'completed': 'badge-completed',
+            'rejected': 'badge-rejected',
+            'cancelled': 'badge-cancelled'
+          };
+          return baseClass + (statusClasses[status] || 'badge-pending');
+        },
+        
+        showToast(message, type = 'success') {
+          this.toast.message = message;
+          this.toast.type = type;
+          this.toast.show = true;
+          setTimeout(() => {
+            this.toast.show = false;
+          }, 3000);
+        }
+      };
+    }
+  </script>
+
+</body>
+</html>
