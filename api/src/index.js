@@ -652,6 +652,237 @@ app.get("/api/campaigns/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// Update campaign status (pause/resume/close)
+app.patch("/api/campaigns/:id/status", authMiddleware, async (req, res) => {
+  try {
+    const campaignId = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    if (!campaignId || isNaN(campaignId)) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم الحملة غير صحيح"
+      });
+    }
+
+    // Valid status transitions
+    const validStatuses = ['active', 'paused', 'closed'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "حالة غير صالحة"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+    
+    // Get campaign and check ownership
+    const campaignData = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
+    
+    if (!campaignData || campaignData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    const campaign = campaignData[0];
+    
+    if (campaign.brand_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "ليس لديك صلاحية لتعديل هذه الحملة"
+      });
+    }
+
+    // Validate status transitions
+    if (campaign.status === 'closed') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن تغيير حالة حملة مغلقة"
+      });
+    }
+
+    if (campaign.status === 'draft' && status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        message: "يجب تفعيل الحملة أولاً"
+      });
+    }
+
+    // Update status
+    await db.update(campaigns)
+      .set({ 
+        status: status,
+        updated_at: new Date()
+      })
+      .where(eq(campaigns.id, campaignId));
+
+    const statusMessages = {
+      'active': 'تم تفعيل الحملة بنجاح',
+      'paused': 'تم إيقاف الحملة مؤقتاً',
+      'closed': 'تم إغلاق الحملة'
+    };
+
+    console.log(`✅ Campaign ${campaignId} status changed to: ${status}`);
+
+    return res.status(200).json({
+      success: true,
+      message: statusMessages[status]
+    });
+
+  } catch (error) {
+    console.error("❌ Error updating campaign status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحديث حالة الحملة",
+      error: error.message
+    });
+  }
+});
+
+// Duplicate campaign
+app.post("/api/campaigns/:id/duplicate", authMiddleware, async (req, res) => {
+  try {
+    const campaignId = parseInt(req.params.id);
+    
+    if (!campaignId || isNaN(campaignId)) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم الحملة غير صحيح"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+    
+    // Get original campaign
+    const campaignData = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
+    
+    if (!campaignData || campaignData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    const originalCampaign = campaignData[0];
+    
+    if (originalCampaign.brand_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "ليس لديك صلاحية لتكرار هذه الحملة"
+      });
+    }
+
+    // Create duplicate (without media files - user can re-upload)
+    const newCampaign = await db.insert(campaigns).values({
+      brand_id: originalCampaign.brand_id,
+      title: `${originalCampaign.title} (نسخة)`,
+      description: originalCampaign.description,
+      category: originalCampaign.category,
+      content_type: originalCampaign.content_type,
+      language: originalCampaign.language,
+      budget: originalCampaign.budget,
+      price_per_ugc: originalCampaign.price_per_ugc,
+      platforms: originalCampaign.platforms,
+      start_date: null,
+      deadline: null,
+      product_name: originalCampaign.product_name,
+      product_link: originalCampaign.product_link,
+      delivery_method: originalCampaign.delivery_method,
+      media_files: null, // Don't copy media files
+      additional_notes: originalCampaign.additional_notes,
+      status: 'draft', // New campaign starts as draft
+      difficulty: originalCampaign.difficulty,
+      created_at: new Date(),
+      updated_at: new Date()
+    }).returning();
+
+    console.log(`✅ Campaign ${campaignId} duplicated as ${newCampaign[0].id}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم تكرار الحملة بنجاح",
+      campaign: newCampaign[0]
+    });
+
+  } catch (error) {
+    console.error("❌ Error duplicating campaign:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تكرار الحملة",
+      error: error.message
+    });
+  }
+});
+
+// Delete campaign
+app.delete("/api/campaigns/:id", authMiddleware, async (req, res) => {
+  try {
+    const campaignId = parseInt(req.params.id);
+    
+    if (!campaignId || isNaN(campaignId)) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم الحملة غير صحيح"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+    
+    // Get campaign and check ownership
+    const campaignData = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
+    
+    if (!campaignData || campaignData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    const campaign = campaignData[0];
+    
+    if (campaign.brand_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "ليس لديك صلاحية لحذف هذه الحملة"
+      });
+    }
+
+    // Only allow deleting draft campaigns or campaigns without submissions
+    if (campaign.status !== 'draft' && campaign.submissions > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن حذف حملة نشطة أو تحتوي على محتوى مقدم"
+      });
+    }
+
+    // Delete campaign
+    await db.delete(campaigns).where(eq(campaigns.id, campaignId));
+
+    console.log(`✅ Campaign ${campaignId} deleted`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم حذف الحملة بنجاح"
+    });
+
+  } catch (error) {
+    console.error("❌ Error deleting campaign:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في حذف الحملة",
+      error: error.message
+    });
+  }
+});
+
 // Upload media files for campaign (images/videos)
 app.post("/api/campaigns/upload-media", authMiddleware, uploadMedia.array('media', 5), async (req, res) => {
   try {

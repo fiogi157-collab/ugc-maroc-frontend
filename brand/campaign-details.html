@@ -486,33 +486,137 @@
       document.getElementById('error-message').textContent = message;
     }
 
-    // Action functions (placeholders for now)
+    // Action functions
     window.editCampaign = () => {
-      alert('قريباً - تعديل الحملة');
+      alert('قريباً - تعديل الحملة\nستتمكن قريباً من تعديل الحملة من هنا');
     };
 
     window.togglePauseCampaign = async () => {
       const newStatus = campaignData.status === 'active' ? 'paused' : 'active';
-      if (confirm(`هل تريد ${newStatus === 'paused' ? 'إيقاف' : 'استئناف'} هذه الحملة؟`)) {
-        alert('قريباً - تغيير حالة الحملة');
+      const actionText = newStatus === 'paused' ? 'إيقاف' : 'استئناف';
+      
+      if (!confirm(`هل تريد ${actionText} هذه الحملة؟`)) {
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(`${API_URL}/api/campaigns/${campaignId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'فشل تغيير حالة الحملة');
+        }
+
+        alert(result.message);
+        window.location.reload();
+        
+      } catch (error) {
+        console.error('Error toggling campaign status:', error);
+        alert(error.message || 'حدث خطأ في تغيير حالة الحملة');
       }
     };
 
     window.closeCampaign = async () => {
-      if (confirm('هل تريد إغلاق هذه الحملة؟ لن تتمكن من استئنافها بعد ذلك.')) {
-        alert('قريباً - إغلاق الحملة');
+      if (!confirm('هل تريد إغلاق هذه الحملة؟ لن تتمكن من استئنافها بعد ذلك.')) {
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(`${API_URL}/api/campaigns/${campaignId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: 'closed' })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'فشل إغلاق الحملة');
+        }
+
+        alert(result.message);
+        window.location.reload();
+        
+      } catch (error) {
+        console.error('Error closing campaign:', error);
+        alert(error.message || 'حدث خطأ في إغلاق الحملة');
       }
     };
 
     window.duplicateCampaign = async () => {
-      if (confirm('هل تريد إنشاء نسخة من هذه الحملة؟')) {
-        alert('قريباً - تكرار الحملة');
+      if (!confirm('هل تريد إنشاء نسخة من هذه الحملة؟')) {
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(`${API_URL}/api/campaigns/${campaignId}/duplicate`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'فشل تكرار الحملة');
+        }
+
+        alert(result.message);
+        // Redirect to the new campaign
+        window.location.href = `/brand/campaign-details.html?id=${result.campaign.id}`;
+        
+      } catch (error) {
+        console.error('Error duplicating campaign:', error);
+        alert(error.message || 'حدث خطأ في تكرار الحملة');
       }
     };
 
     window.deleteCampaign = async () => {
-      if (confirm('هل أنت متأكد من حذف هذه الحملة؟ لا يمكن التراجع عن هذا الإجراء.')) {
-        alert('قريباً - حذف الحملة');
+      if (!confirm('هل أنت متأكد من حذف هذه الحملة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(`${API_URL}/api/campaigns/${campaignId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'فشل حذف الحملة');
+        }
+
+        alert(result.message);
+        // Redirect to dashboard
+        window.location.href = '/brand/brand_dashboard_premium.html';
+        
+      } catch (error) {
+        console.error('Error deleting campaign:', error);
+        alert(error.message || 'حدث خطأ في حذف الحملة');
       }
     };
 
