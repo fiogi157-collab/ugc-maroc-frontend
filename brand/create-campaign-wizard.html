@@ -546,11 +546,17 @@
                 ${campaignData.endDate ? `<div><span class="font-semibold">النهاية:</span> ${campaignData.endDate}</div>` : ''}
               </div>
               
-              ${uploadedMediaFiles.length > 0 ? `
-                <div class="mt-4">
-                  <span class="font-semibold">الوسائط:</span> ${uploadedMediaFiles.length} ملف
+            </div>
+            
+            ${uploadedMediaFiles.length > 0 ? `
+              <div class="bg-white rounded-xl p-6 border-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                  📸 الصور والفيديوهات (${uploadedMediaFiles.length})
+                </h3>
+                <div id="mediaPreviewStep4" class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 </div>
-              ` : ''}
+              </div>
+            ` : ''}
             </div>
             
             <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
@@ -563,6 +569,29 @@
             <div id="publishError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"></div>
           </div>
         `;
+        
+        // Render media preview in step 4
+        if (uploadedMediaFiles.length > 0) {
+          const mediaPreviewContainer = document.getElementById('mediaPreviewStep4');
+          if (mediaPreviewContainer) {
+            mediaPreviewContainer.innerHTML = uploadedMediaFiles.map((file, index) => {
+              const isVideo = file.type.startsWith('video/');
+              const url = URL.createObjectURL(file);
+              
+              return `
+                <div class="relative aspect-square rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-100 hover:border-indigo-500 transition cursor-pointer group" onclick="window.open('${url}', '_blank')">
+                  ${isVideo 
+                    ? `<video src="${url}" class="w-full h-full object-cover" muted loop autoplay></video>`
+                    : `<img src="${url}" alt="Preview ${index + 1}" class="w-full h-full object-cover">`
+                  }
+                  <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent text-white text-xs py-2 px-1 text-center opacity-0 group-hover:opacity-100 transition">
+                    ${isVideo ? '🎬 فيديو - انقر للعرض بحجم كامل' : '🖼️ صورة - انقر للعرض بحجم كامل'}
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
       }
       
       document.getElementById('prevBtn').classList.toggle('hidden', step === 1);
