@@ -88,7 +88,7 @@
   document.documentElement.classList.add('dark');
 </script>
 <div class="flex h-screen">
-<aside class="w-64 bg-card-light dark:bg-card-dark p-6 hidden lg:flex flex-col justify-between">
+<aside id="mobile-sidebar" class="w-64 bg-card-light dark:bg-card-dark p-6 hidden lg:flex flex-col justify-between fixed lg:static top-0 right-0 h-full z-50 transition-transform duration-300 transform translate-x-full lg:translate-x-0">
 <div>
 <div class="flex items-center justify-between mb-10">
 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">UGC Maroc</h1>
@@ -143,7 +143,7 @@
 <main class="flex-1 p-4 md:p-6 overflow-y-auto">
 <header class="flex items-center justify-between mb-6">
 <div class="flex items-center space-x-4">
-<button class="lg:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
+<button id="mobile-menu-btn" class="lg:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
 <span class="material-icons">menu</span>
 </button>
 <div class="relative hidden sm:block">
@@ -314,7 +314,7 @@
 </div>
 </div>
 <div class="flex gap-4 justify-center">
-<a href="#" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition inline-flex items-center">
+<a href="/brand/brand_dashboard_premium.html" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition inline-flex items-center">
 <span class="material-icons ml-2">dashboard</span>
 العودة إلى لوحة التحكم
 </a>
@@ -435,6 +435,32 @@ function resetForm() {
     document.getElementById('depositForm').classList.remove('hidden');
     document.getElementById('successSection').classList.add('hidden');
 }
+
+// Mobile menu toggle
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileSidebar = document.getElementById('mobile-sidebar');
+let isMenuOpen = false;
+
+mobileMenuBtn?.addEventListener('click', () => {
+    isMenuOpen = !isMenuOpen;
+    if (isMenuOpen) {
+        mobileSidebar.classList.remove('hidden', 'translate-x-full');
+        mobileSidebar.classList.add('translate-x-0');
+    } else {
+        mobileSidebar.classList.add('translate-x-full');
+        setTimeout(() => mobileSidebar.classList.add('hidden'), 300);
+    }
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (isMenuOpen && !mobileSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+        isMenuOpen = false;
+        mobileSidebar.classList.add('translate-x-full');
+        setTimeout(() => mobileSidebar.classList.add('hidden'), 300);
+    }
+});
 </script>
+<script src="/js/dark-mode-toggle.js"></script>
 </body>
 </html>
