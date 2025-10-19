@@ -334,3 +334,33 @@ export const platformSettings = pgTable("platform_settings", {
   updated_at: timestamp("updated_at").defaultNow().notNull(),
   updated_by: varchar("updated_by").references(() => profiles.id, { onDelete: "set null" }), // Admin who last updated
 });
+
+// ===== CONVERSATIONS TABLE (NEW) =====
+// Real-time chat conversations for agreement negotiation
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  agreement_id: integer("agreement_id").notNull().unique().references(() => campaignAgreements.id, { onDelete: "cascade" }), // One conversation per agreement
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  campaign_id: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  last_message: text("last_message"), // Preview of most recent message
+  last_message_at: timestamp("last_message_at"), // Timestamp of last message
+  brand_unread_count: integer("brand_unread_count").default(0).notNull(), // Unread messages for brand
+  creator_unread_count: integer("creator_unread_count").default(0).notNull(), // Unread messages for creator
+  is_active: boolean("is_active").default(true).notNull(), // Can be closed when agreement finalized
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== MESSAGES TABLE (NEW) =====
+// Individual chat messages within conversations
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversation_id: integer("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  sender_id: varchar("sender_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), // brand_id or creator_id
+  message: text("message").notNull(), // Message content
+  message_type: varchar("message_type").default("text").notNull(), // 'text' | 'system' | 'offer' | 'file'
+  metadata: text("metadata"), // JSON for offers, file URLs, etc.
+  is_read: boolean("is_read").default(false).notNull(), // Mark as read when viewed
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});

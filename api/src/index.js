@@ -31,7 +31,9 @@ import {
   ratings,
   creatorBankDetails,
   bankChangeRequests,
-  platformSettings
+  platformSettings,
+  conversations,
+  messages
 } from "../db/schema.js";
 import { eq, and, sql, desc } from "drizzle-orm";
 
@@ -2587,6 +2589,22 @@ app.patch("/api/agreements/:id/accept", authMiddleware, async (req, res) => {
           created_at: new Date(),
           updated_at: new Date()
         });
+
+      // 5. Create conversation for real-time negotiation
+      await tx.insert(conversations)
+        .values({
+          agreement_id: agreementId,
+          brand_id: agreement.brand_id,
+          creator_id: agreement.creator_id,
+          campaign_id: agreement.campaign_id,
+          last_message: "تم قبول الدعوة! يمكنكم الآن بدء المحادثة 💬",
+          last_message_at: new Date(),
+          brand_unread_count: 0,
+          creator_unread_count: 0,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        });
     });
 
     console.log(`✅ Agreement accepted: Agreement #${agreementId}, Escrow created for ${agreement.final_price} MAD, Wallet debited`);
@@ -2864,6 +2882,22 @@ app.patch("/api/agreements/:id/approve", authMiddleware, async (req, res) => {
           creator_id: agreement.creator_id,
           amount: agreement.final_price,
           status: 'active',
+          created_at: new Date(),
+          updated_at: new Date()
+        });
+
+      // 5. Create conversation for real-time negotiation
+      await tx.insert(conversations)
+        .values({
+          agreement_id: agreementId,
+          brand_id: agreement.brand_id,
+          creator_id: agreement.creator_id,
+          campaign_id: agreement.campaign_id,
+          last_message: "تم قبول الطلب! يمكنكم الآن بدء المحادثة 💬",
+          last_message_at: new Date(),
+          brand_unread_count: 0,
+          creator_unread_count: 0,
+          is_active: true,
           created_at: new Date(),
           updated_at: new Date()
         });
@@ -4736,6 +4770,261 @@ app.put("/api/platform/bank-info", authMiddleware, async (req, res) => {
 });
 
 // ========================================
+// 💬 MESSAGING & CONVERSATIONS ENDPOINTS
+// ========================================
+
+// GET /api/conversations/:user_id - Get all conversations for a user
+app.get("/api/conversations/:user_id", authMiddleware, async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    // SECURITY: Verify requester is accessing their own conversations
+    if (req.user.id !== user_id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول إلى محادثات مستخدم آخر"
+      });
+    }
+
+    // Get all conversations where user is brand or creator
+    const userConversations = await db
+      .select({
+        id: conversations.id,
+        agreement_id: conversations.agreement_id,
+        brand_id: conversations.brand_id,
+        creator_id: conversations.creator_id,
+        campaign_id: conversations.campaign_id,
+        last_message: conversations.last_message,
+        last_message_at: conversations.last_message_at,
+        brand_unread_count: conversations.brand_unread_count,
+        creator_unread_count: conversations.creator_unread_count,
+        is_active: conversations.is_active,
+        created_at: conversations.created_at,
+        campaign_title: campaigns.title,
+        brand_name: sql`brand_profile.full_name`,
+        creator_name: sql`creator_profile.full_name`,
+      })
+      .from(conversations)
+      .leftJoin(campaigns, eq(conversations.campaign_id, campaigns.id))
+      .leftJoin(profiles.as('brand_profile'), eq(conversations.brand_id, sql`brand_profile.id`))
+      .leftJoin(profiles.as('creator_profile'), eq(conversations.creator_id, sql`creator_profile.id`))
+      .where(
+        sql`${conversations.brand_id} = ${user_id} OR ${conversations.creator_id} = ${user_id}`
+      )
+      .orderBy(desc(conversations.last_message_at));
+
+    res.json({
+      success: true,
+      conversations: userConversations
+    });
+  } catch (error) {
+    console.error("❌ Error fetching conversations:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في جلب المحادثات"
+    });
+  }
+});
+
+// GET /api/conversations/:conversation_id/messages - Get all messages in a conversation
+app.get("/api/conversations/:conversation_id/messages", authMiddleware, async (req, res) => {
+  try {
+    const { conversation_id } = req.params;
+
+    // SECURITY: Verify user is participant of this conversation
+    const [messagesConversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, parseInt(conversation_id)));
+
+    if (!messagesConversation) {
+      return res.status(404).json({
+        success: false,
+        message: "المحادثة غير موجودة"
+      });
+    }
+
+    if (messagesConversation.brand_id !== req.user.id && messagesConversation.creator_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول إلى هذه المحادثة"
+      });
+    }
+
+    const conversationMessages = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversation_id, parseInt(conversation_id)))
+      .orderBy(messages.created_at);
+
+    res.json({
+      success: true,
+      messages: conversationMessages
+    });
+  } catch (error) {
+    console.error("❌ Error fetching messages:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في جلب الرسائل"
+    });
+  }
+});
+
+// POST /api/conversations/:conversation_id/messages - Send a message
+app.post("/api/conversations/:conversation_id/messages", authMiddleware, async (req, res) => {
+  try {
+    const { conversation_id } = req.params;
+    const { sender_id, message: messageText, message_type = "text", metadata } = req.body;
+
+    // SECURITY: Verify sender_id matches authenticated user
+    if (sender_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإرسال رسائل بهوية مستخدم آخر"
+      });
+    }
+
+    // SECURITY: Verify user is participant of this conversation
+    const [targetConversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, parseInt(conversation_id)));
+
+    if (!targetConversation) {
+      return res.status(404).json({
+        success: false,
+        message: "المحادثة غير موجودة"
+      });
+    }
+
+    if (targetConversation.brand_id !== req.user.id && targetConversation.creator_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإرسال رسائل في هذه المحادثة"
+      });
+    }
+
+    // Insert the message
+    const [newMessage] = await db.insert(messages)
+      .values({
+        conversation_id: parseInt(conversation_id),
+        sender_id,
+        message: messageText,
+        message_type,
+        metadata: metadata ? JSON.stringify(metadata) : null,
+        is_read: false,
+        created_at: new Date()
+      })
+      .returning();
+
+    // Update conversation last_message and timestamp
+    await db.update(conversations)
+      .set({
+        last_message: messageText,
+        last_message_at: new Date(),
+        updated_at: new Date()
+      })
+      .where(eq(conversations.id, parseInt(conversation_id)));
+
+    // Increment unread count for the other party
+    if (sender_id === targetConversation.brand_id) {
+      // Brand sent message, increment creator unread
+      await db.update(conversations)
+        .set({
+          creator_unread_count: sql`${conversations.creator_unread_count} + 1`
+        })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+    } else {
+      // Creator sent message, increment brand unread
+      await db.update(conversations)
+        .set({
+          brand_unread_count: sql`${conversations.brand_unread_count} + 1`
+        })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+    }
+
+    res.json({
+      success: true,
+      message: newMessage
+    });
+  } catch (error) {
+    console.error("❌ Error sending message:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في إرسال الرسالة"
+    });
+  }
+});
+
+// PUT /api/conversations/:conversation_id/mark-read - Mark messages as read
+app.put("/api/conversations/:conversation_id/mark-read", authMiddleware, async (req, res) => {
+  try {
+    const { conversation_id } = req.params;
+    const { user_id } = req.body;
+
+    // SECURITY: Verify user_id matches authenticated user
+    if (user_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتحديث رسائل مستخدم آخر"
+      });
+    }
+
+    // SECURITY: Verify user is participant of this conversation
+    const [markReadConversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, parseInt(conversation_id)));
+
+    if (!markReadConversation) {
+      return res.status(404).json({
+        success: false,
+        message: "المحادثة غير موجودة"
+      });
+    }
+
+    if (markReadConversation.brand_id !== req.user.id && markReadConversation.creator_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول إلى هذه المحادثة"
+      });
+    }
+
+    // Mark all messages as read for this user
+    await db.update(messages)
+      .set({ is_read: true })
+      .where(
+        and(
+          eq(messages.conversation_id, parseInt(conversation_id)),
+          sql`${messages.sender_id} != ${user_id}`
+        )
+      );
+
+    // Reset unread count for this user
+    if (user_id === markReadConversation.brand_id) {
+      await db.update(conversations)
+        .set({ brand_unread_count: 0 })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+    } else {
+      await db.update(conversations)
+        .set({ creator_unread_count: 0 })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+    }
+
+    res.json({
+      success: true,
+      message: "تم تحديث الرسائل كمقروءة"
+    });
+  } catch (error) {
+    console.error("❌ Error marking messages as read:", error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في تحديث الرسائل"
+    });
+  }
+});
+
+// ========================================
 // 💬 SOCKET.IO - REAL-TIME NEGOTIATION
 // ========================================
 
@@ -4760,27 +5049,59 @@ io.on("connection", (socket) => {
   });
 
   // Send negotiation message
-  socket.on("send_message", async ({ agreement_id, sender_id, message_text }) => {
+  socket.on("send_message", async ({ conversation_id, sender_id, message_text }) => {
     try {
-      const roomName = `agreement_${agreement_id}`;
+      const roomName = `conversation_${conversation_id}`;
       
+      // Get conversation details
+      const [socketConversation] = await db.select()
+        .from(conversations)
+        .where(eq(conversations.id, parseInt(conversation_id)));
+
+      if (!socketConversation) {
+        socket.emit("message_error", { error: "المحادثة غير موجودة" });
+        return;
+      }
+
       // Save message to database
-      const [newMessage] = await db.insert(negotiationMessages)
+      const [newMessage] = await db.insert(messages)
         .values({
-          agreement_id: parseInt(agreement_id),
+          conversation_id: parseInt(conversation_id),
           sender_id: sender_id,
-          message_text: message_text,
+          message: message_text,
+          message_type: 'text',
           is_read: false,
           created_at: new Date()
         })
         .returning();
 
+      // Update conversation last_message and increment unread count
+      await db.update(conversations)
+        .set({
+          last_message: message_text,
+          last_message_at: new Date(),
+          updated_at: new Date()
+        })
+        .where(eq(conversations.id, parseInt(conversation_id)));
+
+      // Increment unread count for recipient
+      if (sender_id === socketConversation.brand_id) {
+        await db.update(conversations)
+          .set({ creator_unread_count: sql`${conversations.creator_unread_count} + 1` })
+          .where(eq(conversations.id, parseInt(conversation_id)));
+      } else {
+        await db.update(conversations)
+          .set({ brand_unread_count: sql`${conversations.brand_unread_count} + 1` })
+          .where(eq(conversations.id, parseInt(conversation_id)));
+      }
+
       // Broadcast to room (including sender for confirmation)
       io.to(roomName).emit("new_message", {
         id: newMessage.id,
-        agreement_id: newMessage.agreement_id,
+        conversation_id: newMessage.conversation_id,
         sender_id: newMessage.sender_id,
-        message_text: newMessage.message_text,
+        message: newMessage.message,
+        message_type: newMessage.message_type,
         is_read: newMessage.is_read,
         created_at: newMessage.created_at
       });

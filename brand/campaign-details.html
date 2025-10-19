@@ -725,9 +725,10 @@
       }
     };
 
-    window.openNegotiation = (agreementId) => {
-      alert(`قريباً - سيتم فتح نافذة المحادثة للتفاوض مع المبدع\nرقم الاتفاق: ${agreementId}`);
-      // TODO: Redirect to messages page or open modal with chat
+    window.openNegotiation = async (agreementId) => {
+      // Redirect to chat page with agreement ID
+      // The chat page will find the conversation by agreement_id
+      window.location.href = `/brand/chat.html?agreement_id=${agreementId}`;
     };
 
     window.viewAgreement = (agreementId) => {

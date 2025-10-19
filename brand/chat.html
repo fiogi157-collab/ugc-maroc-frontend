@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المحادثات - UGC Maroc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-white to-pink-50 min-h-screen">
+  
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-purple-900 mb-2">💬 المحادثات</h1>
+      <p class="text-gray-600">تواصل مع منشئي المحتوى</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Conversations List -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">📋 المحادثات</h2>
+          
+          <div id="conversations-list" class="space-y-3">
+            <!-- Conversations will load here -->
+            <div class="text-center py-8 text-gray-400">
+              <span class="material-symbols-outlined text-5xl mb-2">chat_bubble_outline</span>
+              <p>جاري تحميل المحادثات...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Window -->
+      <div class="lg:col-span-2">
+        <div id="chat-window" class="bg-white rounded-2xl shadow-lg h-[600px] flex flex-col">
+          <!-- Chat Header -->
+          <div id="chat-header" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 id="chat-title" class="text-xl font-bold">اختر محادثة للبدء</h3>
+                <p id="chat-subtitle" class="text-sm opacity-90"></p>
+              </div>
+              <button onclick="closeChatWindow()" class="p-2 hover:bg-white/20 rounded-lg transition">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Messages Area -->
+          <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <div class="text-center text-gray-400 py-20">
+              <span class="material-symbols-outlined text-6xl mb-4">forum</span>
+              <p>اختر محادثة من القائمة لبدء المحادثة</p>
+            </div>
+          </div>
+
+          <!-- Message Input -->
+          <div id="message-input-area" class="p-6 border-t border-gray-200 hidden">
+            <form id="send-message-form" class="flex gap-3">
+              <input 
+                type="text" 
+                id="message-input" 
+                placeholder="اكتب رسالتك هنا..."
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                required
+              />
+              <button 
+                type="submit"
+                class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition flex items-center gap-2"
+              >
+                <span class="material-symbols-outlined">send</span>
+                إرسال
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Core Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <script>
+    let currentUser = null;
+    let socket = null;
+    let selectedConversation = null;
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      await ensureUserAuthenticated();
+      currentUser = await getCurrentUser();
+      
+      if (!currentUser) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Connect to Socket.IO
+      socket = io(window.API_BASE_URL);
+      
+      socket.on('connect', () => {
+        console.log('✅ Socket.IO connected');
+      });
+
+      socket.on('new_message', (message) => {
+        console.log('📨 New message received:', message);
+        if (selectedConversation && message.conversation_id === selectedConversation.id) {
+          appendMessage(message);
+        }
+        // Refresh conversations list to update last_message
+        loadConversations();
+      });
+
+      // Load conversations
+      await loadConversations();
+
+      // Check if agreement_id is in URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const agreementId = urlParams.get('agreement_id');
+      
+      if (agreementId) {
+        // Find and open conversation by agreement_id
+        await openConversationByAgreementId(parseInt(agreementId));
+      }
+    });
+
+    // Load all conversations
+    async function loadConversations() {
+      try {
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${window.API_BASE_URL}/api/conversations/${currentUser.id}`, { headers });
+        const data = await response.json();
+
+        if (data.success && data.conversations) {
+          renderConversations(data.conversations);
+        }
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+      }
+    }
+
+    // Render conversations list
+    function renderConversations(conversations) {
+      const container = document.getElementById('conversations-list');
+      
+      if (conversations.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-gray-400">
+            <span class="material-symbols-outlined text-5xl mb-2">inbox</span>
+            <p>لا توجد محادثات بعد</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = conversations.map(conv => {
+        const otherPartyName = currentUser.id === conv.brand_id ? conv.creator_name : conv.brand_name;
+        const unreadCount = currentUser.id === conv.brand_id ? conv.brand_unread_count : conv.creator_unread_count;
+        const lastMessageTime = conv.last_message_at ? new Date(conv.last_message_at).toLocaleDateString('ar-MA') : '';
+
+        return `
+          <div 
+            onclick="openConversation(${conv.id})"
+            class="p-4 border border-gray-200 rounded-xl hover:bg-purple-50 cursor-pointer transition ${selectedConversation?.id === conv.id ? 'bg-purple-100 border-purple-400' : ''}"
+          >
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="font-bold text-gray-800">${otherPartyName || 'مستخدم'}</h4>
+                <p class="text-sm text-gray-600 truncate">${conv.campaign_title || 'حملة'}</p>
+              </div>
+              ${unreadCount > 0 ? `<span class="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">${unreadCount}</span>` : ''}
+            </div>
+            <p class="text-sm text-gray-500 truncate">${conv.last_message || 'لا توجد رسائل'}</p>
+            <p class="text-xs text-gray-400 mt-1">${lastMessageTime}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Open conversation by agreement_id
+    async function openConversationByAgreementId(agreementId) {
+      try {
+        const headers = await getAuthHeaders();
+        
+        // Get all conversations and find one with matching agreement_id
+        const response = await fetch(`${window.API_BASE_URL}/api/conversations/${currentUser.id}`, { headers });
+        const data = await response.json();
+
+        if (data.success && data.conversations) {
+          const conversation = data.conversations.find(c => c.agreement_id === agreementId);
+          
+          if (conversation) {
+            await openConversation(conversation.id);
+          } else {
+            alert('لم يتم العثور على محادثة لهذا الاتفاق. قد تكون الدردشة غير متاحة بعد.');
+          }
+        }
+      } catch (error) {
+        console.error('Error finding conversation:', error);
+        alert('حدث خطأ في البحث عن المحادثة');
+      }
+    }
+
+    // Open a conversation
+    async function openConversation(conversationId) {
+      try {
+        const headers = await getAuthHeaders();
+        
+        // Load conversation messages
+        const response = await fetch(`${window.API_BASE_URL}/api/conversations/${conversationId}/messages`, { headers });
+        const data = await response.json();
+
+        if (data.success) {
+          selectedConversation = { id: conversationId, messages: data.messages };
+          
+          // Join Socket.IO room
+          socket.emit('join_negotiation', { 
+            agreement_id: conversationId,
+            user_id: currentUser.id 
+          });
+
+          // Update UI
+          document.getElementById('chat-title').textContent = `محادثة #${conversationId}`;
+          document.getElementById('message-input-area').classList.remove('hidden');
+          
+          // Render messages
+          renderMessages(data.messages);
+
+          // Mark as read
+          await fetch(`${window.API_BASE_URL}/api/conversations/${conversationId}/mark-read`, {
+            method: 'PUT',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({ user_id: currentUser.id })
+          });
+
+          // Refresh conversations to update unread count
+          loadConversations();
+        }
+      } catch (error) {
+        console.error('Error opening conversation:', error);
+      }
+    }
+
+    // Render messages
+    function renderMessages(messages) {
+      const container = document.getElementById('messages-container');
+      
+      if (messages.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-gray-400 py-20">
+            <span class="material-symbols-outlined text-6xl mb-4">chat</span>
+            <p>لا توجد رسائل بعد. ابدأ المحادثة الآن!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = messages.map(msg => {
+        const isMe = msg.sender_id === currentUser.id;
+        const time = new Date(msg.created_at).toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+            <div class="${isMe ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-800'} px-4 py-3 rounded-2xl max-w-md">
+              <p class="text-sm">${msg.message}</p>
+              <p class="text-xs ${isMe ? 'text-purple-200' : 'text-gray-500'} mt-1">${time}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Scroll to bottom
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Append new message (for real-time)
+    function appendMessage(message) {
+      const container = document.getElementById('messages-container');
+      const isMe = message.sender_id === currentUser.id;
+      const time = new Date(message.created_at).toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
+
+      const messageHTML = `
+        <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+          <div class="${isMe ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-800'} px-4 py-3 rounded-2xl max-w-md">
+            <p class="text-sm">${message.message}</p>
+            <p class="text-xs ${isMe ? 'text-purple-200' : 'text-gray-500'} mt-1">${time}</p>
+          </div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', messageHTML);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Send message
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('send-message-form');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          if (!selectedConversation) return;
+
+          const input = document.getElementById('message-input');
+          const messageText = input.value.trim();
+
+          if (!messageText) return;
+
+          // Send via Socket.IO for real-time
+          socket.emit('send_message', {
+            conversation_id: selectedConversation.id,
+            sender_id: currentUser.id,
+            message_text: messageText
+          });
+
+          // Clear input
+          input.value = '';
+        });
+      }
+    });
+
+    function closeChatWindow() {
+      selectedConversation = null;
+      document.getElementById('message-input-area').classList.add('hidden');
+      document.getElementById('messages-container').innerHTML = `
+        <div class="text-center text-gray-400 py-20">
+          <span class="material-symbols-outlined text-6xl mb-4">forum</span>
+          <p>اختر محادثة من القائمة لبدء المحادثة</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

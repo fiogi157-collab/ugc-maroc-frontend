@@ -83,6 +83,27 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
     - **Agreement Actions**: Brand can accept/reject pending applications, open chat for negotiation, view detailed agreement info
     - **API Integration**: Loads campaign details from GET `/api/campaigns/:id` and agreements from GET `/api/agreements?campaign_id=X`
     - **Escrow Integration**: Accept button triggers `/api/agreements/:id/approve` which creates escrow and debits wallet
+- **Real-Time Messaging System** (`brand/chat.html`):
+    - **Conversations Database**: `conversations` table (one per agreement) tracks last_message, timestamps, unread counts for both brand and creator
+    - **Messages Database**: `messages` table stores individual chat messages with sender_id, message content, type (text/system/offer/file), and read status
+    - **Automatic Conversation Creation**: Conversations automatically created when brand approves application or creator accepts invitation (within escrow transaction)
+    - **REST API Endpoints**:
+        - GET `/api/conversations/:user_id` - Fetch all user conversations with campaign titles, party names, unread counts
+        - GET `/api/conversations/:conversation_id/messages` - Fetch all messages in a conversation
+        - POST `/api/conversations/:conversation_id/messages` - Send message (also updates last_message and unread counts)
+        - PUT `/api/conversations/:conversation_id/mark-read` - Mark messages as read, reset unread count
+    - **Socket.IO Real-Time Events**:
+        - `join_negotiation` - Join conversation room for live updates
+        - `send_message` - Send message with automatic DB save and broadcast
+        - `new_message` - Receive messages in real-time from other party
+        - `typing` - Typing indicators for better UX
+    - **Chat Interface Features**:
+        - Split-screen layout: conversations list (left) + active chat window (right)
+        - Real-time message delivery with Socket.IO
+        - Unread message badges on conversations
+        - Auto-scroll to latest messages
+        - Direct link from campaign-details: clicking "محادثة" button redirects to `/brand/chat.html?agreement_id=X`
+        - URL parameter support: opens specific conversation automatically when `agreement_id` provided
 
 ### System Design Choices
 - **Unified Server Architecture**: A single Express server serves both static files and API endpoints.
