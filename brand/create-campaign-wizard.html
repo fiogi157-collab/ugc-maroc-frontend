@@ -285,7 +285,17 @@
           aiLoader.classList.remove('hidden');
           
           try {
-            const { data: { session } } = await window.supabase.auth.getSession();
+            if (!supabase) {
+              showToast('الرجاء الانتظار حتى يتم تحميل النظام...', 'error');
+              return;
+            }
+            
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            
+            if (sessionError || !session) {
+              showToast('يجب تسجيل الدخول أولاً', 'error');
+              return;
+            }
             
             const response = await fetch(`${window.API_URL}/api/ai/generate-description`, {
               method: 'POST',
@@ -295,6 +305,11 @@
               },
               body: JSON.stringify({ title, category })
             });
+            
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || 'فشل الاتصال بالخادم');
+            }
             
             const result = await response.json();
             
@@ -306,7 +321,7 @@
             }
           } catch (error) {
             console.error('AI generation error:', error);
-            showToast('خطأ في الاتصال بالذكاء الاصطناعي', 'error');
+            showToast(error.message || 'خطأ في الاتصال بالذكاء الاصطناعي', 'error');
           } finally {
             aiBtn.disabled = false;
             aiLoader.classList.add('hidden');
