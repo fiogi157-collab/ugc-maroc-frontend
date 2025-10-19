@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل الحملة - UGC Maroc</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            'cairo': ['Cairo', 'sans-serif']
+          },
+          colors: {
+            primary: '#6366f1',
+            'primary-dark': '#4f46e5',
+            'card-dark': '#1f2937'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    
+    .status-draft { background: #e5e7eb; color: #374151; }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-paused { background: #fef3c7; color: #92400e; }
+    .status-closed { background: #fee2e2; color: #991b1b; }
+    
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .media-item {
+      aspect-ratio: 1;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 2px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .media-item:hover {
+      border-color: #6366f1;
+      transform: scale(1.05);
+    }
+    
+    .media-item img, .media-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 2px solid #e5e7eb;
+      transition: all 0.2s;
+    }
+    
+    .dark .stat-card {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    
+    .stat-card:hover {
+      border-color: #6366f1;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(99, 102, 241, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+  
+  <div id="nav-container"></div>
+
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    
+    <!-- Loading State -->
+    <div id="loading-state" class="text-center py-20">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">جاري تحميل تفاصيل الحملة...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden">
+      <div class="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-8 text-center">
+        <span class="material-symbols-outlined text-6xl text-red-600 mb-4">error</span>
+        <h2 class="text-2xl font-bold text-red-800 dark:text-red-400 mb-2">خطأ في تحميل الحملة</h2>
+        <p class="text-red-700 dark:text-red-300 mb-6" id="error-message"></p>
+        <button onclick="window.location.href='/brand/brand_dashboard_premium.html'" class="action-btn bg-red-600 text-white hover:bg-red-700">
+          <span class="material-symbols-outlined">arrow_back</span>
+          العودة للوحة التحكم
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden space-y-6">
+      
+      <!-- Header Section -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex-1">
+          <button onclick="window.location.href='/brand/brand_dashboard_premium.html'" class="text-primary hover:text-primary-dark mb-3 inline-flex items-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            العودة للحملات
+          </button>
+          <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2" id="campaign-title"></h1>
+          <div class="flex flex-wrap items-center gap-3">
+            <span id="campaign-status-badge"></span>
+            <span class="text-sm text-gray-500 dark:text-gray-400" id="campaign-dates"></span>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-2" id="action-buttons">
+          <!-- Will be populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats-container">
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-blue-600">visibility</span>
+            <span class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-views">0</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">المشاهدات</p>
+        </div>
+        
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-green-600">group</span>
+            <span class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-applicants">0</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">المتقدمون</p>
+        </div>
+        
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-purple-600">video_library</span>
+            <span class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-submissions">0</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">المحتوى المقدم</p>
+        </div>
+        
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-yellow-600">payments</span>
+            <span class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-budget">0</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">الميزانية</p>
+        </div>
+      </div>
+
+      <!-- Campaign Info -->
+      <div class="bg-white dark:bg-card-dark rounded-xl p-6 border-2 border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">📋 معلومات الحملة</h2>
+        
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">الوصف</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed" id="campaign-description"></p>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">الفئة</p>
+              <p class="text-gray-600 dark:text-gray-400" id="campaign-category"></p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">اللغة</p>
+              <p class="text-gray-600 dark:text-gray-400" id="campaign-language"></p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">نوع المحتوى</p>
+              <p class="text-gray-600 dark:text-gray-400" id="campaign-content-types"></p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">المنصات</p>
+              <p class="text-gray-600 dark:text-gray-400" id="campaign-platforms"></p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">سعر UGC</p>
+              <p class="text-gray-600 dark:text-gray-400" id="campaign-price"></p>
+            </div>
+            <div id="product-info-container" class="hidden">
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">المنتج</p>
+              <p class="text-gray-600 dark:text-gray-400" id="campaign-product"></p>
+            </div>
+          </div>
+          
+          <div id="additional-notes-container" class="hidden">
+            <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">ملاحظات إضافية</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed" id="campaign-notes"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign Media -->
+      <div id="media-section" class="hidden bg-white dark:bg-card-dark rounded-xl p-6 border-2 border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">📸 الصور والفيديوهات</h2>
+        <div class="media-grid" id="media-container">
+          <!-- Media items will be populated here -->
+        </div>
+      </div>
+
+      <!-- Submissions Section -->
+      <div class="bg-white dark:bg-card-dark rounded-xl p-6 border-2 border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">🎬 المحتوى المقدم من المبدعين</h2>
+        
+        <div id="submissions-empty" class="text-center py-12">
+          <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-3">video_library</span>
+          <p class="text-gray-500 dark:text-gray-400">لا يوجد محتوى مقدم بعد</p>
+          <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">سيظهر هنا المحتوى عندما يقدمه المبدعون</p>
+        </div>
+        
+        <div id="submissions-container" class="hidden space-y-4">
+          <!-- Submissions will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal (placeholder) -->
+  <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-card-dark rounded-xl p-6 max-w-2xl w-full">
+      <h2 class="text-2xl font-bold mb-4">تعديل الحملة</h2>
+      <p class="text-gray-600 dark:text-gray-400 mb-4">قريباً - ستتمكن من تعديل الحملة من هنا</p>
+      <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="action-btn bg-gray-600 text-white">
+        إغلاق
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    
+    let supabase;
+    let API_URL;
+    let campaignId;
+    let campaignData;
+
+    async function init() {
+      try {
+        // Get campaign ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        campaignId = urlParams.get('id');
+        
+        if (!campaignId) {
+          showError('لم يتم تحديد رقم الحملة');
+          return;
+        }
+
+        // Fetch Supabase config
+        const configResponse = await fetch('/api/config');
+        const config = await configResponse.json();
+        
+        supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+        API_URL = config.apiUrl;
+        
+        console.log('✅ Supabase initialized');
+        
+        // Check authentication
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          window.location.href = '/auth/signin.html';
+          return;
+        }
+
+        // Load campaign details
+        await loadCampaignDetails();
+        
+      } catch (error) {
+        console.error('Error initializing:', error);
+        showError('حدث خطأ في تهيئة الصفحة');
+      }
+    }
+
+    async function loadCampaignDetails() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(`${API_URL}/api/campaigns/${campaignId}`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'فشل تحميل الحملة');
+        }
+
+        campaignData = await response.json();
+        renderCampaign();
+        
+      } catch (error) {
+        console.error('Error loading campaign:', error);
+        showError(error.message || 'حدث خطأ في تحميل تفاصيل الحملة');
+      }
+    }
+
+    function renderCampaign() {
+      // Hide loading, show content
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('main-content').classList.remove('hidden');
+
+      // Title and basic info
+      document.getElementById('campaign-title').textContent = campaignData.title;
+      document.getElementById('campaign-description').textContent = campaignData.description;
+      
+      // Status badge
+      const statusBadge = getStatusBadge(campaignData.status);
+      document.getElementById('campaign-status-badge').innerHTML = statusBadge;
+      
+      // Dates
+      const startDate = campaignData.start_date ? new Date(campaignData.start_date).toLocaleDateString('ar-MA') : 'غير محدد';
+      const endDate = campaignData.end_date ? new Date(campaignData.end_date).toLocaleDateString('ar-MA') : 'غير محدد';
+      document.getElementById('campaign-dates').textContent = `${startDate} - ${endDate}`;
+
+      // Stats
+      document.getElementById('stat-views').textContent = campaignData.views || 0;
+      document.getElementById('stat-applicants').textContent = campaignData.applicants || 0;
+      document.getElementById('stat-submissions').textContent = campaignData.submissions || 0;
+      document.getElementById('stat-budget').textContent = `${campaignData.budget || 0} د.م`;
+
+      // Campaign details
+      document.getElementById('campaign-category').textContent = campaignData.category;
+      document.getElementById('campaign-language').textContent = campaignData.language;
+      document.getElementById('campaign-content-types').textContent = campaignData.content_types?.join(', ') || '-';
+      document.getElementById('campaign-platforms').textContent = campaignData.platforms?.join(', ') || '-';
+      document.getElementById('campaign-price').textContent = `${campaignData.price_per_ugc} د.م`;
+
+      // Product info
+      if (campaignData.product_name) {
+        document.getElementById('product-info-container').classList.remove('hidden');
+        let productText = campaignData.product_name;
+        if (campaignData.product_link) {
+          productText += ` (${campaignData.product_link})`;
+        }
+        document.getElementById('campaign-product').textContent = productText;
+      }
+
+      // Additional notes
+      if (campaignData.additional_notes) {
+        document.getElementById('additional-notes-container').classList.remove('hidden');
+        document.getElementById('campaign-notes').textContent = campaignData.additional_notes;
+      }
+
+      // Media
+      if (campaignData.media && campaignData.media.length > 0) {
+        document.getElementById('media-section').classList.remove('hidden');
+        renderMedia(campaignData.media);
+      }
+
+      // Action buttons
+      renderActionButtons();
+    }
+
+    function getStatusBadge(status) {
+      const badges = {
+        'draft': '<span class="status-badge status-draft">📝 مسودة</span>',
+        'active': '<span class="status-badge status-active">✅ نشطة</span>',
+        'paused': '<span class="status-badge status-paused">⏸️ متوقفة</span>',
+        'closed': '<span class="status-badge status-closed">🔒 مغلقة</span>'
+      };
+      return badges[status] || badges.draft;
+    }
+
+    function renderMedia(mediaUrls) {
+      const container = document.getElementById('media-container');
+      container.innerHTML = mediaUrls.map(url => {
+        const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
+        return `
+          <div class="media-item" onclick="window.open('${url}', '_blank')">
+            ${isVideo 
+              ? `<video src="${url}" muted loop></video>`
+              : `<img src="${url}" alt="Campaign media">`
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderActionButtons() {
+      const container = document.getElementById('action-buttons');
+      const buttons = [];
+
+      // Edit button (if draft or active)
+      if (campaignData.status === 'draft' || campaignData.status === 'active') {
+        buttons.push(`
+          <button onclick="editCampaign()" class="action-btn bg-blue-600 text-white hover:bg-blue-700">
+            <span class="material-symbols-outlined">edit</span>
+            تعديل
+          </button>
+        `);
+      }
+
+      // Pause/Resume button
+      if (campaignData.status === 'active') {
+        buttons.push(`
+          <button onclick="togglePauseCampaign()" class="action-btn bg-yellow-600 text-white hover:bg-yellow-700">
+            <span class="material-symbols-outlined">pause</span>
+            إيقاف مؤقت
+          </button>
+        `);
+      } else if (campaignData.status === 'paused') {
+        buttons.push(`
+          <button onclick="togglePauseCampaign()" class="action-btn bg-green-600 text-white hover:bg-green-700">
+            <span class="material-symbols-outlined">play_arrow</span>
+            استئناف
+          </button>
+        `);
+      }
+
+      // Close button (if active or paused)
+      if (campaignData.status === 'active' || campaignData.status === 'paused') {
+        buttons.push(`
+          <button onclick="closeCampaign()" class="action-btn bg-gray-600 text-white hover:bg-gray-700">
+            <span class="material-symbols-outlined">check_circle</span>
+            إغلاق
+          </button>
+        `);
+      }
+
+      // Duplicate button
+      buttons.push(`
+        <button onclick="duplicateCampaign()" class="action-btn bg-purple-600 text-white hover:bg-purple-700">
+          <span class="material-symbols-outlined">content_copy</span>
+          تكرار
+        </button>
+      `);
+
+      // Delete button (if draft)
+      if (campaignData.status === 'draft') {
+        buttons.push(`
+          <button onclick="deleteCampaign()" class="action-btn bg-red-600 text-white hover:bg-red-700">
+            <span class="material-symbols-outlined">delete</span>
+            حذف
+          </button>
+        `);
+      }
+
+      container.innerHTML = buttons.join('');
+    }
+
+    function showError(message) {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('error-message').textContent = message;
+    }
+
+    // Action functions (placeholders for now)
+    window.editCampaign = () => {
+      alert('قريباً - تعديل الحملة');
+    };
+
+    window.togglePauseCampaign = async () => {
+      const newStatus = campaignData.status === 'active' ? 'paused' : 'active';
+      if (confirm(`هل تريد ${newStatus === 'paused' ? 'إيقاف' : 'استئناف'} هذه الحملة؟`)) {
+        alert('قريباً - تغيير حالة الحملة');
+      }
+    };
+
+    window.closeCampaign = async () => {
+      if (confirm('هل تريد إغلاق هذه الحملة؟ لن تتمكن من استئنافها بعد ذلك.')) {
+        alert('قريباً - إغلاق الحملة');
+      }
+    };
+
+    window.duplicateCampaign = async () => {
+      if (confirm('هل تريد إنشاء نسخة من هذه الحملة؟')) {
+        alert('قريباً - تكرار الحملة');
+      }
+    };
+
+    window.deleteCampaign = async () => {
+      if (confirm('هل أنت متأكد من حذف هذه الحملة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+        alert('قريباً - حذف الحملة');
+      }
+    };
+
+    // Initialize on load
+    init();
+  </script>
+
+  <script src="/js/nav-links.js"></script>
+  <script src="/js/dark-mode-toggle.js"></script>
+</body>
+</html>

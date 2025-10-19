@@ -574,6 +574,84 @@ app.post("/api/campaigns", authMiddleware, async (req, res) => {
   }
 });
 
+// Get campaign details by ID (protected route)
+app.get("/api/campaigns/:id", authMiddleware, async (req, res) => {
+  try {
+    const campaignId = parseInt(req.params.id);
+    
+    if (!campaignId || isNaN(campaignId)) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم الحملة غير صحيح"
+      });
+    }
+
+    const db = await import("../db/client.js").then(m => m.db);
+    const { campaigns } = await import("../db/schema.js");
+    const { eq } = await import("drizzle-orm");
+    
+    // Get campaign
+    const campaignData = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
+    
+    if (!campaignData || campaignData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    const campaign = campaignData[0];
+
+    // Check ownership - only brand owner can view full details
+    if (campaign.brand_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "ليس لديك صلاحية لعرض هذه الحملة"
+      });
+    }
+
+    // Parse JSON fields
+    const campaignDetails = {
+      id: campaign.id,
+      brand_id: campaign.brand_id,
+      title: campaign.title,
+      description: campaign.description,
+      category: campaign.category,
+      content_types: campaign.content_type ? JSON.parse(campaign.content_type) : [],
+      language: campaign.language,
+      budget: parseFloat(campaign.budget || 0),
+      price_per_ugc: parseFloat(campaign.price_per_ugc || 0),
+      platforms: campaign.platforms ? JSON.parse(campaign.platforms) : [],
+      start_date: campaign.start_date,
+      end_date: campaign.deadline,
+      product_name: campaign.product_name,
+      product_link: campaign.product_link,
+      delivery_method: campaign.delivery_method,
+      media: campaign.media_files ? JSON.parse(campaign.media_files) : [],
+      additional_notes: campaign.additional_notes,
+      status: campaign.status,
+      difficulty: campaign.difficulty,
+      views: campaign.views || 0,
+      applicants: campaign.applicants || 0,
+      submissions: campaign.submissions || 0,
+      created_at: campaign.created_at,
+      updated_at: campaign.updated_at
+    };
+
+    console.log(`✅ Campaign ${campaignId} details retrieved`);
+
+    return res.status(200).json(campaignDetails);
+
+  } catch (error) {
+    console.error("❌ Error fetching campaign:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل تفاصيل الحملة",
+      error: error.message
+    });
+  }
+});
+
 // Upload media files for campaign (images/videos)
 app.post("/api/campaigns/upload-media", authMiddleware, uploadMedia.array('media', 5), async (req, res) => {
   try {
