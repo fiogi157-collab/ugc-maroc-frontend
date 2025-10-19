@@ -80,15 +80,18 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 - **Campaign Details Page** (`brand/campaign-details.html`):
     - **Complete Campaign View**: Displays all campaign information (title, description, budget, platforms, content types, media, dates, status)
     - **Applications/Agreements Section**: Shows list of creator applications with real-time status badges (pending, negotiating, finalized, work_in_progress, submitted, approved, etc.)
+    - **Detailed Application Display**: Shows application_message, portfolio_links (clickable badges), delivery_days, additional_notes in color-coded sections (blue/purple/green)
     - **Agreement Actions**: Brand can accept/reject pending applications, open chat for negotiation, view detailed agreement info
     - **API Integration**: Loads campaign details from GET `/api/campaigns/:id` and agreements from GET `/api/agreements?campaign_id=X`
     - **Escrow Integration**: Accept button triggers `/api/agreements/:id/approve` which creates escrow and debits wallet
+    - **Email Notifications**: Brand receives RTL Arabic email via Resend when creator submits application, with direct link to campaign-details page
 - **Real-Time Messaging System** (`brand/chat.html`):
     - **Conversations Database**: `conversations` table (one per agreement) tracks last_message, timestamps, unread counts for both brand and creator
     - **Messages Database**: `messages` table stores individual chat messages with sender_id, message content, type (text/system/offer/file), and read status
     - **Automatic Conversation Creation**: Conversations automatically created when brand approves application or creator accepts invitation (within escrow transaction)
     - **REST API Endpoints**:
         - GET `/api/conversations/:user_id` - Fetch all user conversations with campaign titles, party names, unread counts
+        - GET `/api/conversations/unread-count/:user_id` - Get total unread messages count across all conversations for notification badges
         - GET `/api/conversations/:conversation_id/messages` - Fetch all messages in a conversation
         - POST `/api/conversations/:conversation_id/messages` - Send message (also updates last_message and unread counts)
         - PUT `/api/conversations/:conversation_id/mark-read` - Mark messages as read, reset unread count
