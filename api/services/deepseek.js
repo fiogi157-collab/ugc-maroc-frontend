@@ -4,7 +4,7 @@
 
 import axios from 'axios';
 
-const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 class DeepSeekService {
   constructor() {
@@ -16,14 +16,14 @@ class DeepSeekService {
       console.error("⚠️ DEEPSEEK_API_KEY manquante dans les variables d'environnement");
     }
     
-    console.log(`🔑 DeepSeek API Key loaded: ${this.apiKey.length} chars, starts with "${this.apiKey.substring(0, 4)}", ends with "${this.apiKey.substring(this.apiKey.length - 4)}"`);
+    console.log(`🔑 OpenRouter API Key loaded: ${this.apiKey.length} chars, starts with "${this.apiKey.substring(0, 7)}", ends with "${this.apiKey.substring(this.apiKey.length - 4)}"`);
   }
 
-  // Méthode générique pour appeler DeepSeek (utilise axios au lieu de fetch)
+  // Méthode générique pour appeler DeepSeek via OpenRouter
   async callDeepSeek(systemPrompt, userMessage, temperature = 0.7) {
     try {
       const payload = {
-        model: "deepseek-chat",
+        model: "deepseek/deepseek-chat",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage }
@@ -32,21 +32,23 @@ class DeepSeekService {
         max_tokens: 2000
       };
       
-      const response = await axios.post(DEEPSEEK_API_URL, payload, {
+      const response = await axios.post(OPENROUTER_API_URL, payload, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.apiKey}`
+          "Authorization": `Bearer ${this.apiKey}`,
+          "HTTP-Referer": "https://ugc-maroc.replit.app",
+          "X-Title": "UGC Maroc Platform"
         },
-        timeout: 30000 // 30 seconds timeout
+        timeout: 30000
       });
 
       return response.data.choices[0]?.message?.content || "";
     } catch (error) {
       if (error.response) {
-        console.error("❌ DeepSeek API error:", error.response.status, error.response.data);
-        throw new Error(`DeepSeek API Error: ${error.response.status} - ${error.response.data.error?.message || 'Unknown error'}`);
+        console.error("❌ OpenRouter API error:", error.response.status, error.response.data);
+        throw new Error(`OpenRouter API Error: ${error.response.status} - ${error.response.data.error?.message || 'Unknown error'}`);
       } else {
-        console.error("❌ Erreur DeepSeek:", error.message);
+        console.error("❌ Erreur OpenRouter:", error.message);
         throw error;
       }
     }
