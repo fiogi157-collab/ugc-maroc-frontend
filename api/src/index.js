@@ -2848,6 +2848,68 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/campaigns/:id/check-application - Check if creator already applied to campaign
+app.get("/api/campaigns/:id/check-application", authMiddleware, async (req, res) => {
+  try {
+    const creatorId = req.user.id;
+    const campaignId = parseInt(req.params.id);
+
+    if (isNaN(campaignId)) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الحملة غير صالح"
+      });
+    }
+
+    // Check if campaign exists
+    const [campaign] = await db.select()
+      .from(campaigns)
+      .where(eq(campaigns.id, campaignId));
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    // Check for existing application/agreement
+    const [existingAgreement] = await db.select()
+      .from(campaignAgreements)
+      .where(
+        and(
+          eq(campaignAgreements.campaign_id, campaignId),
+          eq(campaignAgreements.creator_id, creatorId)
+        )
+      );
+
+    if (existingAgreement) {
+      return res.status(200).json({
+        success: true,
+        has_applied: true,
+        application: {
+          id: existingAgreement.id,
+          status: existingAgreement.status,
+          proposed_price: parseFloat(existingAgreement.price_offered),
+          created_at: existingAgreement.created_at
+        }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      has_applied: false
+    });
+  } catch (error) {
+    console.error("❌ Error checking application status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في التحقق من حالة الطلب",
+      error: error.message
+    });
+  }
+});
+
 // PATCH /api/agreements/:id/approve - Brand approves creator application
 app.patch("/api/agreements/:id/approve", authMiddleware, async (req, res) => {
   try {
