@@ -2680,7 +2680,14 @@ app.patch("/api/agreements/:id/accept", authMiddleware, async (req, res) => {
 app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
   try {
     const creatorId = req.user.id;
-    const { campaign_id, proposed_price, message } = req.body;
+    const { 
+      campaign_id, 
+      proposed_price, 
+      application_message, 
+      portfolio_links, 
+      delivery_days, 
+      additional_notes 
+    } = req.body;
 
     // SECURITY: Load role from profiles table (server-side source of truth)
     const [userProfile] = await db.select()
@@ -2703,10 +2710,10 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
     }
 
     // Validate required fields
-    if (!campaign_id || !proposed_price) {
+    if (!campaign_id || !proposed_price || !application_message || !delivery_days) {
       return res.status(400).json({
         success: false,
-        message: "معرف الحملة والسعر المقترح مطلوبان"
+        message: "جميع الحقول مطلوبة: معرف الحملة، السعر المقترح، رسالة التقديم، ومدة التسليم"
       });
     }
 
@@ -2717,6 +2724,32 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
         success: false,
         message: "السعر المقترح يجب أن يكون أكبر من صفر"
       });
+    }
+
+    // Validate delivery days
+    const deliveryDaysInt = parseInt(delivery_days);
+    if (isNaN(deliveryDaysInt) || deliveryDaysInt <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "مدة التسليم يجب أن تكون أكبر من صفر"
+      });
+    }
+
+    // Validate portfolio links (if provided)
+    let portfolioLinksJson = null;
+    if (portfolio_links) {
+      try {
+        const portfolioArray = Array.isArray(portfolio_links) ? portfolio_links : JSON.parse(portfolio_links);
+        if (!Array.isArray(portfolioArray)) {
+          throw new Error("Portfolio links must be an array");
+        }
+        portfolioLinksJson = JSON.stringify(portfolioArray);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "روابط الأعمال السابقة يجب أن تكون في شكل قائمة صحيحة"
+        });
+      }
     }
 
     // Check campaign exists and is active
@@ -2755,6 +2788,22 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
       });
     }
 
+    // Price validation: Check if price is reasonable compared to campaign budget
+    let priceWarning = null;
+    const campaignBudget = parseFloat(campaign.price_per_ugc || campaign.budget_per_video || 0);
+    
+    if (campaignBudget > 0) {
+      const priceRatio = priceFloat / campaignBudget;
+      
+      if (priceRatio > 3) {
+        priceWarning = "red"; // Very high price
+      } else if (priceRatio > 2) {
+        priceWarning = "yellow"; // High price
+      } else {
+        priceWarning = "green"; // Reasonable price
+      }
+    }
+
     // Create application agreement (status: 'pending' = awaiting brand approval)
     const [newApplication] = await db.insert(campaignAgreements)
       .values({
@@ -2765,13 +2814,16 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
         final_price: priceFloat.toFixed(2), // Initially same as proposed
         invitation_type: 'creator_application', // Key: this is a creator application, not brand invite
         status: 'pending', // Awaiting brand approval
-        custom_terms: message || null,
+        application_message: application_message,
+        portfolio_links: portfolioLinksJson,
+        delivery_days: deliveryDaysInt,
+        additional_notes: additional_notes || null,
         created_at: new Date(),
         updated_at: new Date()
       })
       .returning();
 
-    console.log(`📝 Creator application submitted: Creator ${creatorId} → Campaign ${campaign_id}, Proposed: ${priceFloat} MAD`);
+    console.log(`📝 Creator application submitted: Creator ${creatorId} → Campaign ${campaign_id}, Proposed: ${priceFloat} MAD (Warning: ${priceWarning})`);
 
     return res.status(201).json({
       success: true,
@@ -2782,7 +2834,8 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
         campaign_title: campaign.title,
         proposed_price: parseFloat(newApplication.price_offered),
         status: newApplication.status,
-        created_at: newApplication.created_at
+        created_at: newApplication.created_at,
+        price_warning: priceWarning // Send warning level to frontend for UI feedback
       }
     });
   } catch (error) {
