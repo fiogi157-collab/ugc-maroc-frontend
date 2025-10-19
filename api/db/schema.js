@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 
 /**
  * UGC Maroc - Complete Database Schema
- * Tables: profiles, creators, brands, wallets, campaigns, submissions, transactions
+ * NEW SYSTEM: Agreement-based payments with virtual reservations
  */
 
 // ===== PROFILES TABLE =====
@@ -56,11 +56,12 @@ export const brands = pgTable("brands", {
 
 // ===== WALLETS TABLE =====
 // Financial wallets for creators and brands
+// Note: balance = total, pending_balance = reserved for invitations
 export const wallets = pgTable("wallets", {
   id: serial("id").primaryKey(),
   user_id: varchar("user_id").notNull().unique().references(() => profiles.id, { onDelete: "cascade" }),
   balance: decimal("balance", { precision: 10, scale: 2 }).default("0.00").notNull(),
-  pending_balance: decimal("pending_balance", { precision: 10, scale: 2 }).default("0.00").notNull(),
+  pending_balance: decimal("pending_balance", { precision: 10, scale: 2 }).default("0.00").notNull(), // Reserved for invitations
   currency: varchar("currency").default("MAD").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
@@ -73,7 +74,7 @@ export const campaigns = pgTable("campaigns", {
   brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
   title: varchar("title").notNull(),
   description: text("description").notNull(),
-  budget: decimal("budget", { precision: 10, scale: 2 }), // Optional total budget
+  budget: decimal("budget", { precision: 10, scale: 2 }), // Optional - deprecated in favor of agreements
   price_per_ugc: decimal("price_per_ugc", { precision: 10, scale: 2 }), // Price per UGC content
   content_type: text("content_type"), // JSON array: ['video', 'image', 'story', 'reel']
   video_duration: integer("video_duration"), // in seconds
@@ -97,12 +98,88 @@ export const campaigns = pgTable("campaigns", {
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ===== CAMPAIGN AGREEMENTS TABLE =====
+// Individual agreements between brand and creator (NEW CORE SYSTEM)
+export const campaignAgreements = pgTable("campaign_agreements", {
+  id: serial("id").primaryKey(),
+  campaign_id: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Negotiated price
+  deadline: timestamp("deadline").notNull(), // Delivery deadline
+  status: varchar("status").default("pending_creator").notNull(), // 'pending_creator', 'negotiating', 'pending_payment', 'active', 'pending_review', 'completed', 'rejected', 'expired', 'disputed'
+  invitation_type: varchar("invitation_type").notNull(), // 'brand_invite' | 'creator_application'
+  custom_clauses: text("custom_clauses"), // Custom contract conditions
+  template_clauses: text("template_clauses"), // JSON array of selected template clauses
+  submission_id: integer("submission_id").references(() => submissions.id, { onDelete: "set null" }),
+  revision_count: integer("revision_count").default(0),
+  max_revisions: integer("max_revisions").default(2),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  finalized_at: timestamp("finalized_at"),
+  expires_at: timestamp("expires_at"), // For pending invitations (48h)
+});
+
+// ===== WALLET RESERVATIONS TABLE =====
+// Virtual reservations when brand sends invitation (NEW)
+export const walletReservations = pgTable("wallet_reservations", {
+  id: serial("id").primaryKey(),
+  user_id: varchar("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  agreement_id: integer("agreement_id").notNull().unique().references(() => campaignAgreements.id, { onDelete: "cascade" }),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  status: varchar("status").default("active").notNull(), // 'active', 'converted_to_escrow', 'cancelled', 'expired'
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  expires_at: timestamp("expires_at").notNull(), // 48h from creation
+  cancelled_at: timestamp("cancelled_at"),
+});
+
+// ===== NEGOTIATION MESSAGES TABLE =====
+// Real-time chat between brand and creator (NEW)
+export const negotiationMessages = pgTable("negotiation_messages", {
+  id: serial("id").primaryKey(),
+  agreement_id: integer("agreement_id").notNull().references(() => campaignAgreements.id, { onDelete: "cascade" }),
+  sender_id: varchar("sender_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  message_type: varchar("message_type").default("text").notNull(), // 'text', 'price_offer', 'deadline_change', 'clause_modification'
+  metadata: text("metadata"), // JSON for structured offers (price, deadline, etc.)
+  is_read: boolean("is_read").default(false),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ===== DISPUTE CASES TABLE =====
+// Disputes opened by either party (NEW)
+export const disputeCases = pgTable("dispute_cases", {
+  id: serial("id").primaryKey(),
+  agreement_id: integer("agreement_id").notNull().unique().references(() => campaignAgreements.id, { onDelete: "cascade" }),
+  opened_by: varchar("opened_by").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  reason: text("reason").notNull(),
+  proofs: text("proofs"), // JSON array of evidence URLs
+  status: varchar("status").default("open").notNull(), // 'open', 'under_review', 'resolved'
+  admin_decision: varchar("admin_decision"), // 'favor_creator', 'favor_brand', 'split_50_50'
+  admin_notes: text("admin_notes"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  resolved_at: timestamp("resolved_at"),
+});
+
+// ===== RATINGS TABLE =====
+// Mutual ratings after agreement completion (NEW)
+export const ratings = pgTable("ratings", {
+  id: serial("id").primaryKey(),
+  agreement_id: integer("agreement_id").notNull().references(() => campaignAgreements.id, { onDelete: "cascade" }),
+  from_user: varchar("from_user").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  to_user: varchar("to_user").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(), // 1-5 stars
+  comment: text("comment"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ===== SUBMISSIONS TABLE =====
-// Creator submissions for campaigns
+// Creator submissions (now linked to agreements)
 export const submissions = pgTable("submissions", {
   id: serial("id").primaryKey(),
   campaign_id: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
   creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  agreement_id: integer("agreement_id").references(() => campaignAgreements.id, { onDelete: "set null" }), // NEW: Link to agreement
   video_url: text("video_url").notNull(), // Cloudflare R2 URL
   r2_key: text("r2_key").notNull(), // R2 storage key
   file_size: integer("file_size"), // bytes
@@ -118,14 +195,15 @@ export const transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
   user_id: varchar("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  type: varchar("type").notNull(), // 'deposit', 'withdrawal', 'payment', 'refund', 'earning'
+  type: varchar("type").notNull(), // 'deposit', 'withdrawal', 'payment', 'refund', 'earning', 'reservation', 'escrow'
   status: varchar("status").default("pending").notNull(), // 'pending', 'completed', 'failed', 'cancelled'
   description: text("description"),
   related_campaign_id: integer("related_campaign_id").references(() => campaigns.id),
+  related_agreement_id: integer("related_agreement_id").references(() => campaignAgreements.id), // NEW
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
-// ===== ESCROW TRANSACTIONS TABLE =====
+// ===== ESCROW TRANSACTIONS TABLE (OLD SYSTEM - DEPRECATED) =====
 // Escrow funds blocked per campaign (released when UGC validated)
 export const escrowTransactions = pgTable("escrow_transactions", {
   id: serial("id").primaryKey(),
@@ -141,12 +219,40 @@ export const escrowTransactions = pgTable("escrow_transactions", {
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// ===== CREATOR EARNINGS TABLE =====
+// ===== AGREEMENT ESCROW TABLE (NEW SYSTEM) =====
+// Escrow funds blocked per agreement
+export const agreementEscrow = pgTable("agreement_escrow", {
+  id: serial("id").primaryKey(),
+  agreement_id: integer("agreement_id").notNull().unique().references(() => campaignAgreements.id, { onDelete: "cascade" }),
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  status: varchar("status").default("active").notNull(), // 'active', 'released', 'disputed', 'refunded'
+  released_at: timestamp("released_at"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== CREATOR EARNINGS TABLE (OLD SYSTEM - DEPRECATED) =====
 // Track earnings per UGC submission (after validation)
 export const creatorEarnings = pgTable("creator_earnings", {
   id: serial("id").primaryKey(),
   creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
   campaign_id: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  submission_id: integer("submission_id").notNull().unique().references(() => submissions.id, { onDelete: "cascade" }),
+  gross_amount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(), // Original payment
+  platform_fee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(), // 15% commission
+  net_amount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(), // After commission
+  status: varchar("status").default("pending").notNull(), // 'pending', 'available', 'withdrawn'
+  earned_at: timestamp("earned_at").defaultNow().notNull(),
+});
+
+// ===== AGREEMENT EARNINGS TABLE (NEW SYSTEM) =====
+// Track earnings per agreement (after validation)
+export const agreementEarnings = pgTable("agreement_earnings", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  agreement_id: integer("agreement_id").notNull().unique().references(() => campaignAgreements.id, { onDelete: "cascade" }),
   submission_id: integer("submission_id").notNull().unique().references(() => submissions.id, { onDelete: "cascade" }),
   gross_amount: decimal("gross_amount", { precision: 10, scale: 2 }).notNull(), // Original payment
   platform_fee: decimal("platform_fee", { precision: 10, scale: 2 }).notNull(), // 15% commission
