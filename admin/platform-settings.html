@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - إعدادات المنصة (إدارة)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: '#7C3AED',
+          'background-light': '#F3F4F6',
+          'background-dark': '#0D0D1A',
+          'card-light': '#FFFFFF',
+          'card-dark': '#1A1A2E',
+        },
+        fontFamily: {
+          sans: ["Cairo", "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body {
+    font-family: 'Cairo', sans-serif;
+  }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<script>
+  document.documentElement.classList.add('dark');
+</script>
+
+<div class="min-h-screen p-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+          <span class="material-icons text-primary text-4xl ml-3">settings</span>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">إعدادات المنصة</h1>
+            <p class="text-gray-600 dark:text-gray-400">تعديل معلومات الحساب البنكي لـ UGC Maroc</p>
+          </div>
+        </div>
+        <a href="/brand/brand_dashboard_premium.html" class="flex items-center bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg transition">
+          <span class="material-icons ml-2">arrow_back</span>
+          <span>العودة</span>
+        </a>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="bg-yellow-100 dark:bg-yellow-900/30 border-r-4 border-yellow-500 p-4 rounded-lg">
+        <div class="flex items-start">
+          <span class="material-icons text-yellow-600 ml-3">warning</span>
+          <div>
+            <h4 class="font-bold text-yellow-800 dark:text-yellow-200">⚠️ تحذير: صلاحيات الإدارة فقط</h4>
+            <p class="text-sm text-yellow-700 dark:text-yellow-300">هذه الصفحة متاحة للإداريين فقط. التغييرات ستظهر فوراً لجميع المستخدمين.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="bg-card-light dark:bg-card-dark p-8 rounded-lg text-center">
+      <div class="animate-pulse">
+        <span class="material-icons text-primary text-6xl mb-4">autorenew</span>
+        <p class="text-gray-600 dark:text-gray-400">جاري التحميل...</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form id="settingsForm" class="hidden space-y-6">
+      <!-- Bank Information Card -->
+      <div class="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-lg">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+          <span class="material-icons text-primary ml-2">account_balance</span>
+          معلومات البنك
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">اسم البنك *</label>
+            <input type="text" id="bankName" required 
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="مثال: Attijariwafa Bank"/>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">صاحب الحساب *</label>
+            <input type="text" id="accountHolder" required 
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="مثال: UGC MAROC SARL"/>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">RIB (24 رقم) *</label>
+            <input type="text" id="rib" required maxlength="30"
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary font-mono text-lg"
+              placeholder="230 780 0001234567890 12"/>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">رمز SWIFT/BIC</label>
+            <input type="text" id="swift" 
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="مثال: BCMAMAMC"/>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">IBAN</label>
+            <input type="text" id="iban" 
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              placeholder="MA64 2307 8000 0123 4567 8901 2"/>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">عنوان الوكالة البنكية</label>
+            <textarea id="bankAddress" rows="2"
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="مثال: Agence Casablanca Centre, Boulevard Mohammed V, Casablanca 20000"></textarea>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">تعليمات إضافية للتحويل</label>
+            <textarea id="specialInstructions" rows="3"
+              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="مثال: المرجو ذكر رقم المستخدم الخاص بك كمرجع عند التحويل"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-4 justify-end">
+        <button type="button" onclick="location.reload()" 
+          class="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg font-semibold transition">
+          إلغاء
+        </button>
+        <button type="submit" id="saveBtn"
+          class="px-6 py-3 bg-gradient-to-r from-primary to-purple-600 hover:from-purple-600 hover:to-primary text-white rounded-lg font-semibold transition flex items-center">
+          <span class="material-icons ml-2">save</span>
+          حفظ التغييرات
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="hidden bg-green-100 dark:bg-green-900/30 border-r-4 border-green-500 p-6 rounded-lg">
+      <div class="flex items-center">
+        <span class="material-icons text-green-600 text-4xl ml-4">check_circle</span>
+        <div>
+          <h4 class="font-bold text-green-800 dark:text-green-200 text-xl">✅ تم الحفظ بنجاح!</h4>
+          <p class="text-green-700 dark:text-green-300 mt-1">تم تحديث معلومات الحساب البنكي. جميع المستخدمين سيشاهدون المعلومات الجديدة فوراً.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const API_URL = window.location.origin;
+  const supabaseUrl = 'https://hdodkgyzxopgtkzshbzm.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkb2RrZ3l6eG9wZ3RrenNoYnptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3NjAwNzEsImV4cCI6MjA1MjMzNjA3MX0.MVl1k_yB0ZwWSLPCHsq5pLxhm7bM9n1TI5lV06qkJKg';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Check admin access
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert('يجب تسجيل الدخول أولاً');
+    window.location.href = '/login.html';
+  }
+
+  // Load current settings
+  async function loadSettings() {
+    try {
+      const response = await fetch(`${API_URL}/api/platform/bank-info`);
+      const data = await response.json();
+
+      if (data.success) {
+        document.getElementById('bankName').value = data.data.bank_name || '';
+        document.getElementById('accountHolder').value = data.data.account_holder || '';
+        document.getElementById('rib').value = data.data.rib || '';
+        document.getElementById('swift').value = data.data.swift || '';
+        document.getElementById('iban').value = data.data.iban || '';
+        document.getElementById('bankAddress').value = data.data.bank_address || '';
+        document.getElementById('specialInstructions').value = data.data.special_instructions || '';
+
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('settingsForm').classList.remove('hidden');
+      } else {
+        alert('خطأ في تحميل البيانات');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('خطأ في الاتصال بالخادم');
+    }
+  }
+
+  // Save settings
+  document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="material-icons animate-spin ml-2">autorenew</span> جاري الحفظ...';
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(`${API_URL}/api/platform/bank-info`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          bank_name: document.getElementById('bankName').value,
+          account_holder: document.getElementById('accountHolder').value,
+          rib: document.getElementById('rib').value,
+          swift: document.getElementById('swift').value,
+          iban: document.getElementById('iban').value,
+          bank_address: document.getElementById('bankAddress').value,
+          special_instructions: document.getElementById('specialInstructions').value
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        document.getElementById('settingsForm').classList.add('hidden');
+        document.getElementById('successMessage').classList.remove('hidden');
+        
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      } else {
+        alert(data.message || 'خطأ في الحفظ');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span class="material-icons ml-2">save</span> حفظ التغييرات';
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('خطأ في الاتصال بالخادم');
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span class="material-icons ml-2">save</span> حفظ التغييرات';
+    }
+  });
+
+  loadSettings();
+</script>
+<script src="/js/dark-mode-toggle.js"></script>
+</body>
+</html>

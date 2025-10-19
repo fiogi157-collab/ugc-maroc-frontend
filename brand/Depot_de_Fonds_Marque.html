@@ -258,32 +258,131 @@
 </div>
 </div>
 
+<!-- Bank Info Card (Dynamic) -->
 <div class="bg-card-light dark:bg-card-dark p-6 rounded-lg glow-card">
-<div class="flex items-center mb-4">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center">
 <span class="material-icons text-primary text-2xl ml-3">account_balance</span>
 <h3 class="text-xl font-bold text-gray-900 dark:text-white">المعلومات البنكية لـ UGC Maroc</h3>
 </div>
+<button onclick="copyRIB()" class="flex items-center bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg transition font-semibold">
+<span class="material-icons text-sm ml-2">content_copy</span>
+نسخ RIB
+</button>
+</div>
+
+<div id="bankInfoLoading" class="text-center py-8">
+<span class="material-icons text-primary text-4xl animate-spin">autorenew</span>
+<p class="text-gray-600 dark:text-gray-400 mt-2">جاري تحميل المعلومات البنكية...</p>
+</div>
+
+<div id="bankInfoContent" class="hidden space-y-4">
 <div class="bg-gray-100 dark:bg-gray-800 p-5 rounded-lg space-y-3">
 <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
 <span class="text-sm text-gray-600 dark:text-gray-400">البنك</span>
-<span class="font-bold text-gray-900 dark:text-white">Attijariwafa Bank</span>
+<span id="bankName" class="font-bold text-gray-900 dark:text-white">-</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+<span class="text-sm text-gray-600 dark:text-gray-400">صاحب الحساب</span>
+<span id="accountHolder" class="font-bold text-gray-900 dark:text-white">-</span>
 </div>
 <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
 <span class="text-sm text-gray-600 dark:text-gray-400">RIB</span>
-<span class="font-bold text-gray-900 dark:text-white font-mono">123 456 7890 123456789012</span>
+<span id="rib" class="font-bold text-gray-900 dark:text-white font-mono text-lg">-</span>
 </div>
 <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-<span class="text-sm text-gray-600 dark:text-gray-400">المستفيد</span>
-<span class="font-bold text-gray-900 dark:text-white">UGC Maroc SARL</span>
+<span class="text-sm text-gray-600 dark:text-gray-400">SWIFT/BIC</span>
+<span id="swift" class="font-bold text-gray-900 dark:text-white">-</span>
 </div>
-<div class="flex justify-between items-center py-2">
-<span class="text-sm text-gray-600 dark:text-gray-400">المرجع</span>
-<span class="font-bold text-primary">اسم العلامة التجارية + رقم الحساب</span>
+<div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+<span class="text-sm text-gray-600 dark:text-gray-400">IBAN</span>
+<span id="iban" class="font-bold text-gray-900 dark:text-white font-mono">-</span>
+</div>
+<div id="bankAddressRow" class="py-2 border-b border-gray-200 dark:border-gray-700">
+<span class="text-sm text-gray-600 dark:text-gray-400 block mb-1">عنوان الوكالة</span>
+<span id="bankAddress" class="text-gray-900 dark:text-white text-sm">-</span>
 </div>
 </div>
-<div class="mt-4 bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-lg flex items-start">
-<span class="material-icons text-yellow-400 ml-3">info</span>
-<p class="text-sm text-gray-700 dark:text-gray-300">⚠️ سيتم التحقق من إيداعك خلال 24 إلى 48 ساعة بعد استلام التحويل البنكي.</p>
+
+<div id="specialInstructions" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 rounded-lg">
+<p class="text-sm text-gray-700 dark:text-gray-300"></p>
+</div>
+</div>
+</div>
+
+<!-- Transfer Instructions -->
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-lg glow-card">
+<div class="flex items-center mb-6">
+<span class="material-icons text-primary text-2xl ml-3">list_alt</span>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">خطوات إتمام التحويل البنكي</h3>
+</div>
+
+<div class="space-y-4">
+<!-- Step 1 -->
+<div class="flex items-start">
+<div class="flex-shrink-0 w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center ml-4">
+<span class="font-bold text-primary">1</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-gray-900 dark:text-white mb-2">قم بإجراء التحويل البنكي</h4>
+<p class="text-sm text-gray-600 dark:text-gray-400">استخدم المعلومات البنكية أعلاه لإجراء تحويل من حسابك البنكي إلى حساب UGC Maroc</p>
+</div>
+</div>
+
+<!-- Step 2 -->
+<div class="flex items-start">
+<div class="flex-shrink-0 w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center ml-4">
+<span class="font-bold text-primary">2</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-gray-900 dark:text-white mb-2">ضع رقم حسابك كمرجع</h4>
+<p class="text-sm text-gray-600 dark:text-gray-400">⚠️ <strong>مهم جداً:</strong> اذكر رقم المستخدم الخاص بك أو اسم علامتك التجارية في خانة "المرجع" لتسريع عملية التحقق</p>
+</div>
+</div>
+
+<!-- Step 3 -->
+<div class="flex items-start">
+<div class="flex-shrink-0 w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center ml-4">
+<span class="font-bold text-primary">3</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-gray-900 dark:text-white mb-2">ارفع إثبات التحويل</h4>
+<p class="text-sm text-gray-600 dark:text-gray-400">قم بتحميل صورة واضحة لوصل التحويل البنكي (PDF, JPG, PNG) في النموذج أعلاه</p>
+</div>
+</div>
+</div>
+
+<!-- Important Alerts -->
+<div class="mt-6 space-y-3">
+<div class="bg-yellow-100 dark:bg-yellow-900/30 border-r-4 border-yellow-500 p-4 rounded-lg">
+<div class="flex items-start">
+<span class="material-icons text-yellow-600 ml-3">schedule</span>
+<div>
+<h5 class="font-bold text-yellow-800 dark:text-yellow-200 mb-1">مدة التحقق: 24-48 ساعة</h5>
+<p class="text-sm text-yellow-700 dark:text-yellow-300">سيتم مراجعة طلبك والتحقق من التحويل خلال يومي عمل. ستصلك إشعار عند تفعيل رصيدك.</p>
+</div>
+</div>
+</div>
+
+<div class="bg-red-100 dark:bg-red-900/30 border-r-4 border-red-500 p-4 rounded-lg">
+<div class="flex items-start">
+<span class="material-icons text-red-600 ml-3">warning</span>
+<div>
+<h5 class="font-bold text-red-800 dark:text-red-200 mb-1">انتبه للمبلغ المحول</h5>
+<p class="text-sm text-red-700 dark:text-red-300">تأكد من تحويل المبلغ الكامل (مع احتساب عمولة المنصة 5% إذا لزم الأمر). المبلغ الناقص قد يسبب تأخير.</p>
+</div>
+</div>
+</div>
+
+<div class="bg-blue-100 dark:bg-blue-900/30 border-r-4 border-blue-500 p-4 rounded-lg">
+<div class="flex items-start">
+<span class="material-icons text-blue-600 ml-3">receipt</span>
+<div>
+<h5 class="font-bold text-blue-800 dark:text-blue-200 mb-1">احتفظ بنسخة من إثبات التحويل</h5>
+<p class="text-sm text-blue-700 dark:text-blue-300">احتفظ بوصل التحويل الأصلي في حالة الحاجة لمراجعته لاحقاً.</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -435,6 +534,64 @@ function resetForm() {
     document.getElementById('depositForm').classList.remove('hidden');
     document.getElementById('successSection').classList.add('hidden');
 }
+
+// Load bank info from API
+async function loadBankInfo() {
+    try {
+        const response = await fetch('/api/platform/bank-info');
+        const data = await response.json();
+
+        if (data.success) {
+            const info = data.data;
+            document.getElementById('bankName').textContent = info.bank_name || '-';
+            document.getElementById('accountHolder').textContent = info.account_holder || '-';
+            document.getElementById('rib').textContent = info.rib || '-';
+            document.getElementById('swift').textContent = info.swift || '-';
+            document.getElementById('iban').textContent = info.iban || '-';
+            document.getElementById('bankAddress').textContent = info.bank_address || '-';
+            
+            if (info.special_instructions) {
+                document.querySelector('#specialInstructions p').textContent = info.special_instructions;
+            } else {
+                document.getElementById('specialInstructions').style.display = 'none';
+            }
+
+            // Hide loading, show content
+            document.getElementById('bankInfoLoading').classList.add('hidden');
+            document.getElementById('bankInfoContent').classList.remove('hidden');
+        } else {
+            alert('خطأ في تحميل المعلومات البنكية');
+        }
+    } catch (error) {
+        console.error('Error loading bank info:', error);
+        alert('خطأ في الاتصال بالخادم');
+    }
+}
+
+// Copy RIB to clipboard
+function copyRIB() {
+    const rib = document.getElementById('rib').textContent;
+    if (rib && rib !== '-') {
+        navigator.clipboard.writeText(rib).then(() => {
+            // Show success feedback
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="material-icons text-sm ml-2">check</span> تم النسخ!';
+            btn.classList.add('bg-green-500/20', 'text-green-600');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('bg-green-500/20', 'text-green-600');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('فشل نسخ الRIB');
+        });
+    }
+}
+
+// Load bank info on page load
+loadBankInfo();
 
 // Mobile menu toggle
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
