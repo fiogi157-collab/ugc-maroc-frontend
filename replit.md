@@ -23,7 +23,7 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 - **Authentication**: Client-side authentication handled exclusively by Supabase Auth, ensuring security and performance. Custom event-driven Supabase initialization prevents race conditions.
 - **Video Storage**: Cloudflare R2 is used for robust and scalable video asset storage, replacing Supabase Storage for better performance and cost efficiency.
 - **Video Processing**: FFmpeg is integrated for automatic video watermarking during the upload process, applying "UGC Maroc" branding and campaign-specific overlays.
-- **AI Integration**: DeepSeek V3.1 is integrated for various AI-powered features, including script generation, content suggestions, performance prediction, brief generation, and creator matching, with full Arabic/Moroccan Darija support.
+- **AI Integration**: DeepSeek V3.1 via OpenRouter is integrated for various AI-powered features, including script generation, content suggestions, performance prediction, brief generation, creator matching, and intelligent campaign description generation with automatic language detection (Arabic/Darija/French/English support).
 - **Email Service**: Resend is used for sending transactional emails.
 
 ### Feature Specifications
@@ -35,9 +35,14 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
     - Advanced creator search with filters (category, followers, location, budget, rating)
     - Campaign management section with status badges and quick actions
     - Wallet management modal with transaction history and fund management
-    - Campaign creation wizard with AI brief generation
     - Toast notification system for user feedback
     - Skeleton loaders for optimal perceived performance
+- **Campaign Creation Wizard**: Professional 4-step wizard for creating campaigns featuring:
+    - Step 1: Basic information with AI-powered description generation (auto-detects language from title)
+    - Step 2: Budget configuration, platform selection, and optional dates
+    - Step 3: Product details with drag-and-drop media upload (images/videos, optional but recommended)
+    - Step 4: Preview and publish with terms acceptance
+    - Real-time validation, progress tracking, and elegant RTL design
 - **AI-Powered Tools**:
     - Script Generator
     - Content Suggestion for campaigns
@@ -54,9 +59,14 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 
 ### System Design Choices
 - **Unified Server Architecture**: A single Express server serves both static files and API endpoints.
-- **Event-Driven Supabase Initialization**: `supabaseReady` custom event ensures proper timing for Supabase client access.
+- **Supabase Client Loading**: Campaign wizard loads Supabase directly via CDN (`@supabase/supabase-js@2`) for simplicity and reliability.
 - **Robust Error Handling**: Comprehensive error handling is implemented, particularly for authentication and profile creation, with user-friendly Arabic messages.
 - **Optimized Video Pipeline**: Videos are processed on disk to avoid memory overflows, then streamed to R2, and temporary files are cleaned up.
+- **Multer Configuration**: Separate upload middlewares for different file types:
+  - `uploadVideo`: Creator UGC submissions (videos only, 500MB max)
+  - `uploadMedia`: Campaign media assets (images + videos, 100MB max)
+  - `uploadReceipt`: Wallet recharge receipts (images only, 10MB max)
+- **Secure API Key Management**: API keys never logged with fragments; only status messages shown.
 
 ## External Dependencies
 
@@ -67,8 +77,9 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
 - **Cloudflare R2**:
     - Object Storage for video assets (`ugc-maroc-assets` bucket)
     - CDN for public video delivery
-- **DeepSeek V3.1**:
-    - AI API for various generative and analytical tasks
+- **OpenRouter + DeepSeek V3.1**:
+    - AI API gateway (OpenRouter) routing to DeepSeek V3.1 model for various generative and analytical tasks
+    - Campaign description generation with automatic language detection
 - **Resend**:
     - Email delivery service for transactional emails
 - **FFmpeg**:

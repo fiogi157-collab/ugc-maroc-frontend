@@ -73,15 +73,23 @@ export const campaigns = pgTable("campaigns", {
   brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
   title: varchar("title").notNull(),
   description: text("description").notNull(),
-  budget: decimal("budget", { precision: 10, scale: 2 }).notNull(),
-  content_type: varchar("content_type").notNull(), // 'video', 'image', 'story', etc.
+  budget: decimal("budget", { precision: 10, scale: 2 }), // Optional total budget
+  price_per_ugc: decimal("price_per_ugc", { precision: 10, scale: 2 }), // Price per UGC content
+  content_type: text("content_type"), // JSON array: ['video', 'image', 'story', 'reel']
   video_duration: integer("video_duration"), // in seconds
-  deadline: timestamp("deadline").notNull(),
+  start_date: timestamp("start_date"), // Optional campaign start
+  deadline: timestamp("deadline"), // Optional campaign end
   status: varchar("status").default("active").notNull(), // 'draft', 'active', 'completed', 'cancelled'
   category: varchar("category").default("other"), // 'beauty', 'fashion', 'tech', 'food', 'travel', 'other'
   difficulty: varchar("difficulty").default("intermediate"), // 'beginner', 'intermediate', 'expert'
   requirements: text("requirements"),
   target_audience: text("target_audience"),
+  language: varchar("language"), // 'arabic', 'french', 'darija', 'english'
+  platforms: text("platforms"), // JSON array: ['instagram', 'tiktok', 'youtube', 'facebook']
+  product_name: varchar("product_name"), // Name of product/service
+  product_link: text("product_link"), // Link to product/website
+  delivery_method: varchar("delivery_method"), // 'free_delivery', 'pickup', 'no_product'
+  media_files: text("media_files"), // JSON array of R2 URLs for product images/videos
   max_creators: integer("max_creators").default(10),
   current_creators: integer("current_creators").default(0),
   created_at: timestamp("created_at").defaultNow().notNull(),

@@ -30,8 +30,8 @@ app.use(express.json());
 const TEMP_DIR = path.join(__dirname, "../temp");
 await fs.mkdir(TEMP_DIR, { recursive: true }).catch(() => {});
 
-// Configure multer for video uploads (store on disk to avoid memory exhaustion)
-const upload = multer({
+// Configure multer for video uploads (UGC submissions - videos only)
+const uploadVideo = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, TEMP_DIR);
@@ -54,6 +54,30 @@ const upload = multer({
   },
 });
 
+// Configure multer for campaign media (images AND videos)
+const uploadMedia = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, TEMP_DIR);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `media-${Date.now()}-${Math.random().toString(36).substring(7)}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    }
+  }),
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB max file size for campaign media
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images and videos
+    if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("فقط الصور والفيديوهات مسموح بها"), false);
+    }
+  },
+});
+
 // API Routes
 app.get("/api", (req, res) => {
   res.json({ success: true, message: "🚀 API UGC Maroc is running successfully!" });
@@ -64,28 +88,6 @@ app.get("/api/ping", (req, res) => {
     success: true,
     message: "✅ API connectée avec succès !",
     timestamp: new Date().toISOString(),
-  });
-});
-
-// DEBUG ENDPOINT - Temporary
-app.get("/api/debug/deepseek-key", (req, res) => {
-  const key = process.env.DEEPSEEK_API_KEY || '';
-  const chars = Array.from(key).map((c, i) => ({
-    index: i,
-    char: c,
-    code: c.charCodeAt(0),
-    hex: c.charCodeAt(0).toString(16)
-  }));
-  
-  res.json({
-    exists: !!key,
-    length: key.length,
-    first20chars: chars.slice(0, 20),
-    last20chars: chars.slice(-20),
-    hasLineBreaks: key.includes('\n'),
-    hasCarriageReturns: key.includes('\r'),
-    trimmedLength: key.trim().length,
-    allWhitespaceRemoved: key.replace(/\s+/g, '').length
   });
 });
 
@@ -508,61 +510,47 @@ app.get("/api/wallet/:userId", async (req, res) => {
 });
 
 // Create a new campaign (protected route)
-app.post("/api/campaigns", authMiddleware, ownershipMiddleware('brand_id'), async (req, res) => {
+app.post("/api/campaigns", authMiddleware, async (req, res) => {
   try {
     const { 
-      title, 
-      description, 
-      budget, 
-      deadline, 
-      category, 
-      difficulty, 
-      content_type, 
-      video_duration, 
-      brand_id 
+      title, description, category, contentTypes, language,
+      budget, pricePerUgc, platforms, startDate, endDate,
+      productName, productLink, deliveryMethod, mediaFiles
     } = req.body;
 
     // Validation
-    if (!title || title.trim().length === 0) {
+    if (!title || !description || !pricePerUgc) {
       return res.status(400).json({
         success: false,
-        message: "عنوان الحملة مطلوب"
+        message: "المعلومات الأساسية مطلوبة"
       });
     }
 
-    if (!brand_id) {
-      return res.status(400).json({
-        success: false,
-        message: "معرف العلامة التجارية مطلوب"
-      });
-    }
-
-    if (!budget || parseFloat(budget) <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "الميزانية يجب أن تكون أكبر من صفر"
-      });
-    }
+    // Get brand_id from authenticated user
+    const brand_id = req.user.id;
 
     const db = await import("../db/client.js").then(m => m.db);
     const { campaigns } = await import("../db/schema.js");
-
-    // Set default deadline if not provided (30 days from now)
-    const defaultDeadline = new Date();
-    defaultDeadline.setDate(defaultDeadline.getDate() + 30);
     
     // Insert new campaign
     const newCampaign = await db.insert(campaigns).values({
+      brand_id,
       title: title.trim(),
-      description: description?.trim() || title.trim(), // Use title as default description
-      budget: parseFloat(budget),
-      deadline: deadline ? new Date(deadline) : defaultDeadline,
+      description: description.trim(),
       category: category || 'other',
-      difficulty: difficulty || 'intermediate',
-      content_type: content_type || 'video',
-      video_duration: video_duration || null,
-      brand_id: brand_id,
+      content_type: contentTypes ? JSON.stringify(contentTypes) : JSON.stringify(['video']),
+      language: language || 'arabic',
+      budget: budget ? parseFloat(budget) : null,
+      price_per_ugc: parseFloat(pricePerUgc),
+      platforms: platforms ? JSON.stringify(platforms) : JSON.stringify(['instagram']),
+      start_date: startDate ? new Date(startDate) : null,
+      deadline: endDate ? new Date(endDate) : null,
+      product_name: productName || null,
+      product_link: productLink || null,
+      delivery_method: deliveryMethod || 'no_product',
+      media_files: mediaFiles && mediaFiles.length > 0 ? JSON.stringify(mediaFiles) : null,
       status: 'active',
+      difficulty: 'intermediate',
       created_at: new Date(),
       updated_at: new Date()
     }).returning();
@@ -585,8 +573,45 @@ app.post("/api/campaigns", authMiddleware, ownershipMiddleware('brand_id'), asyn
   }
 });
 
+// Upload media files for campaign (images/videos)
+app.post("/api/campaigns/upload-media", authMiddleware, uploadMedia.array('media', 5), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "لم يتم تحميل أي ملفات"
+      });
+    }
+
+    const { uploadToR2 } = await import("../services/r2.js");
+    const uploadedUrls = [];
+
+    for (const file of req.files) {
+      const uniqueKey = `campaigns/media/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname}`;
+      const publicUrl = await uploadToR2(file.path, uniqueKey, file.mimetype);
+      uploadedUrls.push(publicUrl);
+      
+      await fs.unlink(file.path).catch(() => {});
+    }
+
+    console.log(`✅ Uploaded ${uploadedUrls.length} media files to R2`);
+
+    return res.status(200).json({
+      success: true,
+      urls: uploadedUrls
+    });
+
+  } catch (error) {
+    console.error("❌ Error uploading media:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في تحميل الملفات"
+    });
+  }
+});
+
 // Generate campaign description using AI (auto-detect language)
-app.post("/api/ai/generate-description", async (req, res) => {
+app.post("/api/ai/generate-description", authMiddleware, async (req, res) => {
   try {
     const { title } = req.body;
 
@@ -625,7 +650,7 @@ app.post("/api/ai/generate-description", async (req, res) => {
 });
 
 // Add funds to wallet with receipt upload (protected route)
-app.post("/api/wallet/add-funds", authMiddleware, upload.single('receipt'), ownershipMiddleware('user_id'), async (req, res) => {
+app.post("/api/wallet/add-funds", authMiddleware, uploadMedia.single('receipt'), ownershipMiddleware('user_id'), async (req, res) => {
   try {
     const { user_id, amount } = req.body;
 
@@ -723,7 +748,7 @@ app.post("/api/wallet/add-funds", authMiddleware, upload.single('receipt'), owne
 // 🎬 VIDEO UPLOAD ENDPOINT - R2 + Watermark
 // =====================================================
 
-app.post("/api/upload-video", upload.single("video"), async (req, res) => {
+app.post("/api/upload-video", uploadVideo.single("video"), async (req, res) => {
   let tempInputPath = null;
   let tempOutputPath = null;
 

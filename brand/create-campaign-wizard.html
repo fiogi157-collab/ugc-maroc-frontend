@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إنشاء حملة جديدة | UGC Maroc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Cairo', sans-serif;
+    }
+    
+    .step-indicator {
+      transition: all 0.3s ease;
+    }
+    
+    .step-indicator.active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      transform: scale(1.1);
+    }
+    
+    .step-indicator.completed {
+      background: #10b981;
+    }
+    
+    .wizard-content {
+      min-height: 500px;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .drag-drop-zone {
+      border: 2px dashed #cbd5e1;
+      transition: all 0.3s;
+    }
+    
+    .drag-drop-zone.drag-over {
+      border-color: #6366f1;
+      background: #ede9fe;
+    }
+    
+    .preview-card {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .preview-card img,
+    .preview-card video {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .remove-media-btn {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .preview-card:hover .remove-media-btn {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+
+  <div class="container mx-auto px-4 py-8 max-w-5xl">
+    
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      
+      <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+        <h1 class="text-3xl font-bold">🚀 إنشاء حملة جديدة</h1>
+        <p class="text-indigo-100 mt-2">أنشئ حملة احترافية في 4 خطوات بسيطة</p>
+      </div>
+
+      <div class="px-6 py-8">
+        <div class="flex items-center justify-between mb-12">
+          <div class="flex items-center gap-3 flex-1">
+            <div class="step-indicator active flex items-center justify-center w-12 h-12 rounded-full text-white font-bold">1</div>
+            <div class="h-1 bg-gray-300 flex-1 rounded"></div>
+          </div>
+          <div class="flex items-center gap-3 flex-1">
+            <div class="step-indicator flex items-center justify-center w-12 h-12 rounded-full bg-gray-300 text-white font-bold">2</div>
+            <div class="h-1 bg-gray-300 flex-1 rounded"></div>
+          </div>
+          <div class="flex items-center gap-3 flex-1">
+            <div class="step-indicator flex items-center justify-center w-12 h-12 rounded-full bg-gray-300 text-white font-bold">3</div>
+            <div class="h-1 bg-gray-300 flex-1 rounded"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="step-indicator flex items-center justify-center w-12 h-12 rounded-full bg-gray-300 text-white font-bold">4</div>
+          </div>
+        </div>
+
+        <div id="wizard-container" class="wizard-content">
+        </div>
+
+        <div class="flex justify-between items-center mt-8 pt-6 border-t">
+          <button id="prevBtn" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition hidden">
+            ← السابق
+          </button>
+          <button id="nextBtn" class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-lg font-bold transition shadow-lg">
+            التالي →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Supabase client globally - wait for library to load
+    let supabase;
+    
+    function initSupabase() {
+      const SUPABASE_URL = 'https://arfmvtfkibjadxwnbqjl.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZm12dGZraWJqYWR4d25icWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODI0MjAsImV4cCI6MjA3NTY1ODQyMH0.PIWR6lWml5iliG4658nZdaNy1aiF7hgZZUR__NUDOT0';
+      
+      if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return true;
+      }
+      return false;
+    }
+    
+    // Try to initialize immediately, or wait for window load
+    if (!initSupabase()) {
+      window.addEventListener('load', initSupabase);
+    }
+  </script>
+  
+  <script>
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      startWizard();
+    });
+    
+    function startWizard() {
+    let currentStep = 1;
+    let campaignData = {
+      title: '',
+      description: '',
+      category: 'beauty',
+      contentTypes: [],
+      language: 'arabic',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      pricePerUgc: '',
+      platforms: [],
+      productName: '',
+      productLink: '',
+      deliveryMethod: 'no_product',
+      mediaFiles: []
+    };
+    
+    let uploadedMediaFiles = [];
+    
+    async function renderStep(step) {
+      const container = document.getElementById('wizard-container');
+      container.innerHTML = '';
+      container.classList.add('fade-in');
+      
+      const stepIndicators = document.querySelectorAll('.step-indicator');
+      stepIndicators.forEach((indicator, index) => {
+        if (index + 1 < step) {
+          indicator.classList.add('completed');
+          indicator.classList.remove('active');
+        } else if (index + 1 === step) {
+          indicator.classList.add('active');
+          indicator.classList.remove('completed');
+        } else {
+          indicator.classList.remove('active', 'completed');
+        }
+      });
+      
+      if (step === 1) {
+        container.innerHTML = `
+          <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">📋 المعلومات الأساسية</h2>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">اسم الحملة *</label>
+              <input type="text" id="campaignTitle" value="${campaignData.title}" 
+                     class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                     placeholder="مثال: حملة صيفية لعطر Sweet Moon">
+              <p class="text-sm text-gray-500 mt-1">اسم واضح يعبّر عن هدف الحملة</p>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">وصف الحملة *</label>
+              <div class="flex gap-2 mb-2">
+                <button id="generateAiBtn" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2">
+                  ✨ توليد بالذكاء الاصطناعي
+                </button>
+                <span id="aiLoader" class="hidden text-sm text-purple-600 flex items-center">
+                  <svg class="animate-spin h-5 w-5 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  جاري التوليد...
+                </span>
+              </div>
+              <textarea id="campaignDescription" rows="5" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                        placeholder="شرح شامل للفكرة، النتيجة المنتظرة، ونوع المحتوى المطلوب...">${campaignData.description}</textarea>
+              <p class="text-sm text-gray-500 mt-1">الذكاء الاصطناعي سيكتشف لغة العنوان تلقائياً</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">الفئة *</label>
+                <select id="campaignCategory" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none">
+                  <option value="beauty" ${campaignData.category === 'beauty' ? 'selected' : ''}>الجمال</option>
+                  <option value="fashion" ${campaignData.category === 'fashion' ? 'selected' : ''}>الموضة</option>
+                  <option value="tech" ${campaignData.category === 'tech' ? 'selected' : ''}>التكنولوجيا</option>
+                  <option value="food" ${campaignData.category === 'food' ? 'selected' : ''}>الطعام</option>
+                  <option value="travel" ${campaignData.category === 'travel' ? 'selected' : ''}>السفر</option>
+                  <option value="other" ${campaignData.category === 'other' ? 'selected' : ''}>أخرى</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">لغة المحتوى *</label>
+                <select id="campaignLanguage" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none">
+                  <option value="arabic" ${campaignData.language === 'arabic' ? 'selected' : ''}>عربية</option>
+                  <option value="darija" ${campaignData.language === 'darija' ? 'selected' : ''}>دارجة مغربية</option>
+                  <option value="french" ${campaignData.language === 'french' ? 'selected' : ''}>فرنسية</option>
+                  <option value="english" ${campaignData.language === 'english' ? 'selected' : ''}>إنجليزية</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">نوع المحتوى المطلوب *</label>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                ${['video', 'image', 'story', 'reel'].map(type => {
+                  const labels = {video: 'فيديو', image: 'صور', story: 'قصة', reel: 'ريلز/تيك توك'};
+                  return `
+                    <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer hover:bg-indigo-50 ${campaignData.contentTypes.includes(type) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'}">
+                      <input type="checkbox" class="content-type-checkbox" value="${type}" ${campaignData.contentTypes.includes(type) ? 'checked' : ''}>
+                      <span class="font-semibold">${labels[type]}</span>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('generateAiBtn').addEventListener('click', async () => {
+          const title = document.getElementById('campaignTitle').value.trim();
+          const category = document.getElementById('campaignCategory').value;
+          
+          if (!title) {
+            showToast('الرجاء إدخال اسم الحملة أولاً', 'error');
+            return;
+          }
+          
+          const aiBtn = document.getElementById('generateAiBtn');
+          const aiLoader = document.getElementById('aiLoader');
+          const descTextarea = document.getElementById('campaignDescription');
+          
+          aiBtn.disabled = true;
+          aiLoader.classList.remove('hidden');
+          
+          try {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            
+            const response = await fetch(`${window.API_URL}/api/ai/generate-description`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+              },
+              body: JSON.stringify({ title, category })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+              descTextarea.value = result.description;
+              showToast('تم توليد الوصف بنجاح! ✨', 'success');
+            } else {
+              showToast(result.message || 'حدث خطأ في التوليد', 'error');
+            }
+          } catch (error) {
+            console.error('AI generation error:', error);
+            showToast('خطأ في الاتصال بالذكاء الاصطناعي', 'error');
+          } finally {
+            aiBtn.disabled = false;
+            aiLoader.classList.add('hidden');
+          }
+        });
+        
+      } else if (step === 2) {
+        container.innerHTML = `
+          <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">💰 الميزانية والمنصات</h2>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">الميزانية الإجمالية (اختياري)</label>
+                <input type="number" id="campaignBudget" value="${campaignData.budget}" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                       placeholder="مثال: 5000">
+                <p class="text-sm text-gray-500 mt-1">بالدرهم المغربي</p>
+              </div>
+              
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">سعر كل محتوى UGC *</label>
+                <input type="number" id="pricePerUgc" value="${campaignData.pricePerUgc}" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                       placeholder="مثال: 400">
+                <p class="text-sm text-gray-500 mt-1">المكافأة لكل مبدع</p>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">المنصات المستهدفة *</label>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                ${['instagram', 'tiktok', 'youtube', 'facebook'].map(platform => {
+                  const labels = {instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', facebook: 'Facebook'};
+                  const emojis = {instagram: '📷', tiktok: '🎵', youtube: '🎬', facebook: '👥'};
+                  return `
+                    <label class="flex items-center gap-2 p-4 border-2 rounded-lg cursor-pointer hover:bg-purple-50 ${campaignData.platforms.includes(platform) ? 'border-purple-500 bg-purple-50' : 'border-gray-300'}">
+                      <input type="checkbox" class="platform-checkbox" value="${platform}" ${campaignData.platforms.includes(platform) ? 'checked' : ''}>
+                      <span class="text-2xl">${emojis[platform]}</span>
+                      <span class="font-semibold">${labels[platform]}</span>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">تاريخ البداية (اختياري)</label>
+                <input type="date" id="startDate" value="${campaignData.startDate}" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none">
+              </div>
+              
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">تاريخ الانتهاء (اختياري)</label>
+                <input type="date" id="endDate" value="${campaignData.endDate}" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+        `;
+        
+      } else if (step === 3) {
+        container.innerHTML = `
+          <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">📦 تفاصيل المنتج</h2>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">اسم المنتج / الخدمة</label>
+              <input type="text" id="productName" value="${campaignData.productName}" 
+                     class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                     placeholder="مثال: عطر Sweet Moon">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">رابط المنتج</label>
+              <input type="url" id="productLink" value="${campaignData.productLink}" 
+                     class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                     placeholder="https://example.com/product">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">طريقة الإرسال</label>
+              <select id="deliveryMethod" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none">
+                <option value="no_product" ${campaignData.deliveryMethod === 'no_product' ? 'selected' : ''}>لا يوجد منتج مادي</option>
+                <option value="free_delivery" ${campaignData.deliveryMethod === 'free_delivery' ? 'selected' : ''}>توصيل مجاني</option>
+                <option value="pickup" ${campaignData.deliveryMethod === 'pickup' ? 'selected' : ''}>استلام مباشر</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 font-semibold mb-2">
+                صور أو فيديوهات المنتج 
+                <span class="inline-block px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">مستحسن</span>
+              </label>
+              <div id="dragDropZone" class="drag-drop-zone rounded-lg p-8 text-center cursor-pointer">
+                <div class="text-4xl mb-3">📁</div>
+                <p class="text-gray-600 font-semibold mb-2">اسحب الملفات هنا أو انقر للتحميل</p>
+                <p class="text-sm text-gray-500">الصور والفيديوهات (حتى 5 ملفات)</p>
+                <input type="file" id="mediaInput" multiple accept="image/*,video/*" class="hidden">
+              </div>
+              
+              <div id="mediaPreview" class="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4"></div>
+            </div>
+          </div>
+        `;
+        
+        const dragDropZone = document.getElementById('dragDropZone');
+        const mediaInput = document.getElementById('mediaInput');
+        const mediaPreview = document.getElementById('mediaPreview');
+        
+        dragDropZone.addEventListener('click', () => mediaInput.click());
+        
+        dragDropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dragDropZone.classList.add('drag-over');
+        });
+        
+        dragDropZone.addEventListener('dragleave', () => {
+          dragDropZone.classList.remove('drag-over');
+        });
+        
+        dragDropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dragDropZone.classList.remove('drag-over');
+          handleMediaFiles(e.dataTransfer.files);
+        });
+        
+        mediaInput.addEventListener('change', (e) => {
+          handleMediaFiles(e.target.files);
+        });
+        
+        function handleMediaFiles(files) {
+          if (uploadedMediaFiles.length + files.length > 5) {
+            showToast('يمكنك تحميل 5 ملفات كحد أقصى', 'error');
+            return;
+          }
+          
+          Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+              showToast('الرجاء تحميل صور أو فيديوهات فقط', 'error');
+              return;
+            }
+            
+            uploadedMediaFiles.push(file);
+            renderMediaPreview();
+          });
+        }
+        
+        function renderMediaPreview() {
+          mediaPreview.innerHTML = uploadedMediaFiles.map((file, index) => {
+            const isVideo = file.type.startsWith('video/');
+            const url = URL.createObjectURL(file);
+            
+            return `
+              <div class="preview-card aspect-square rounded-lg border-2 border-gray-300 relative">
+                ${isVideo 
+                  ? `<video src="${url}" class="rounded-lg"></video>`
+                  : `<img src="${url}" alt="Preview" class="rounded-lg">`
+                }
+                <button class="remove-media-btn bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center" data-index="${index}">×</button>
+              </div>
+            `;
+          }).join('');
+          
+          document.querySelectorAll('.remove-media-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const index = parseInt(e.target.dataset.index);
+              uploadedMediaFiles.splice(index, 1);
+              renderMediaPreview();
+            });
+          });
+        }
+        
+        renderMediaPreview();
+        
+      } else if (step === 4) {
+        container.innerHTML = `
+          <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">✅ المراجعة والنشر</h2>
+            
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border-2 border-indigo-200">
+              <h3 class="text-xl font-bold text-indigo-900 mb-4">${campaignData.title}</h3>
+              <p class="text-gray-700 mb-4">${campaignData.description}</p>
+              
+              <div class="grid md:grid-cols-2 gap-4 text-sm">
+                <div><span class="font-semibold">الفئة:</span> ${campaignData.category}</div>
+                <div><span class="font-semibold">اللغة:</span> ${campaignData.language}</div>
+                <div><span class="font-semibold">نوع المحتوى:</span> ${campaignData.contentTypes.join(', ')}</div>
+                <div><span class="font-semibold">المنصات:</span> ${campaignData.platforms.join(', ')}</div>
+                ${campaignData.pricePerUgc ? `<div><span class="font-semibold">سعر UGC:</span> ${campaignData.pricePerUgc} درهم</div>` : ''}
+                ${campaignData.budget ? `<div><span class="font-semibold">الميزانية:</span> ${campaignData.budget} درهم</div>` : ''}
+                ${campaignData.productName ? `<div><span class="font-semibold">المنتج:</span> ${campaignData.productName}</div>` : ''}
+                ${campaignData.startDate ? `<div><span class="font-semibold">البداية:</span> ${campaignData.startDate}</div>` : ''}
+                ${campaignData.endDate ? `<div><span class="font-semibold">النهاية:</span> ${campaignData.endDate}</div>` : ''}
+              </div>
+              
+              ${uploadedMediaFiles.length > 0 ? `
+                <div class="mt-4">
+                  <span class="font-semibold">الوسائط:</span> ${uploadedMediaFiles.length} ملف
+                </div>
+              ` : ''}
+            </div>
+            
+            <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+              <input type="checkbox" id="termsCheckbox" class="mt-1">
+              <label for="termsCheckbox" class="text-sm text-gray-700">
+                أوافق على <a href="#" class="text-indigo-600 font-semibold">الشروط والأحكام</a> و <a href="#" class="text-indigo-600 font-semibold">سياسة الخصوصية</a>
+              </label>
+            </div>
+            
+            <div id="publishError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"></div>
+          </div>
+        `;
+      }
+      
+      document.getElementById('prevBtn').classList.toggle('hidden', step === 1);
+      const nextBtn = document.getElementById('nextBtn');
+      nextBtn.textContent = step === 4 ? '🚀 نشر الحملة' : 'التالي →';
+    }
+    
+    function collectStepData(step) {
+      if (step === 1) {
+        campaignData.title = document.getElementById('campaignTitle').value.trim();
+        campaignData.description = document.getElementById('campaignDescription').value.trim();
+        campaignData.category = document.getElementById('campaignCategory').value;
+        campaignData.language = document.getElementById('campaignLanguage').value;
+        campaignData.contentTypes = Array.from(document.querySelectorAll('.content-type-checkbox:checked')).map(cb => cb.value);
+        
+        if (!campaignData.title || !campaignData.description || campaignData.contentTypes.length === 0) {
+          showToast('الرجاء ملء جميع الحقول المطلوبة', 'error');
+          return false;
+        }
+      } else if (step === 2) {
+        campaignData.budget = document.getElementById('campaignBudget').value;
+        campaignData.pricePerUgc = document.getElementById('pricePerUgc').value;
+        campaignData.platforms = Array.from(document.querySelectorAll('.platform-checkbox:checked')).map(cb => cb.value);
+        campaignData.startDate = document.getElementById('startDate').value;
+        campaignData.endDate = document.getElementById('endDate').value;
+        
+        if (!campaignData.pricePerUgc || campaignData.platforms.length === 0) {
+          showToast('الرجاء تحديد سعر UGC واختيار منصة واحدة على الأقل', 'error');
+          return false;
+        }
+      } else if (step === 3) {
+        campaignData.productName = document.getElementById('productName').value.trim();
+        campaignData.productLink = document.getElementById('productLink').value.trim();
+        campaignData.deliveryMethod = document.getElementById('deliveryMethod').value;
+      }
+      
+      return true;
+    }
+    
+    async function publishCampaign() {
+      const termsCheckbox = document.getElementById('termsCheckbox');
+      const errorDiv = document.getElementById('publishError');
+      
+      if (!termsCheckbox.checked) {
+        errorDiv.textContent = 'يجب الموافقة على الشروط والأحكام';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      const nextBtn = document.getElementById('nextBtn');
+      nextBtn.disabled = true;
+      nextBtn.innerHTML = '<svg class="animate-spin h-5 w-5 inline ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري النشر...';
+      
+      try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        
+        let mediaUrls = [];
+        if (uploadedMediaFiles.length > 0) {
+          const formData = new FormData();
+          uploadedMediaFiles.forEach(file => formData.append('media', file));
+          
+          const uploadResponse = await fetch(`${window.API_URL}/api/campaigns/upload-media`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: formData
+          });
+          
+          const uploadResult = await uploadResponse.json();
+          if (uploadResult.success) {
+            mediaUrls = uploadResult.urls;
+          }
+        }
+        
+        const response = await fetch(`${window.API_URL}/api/campaigns`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            ...campaignData,
+            mediaFiles: mediaUrls
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showToast('تم نشر الحملة بنجاح! 🎉', 'success');
+          setTimeout(() => {
+            window.location.href = '/brand/brand_dashboard_premium.html';
+          }, 1500);
+        } else {
+          errorDiv.textContent = result.message || 'حدث خطأ أثناء النشر';
+          errorDiv.classList.remove('hidden');
+          nextBtn.disabled = false;
+          nextBtn.textContent = '🚀 نشر الحملة';
+        }
+      } catch (error) {
+        console.error('Publish error:', error);
+        errorDiv.textContent = 'خطأ في الاتصال بالخادم';
+        errorDiv.classList.remove('hidden');
+        nextBtn.disabled = false;
+        nextBtn.textContent = '🚀 نشر الحملة';
+      }
+    }
+    
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+      } text-white font-semibold`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+    
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        renderStep(currentStep);
+      }
+    });
+    
+    document.getElementById('nextBtn').addEventListener('click', async () => {
+      if (currentStep < 4) {
+        if (collectStepData(currentStep)) {
+          currentStep++;
+          await renderStep(currentStep);
+        }
+      } else {
+        if (collectStepData(currentStep)) {
+          await publishCampaign();
+        }
+      }
+    });
+    
+    renderStep(currentStep);
+    }
+  </script>
+</body>
+</html>

@@ -14,9 +14,9 @@ class DeepSeekService {
     
     if (!this.apiKey) {
       console.error("⚠️ DEEPSEEK_API_KEY manquante dans les variables d'environnement");
+    } else {
+      console.log("✅ OpenRouter API Key configurée");
     }
-    
-    console.log(`🔑 OpenRouter API Key loaded: ${this.apiKey.length} chars, starts with "${this.apiKey.substring(0, 7)}", ends with "${this.apiKey.substring(this.apiKey.length - 4)}"`);
   }
 
   // Méthode générique pour appeler DeepSeek via OpenRouter
