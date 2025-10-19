@@ -70,6 +70,19 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
     - **Atomic Transactions**: All critical flows (accept, approve, dispute) wrapped in db.transaction() for data integrity
     - **Platform Fee**: 15% commission on all released escrow payments to creators
     - **Socket.IO Integration**: Real-time negotiation messaging with WebSocket events
+- **Platform Banking Settings** (Admin-Managed):
+    - **Platform Settings Table**: Stores UGC Maroc's bank account details (bank_name, account_holder, RIB, SWIFT, IBAN, bank_address, special_instructions)
+    - **Admin Interface** (`admin/platform-settings.html`): Secure form for admin-only modification of platform banking information, protected by ADMIN_USER_IDS environment variable
+    - **Public API Endpoint**: GET `/api/platform/bank-info` provides current RIB and bank details for wire transfer deposits (no auth required)
+    - **Admin Update Endpoint**: PUT `/api/platform/bank-info` allows admins to update banking details with proper authorization check
+    - **Dynamic RIB Loading**: Brand deposit page (`Depot_de_Fonds_Marque.html`) loads bank details dynamically from API with copy-to-clipboard functionality
+    - **Wire Transfer Instructions**: Detailed 3-step guide in Arabic with alerts (reference requirements, 24-48h verification, 5% commission)
+- **Campaign Details Page** (`brand/campaign-details.html`):
+    - **Complete Campaign View**: Displays all campaign information (title, description, budget, platforms, content types, media, dates, status)
+    - **Applications/Agreements Section**: Shows list of creator applications with real-time status badges (pending, negotiating, finalized, work_in_progress, submitted, approved, etc.)
+    - **Agreement Actions**: Brand can accept/reject pending applications, open chat for negotiation, view detailed agreement info
+    - **API Integration**: Loads campaign details from GET `/api/campaigns/:id` and agreements from GET `/api/agreements?campaign_id=X`
+    - **Escrow Integration**: Accept button triggers `/api/agreements/:id/approve` which creates escrow and debits wallet
 
 ### System Design Choices
 - **Unified Server Architecture**: A single Express server serves both static files and API endpoints.

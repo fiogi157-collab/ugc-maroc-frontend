@@ -246,6 +246,26 @@
         </div>
       </div>
 
+      <!-- Applications/Agreements Section -->
+      <div class="bg-white dark:bg-card-dark rounded-xl p-6 border-2 border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">👥 الطلبات والاتفاقات</h2>
+        
+        <div id="agreements-loading" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">جاري تحميل الطلبات...</p>
+        </div>
+
+        <div id="agreements-empty" class="hidden text-center py-12">
+          <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-3">group_off</span>
+          <p class="text-gray-500 dark:text-gray-400">لا توجد طلبات من المبدعين بعد</p>
+          <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">عندما يتقدم المبدعون، ستظهر طلباتهم هنا</p>
+        </div>
+        
+        <div id="agreements-container" class="hidden space-y-3">
+          <!-- Agreements will be populated here -->
+        </div>
+      </div>
+
       <!-- Submissions Section -->
       <div class="bg-white dark:bg-card-dark rounded-xl p-6 border-2 border-gray-200 dark:border-gray-700">
         <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">🎬 المحتوى المقدم من المبدعين</h2>
@@ -311,6 +331,9 @@
 
         // Load campaign details
         await loadCampaignDetails();
+        
+        // Load agreements (applications)
+        await loadAgreements();
         
       } catch (error) {
         console.error('Error initializing:', error);
@@ -508,6 +531,209 @@
 
       container.innerHTML = buttons.join('');
     }
+
+    async function loadAgreements() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session || !session.access_token) {
+          console.warn('No session available for loading agreements');
+          document.getElementById('agreements-loading').classList.add('hidden');
+          document.getElementById('agreements-empty').classList.remove('hidden');
+          return;
+        }
+        
+        const response = await fetch(`${API_URL}/api/agreements?campaign_id=${campaignId}&as_brand=true`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const data = await safeJsonParse(response, 'فشل تحميل الطلبات');
+        
+        if (data.success) {
+          renderAgreements(data.agreements || []);
+        } else {
+          console.error('Failed to load agreements:', data.message);
+          // Show empty state
+          document.getElementById('agreements-loading').classList.add('hidden');
+          document.getElementById('agreements-empty').classList.remove('hidden');
+        }
+        
+      } catch (error) {
+        console.error('Error loading agreements:', error);
+        // Show empty state on error
+        document.getElementById('agreements-loading').classList.add('hidden');
+        document.getElementById('agreements-empty').classList.remove('hidden');
+      }
+    }
+
+    function renderAgreements(agreements) {
+      const container = document.getElementById('agreements-container');
+      const loading = document.getElementById('agreements-loading');
+      const empty = document.getElementById('agreements-empty');
+
+      loading.classList.add('hidden');
+
+      if (!agreements || agreements.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      container.classList.remove('hidden');
+      container.innerHTML = '';
+
+      agreements.forEach(agreement => {
+        const statusInfo = getAgreementStatusInfo(agreement.status);
+        const card = document.createElement('div');
+        card.className = 'bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition';
+        
+        card.innerHTML = `
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="material-symbols-outlined text-primary">person</span>
+                <h3 class="font-bold text-gray-900 dark:text-white">مبدع #${agreement.creator_id.substring(0,8)}</h3>
+                <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
+              </div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <p>💰 السعر المقترح: ${agreement.price_offered} د.م</p>
+                ${agreement.final_price ? `<p>✅ السعر النهائي: ${agreement.final_price} د.م</p>` : ''}
+                ${agreement.deadline ? `<p>📅 الموعد النهائي: ${new Date(agreement.deadline).toLocaleDateString('ar-MA')}</p>` : ''}
+                ${agreement.custom_terms ? `<p>📝 شروط خاصة: ${agreement.custom_terms}</p>` : ''}
+                <p class="text-xs text-gray-500">تاريخ التقديم: ${new Date(agreement.created_at).toLocaleDateString('ar-MA')}</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-2 flex-wrap">
+              ${getAgreementActions(agreement)}
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(card);
+      });
+    }
+
+    function getAgreementStatusInfo(status) {
+      const statusMap = {
+        'pending': { text: '⏳ قيد الانتظار', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' },
+        'negotiating': { text: '💬 في التفاوض', class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200' },
+        'finalized': { text: '✅ مقبول', class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' },
+        'work_in_progress': { text: '⚙️ قيد العمل', class: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200' },
+        'submitted': { text: '📤 تم التسليم', class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200' },
+        'approved': { text: '✔️ موافق عليه', class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' },
+        'revision_requested': { text: '🔄 مطلوب تعديل', class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200' },
+        'completed': { text: '🎉 مكتمل', class: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' },
+        'cancelled': { text: '❌ ملغي', class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200' },
+        'disputed': { text: '⚠️ نزاع', class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200' }
+      };
+      return statusMap[status] || { text: status, class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' };
+    }
+
+    function getAgreementActions(agreement) {
+      const actions = [];
+      
+      // Pending: Accept or Reject
+      if (agreement.status === 'pending') {
+        actions.push(`
+          <button onclick="acceptAgreement(${agreement.id})" class="action-btn bg-green-600 text-white hover:bg-green-700 text-sm px-3 py-2">
+            <span class="material-symbols-outlined text-sm">check</span>
+            قبول
+          </button>
+        `);
+        actions.push(`
+          <button onclick="rejectAgreement(${agreement.id})" class="action-btn bg-red-600 text-white hover:bg-red-700 text-sm px-3 py-2">
+            <span class="material-symbols-outlined text-sm">close</span>
+            رفض
+          </button>
+        `);
+      }
+      
+      // Negotiating or Finalized: Open chat
+      if (agreement.status === 'negotiating' || agreement.status === 'finalized' || agreement.status === 'work_in_progress') {
+        actions.push(`
+          <button onclick="openNegotiation(${agreement.id})" class="action-btn bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-2">
+            <span class="material-symbols-outlined text-sm">chat</span>
+            محادثة
+          </button>
+        `);
+      }
+      
+      // View agreement details
+      actions.push(`
+        <button onclick="viewAgreement(${agreement.id})" class="action-btn bg-gray-600 text-white hover:bg-gray-700 text-sm px-3 py-2">
+          <span class="material-symbols-outlined text-sm">visibility</span>
+          عرض
+        </button>
+      `);
+      
+      return actions.join('');
+    }
+
+    window.acceptAgreement = async (agreementId) => {
+      if (!confirm('هل تريد قبول هذا الطلب؟ سيتم حجز المبلغ من محفظتك.')) return;
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(`${API_URL}/api/agreements/${agreementId}/approve`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await safeJsonParse(response, 'فشل قبول الطلب');
+        
+        if (result.success) {
+          alert(result.message);
+          await loadAgreements(); // Reload
+        } else {
+          alert(result.message || 'فشل قبول الطلب');
+        }
+      } catch (error) {
+        console.error('Error accepting agreement:', error);
+        alert(error.message || 'حدث خطأ في قبول الطلب');
+      }
+    };
+
+    window.rejectAgreement = async (agreementId) => {
+      if (!confirm('هل تريد رفض هذا الطلب؟')) return;
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(`${API_URL}/api/agreements/${agreementId}/reject`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const result = await safeJsonParse(response, 'فشل رفض الطلب');
+        
+        if (result.success) {
+          alert(result.message);
+          await loadAgreements(); // Reload
+        } else {
+          alert(result.message || 'فشل رفض الطلب');
+        }
+      } catch (error) {
+        console.error('Error rejecting agreement:', error);
+        alert(error.message || 'حدث خطأ في رفض الطلب');
+      }
+    };
+
+    window.openNegotiation = (agreementId) => {
+      alert(`قريباً - سيتم فتح نافذة المحادثة للتفاوض مع المبدع\nرقم الاتفاق: ${agreementId}`);
+      // TODO: Redirect to messages page or open modal with chat
+    };
+
+    window.viewAgreement = (agreementId) => {
+      alert(`قريباً - سيتم عرض تفاصيل الاتفاق الكاملة\nرقم الاتفاق: ${agreementId}`);
+      // TODO: Open modal with full agreement details
+    };
 
     function showError(message) {
       document.getElementById('loading-state').classList.add('hidden');
