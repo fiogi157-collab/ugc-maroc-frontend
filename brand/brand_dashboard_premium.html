@@ -118,6 +118,57 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #64748b;
     }
+
+    /* Campaign Menu Dropdown */
+    .campaign-menu {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      min-width: 200px;
+      overflow: hidden;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .dark .campaign-menu {
+      background: #1e293b;
+      border-color: #374151;
+    }
+
+    .campaign-menu-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 14px;
+    }
+
+    .campaign-menu-item:hover {
+      background: #f3f4f6;
+    }
+
+    .dark .campaign-menu-item:hover {
+      background: #374151;
+    }
+
+    .campaign-menu-item.danger {
+      color: #ef4444;
+    }
+
+    .campaign-menu-item.danger:hover {
+      background: #fef2f2;
+    }
+
+    .dark .campaign-menu-item.danger:hover {
+      background: #7f1d1d;
+    }
   </style>
 </head>
 
@@ -1146,9 +1197,11 @@
             <button onclick="window.location.href='/brand/campaign-details.html?id=${campaign.id}'" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
               عرض التفاصيل
             </button>
-            <button class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-              <span class="material-symbols-outlined text-sm">more_vert</span>
-            </button>
+            <div class="relative">
+              <button onclick="openCampaignMenu(event, '${campaign.id}', '${campaign.status}')" class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <span class="material-symbols-outlined text-sm">more_vert</span>
+              </button>
+            </div>
           </div>
         </div>
       `).join('');
@@ -1171,6 +1224,218 @@
         console.error('Error loading creators:', error);
       }
     }
+
+    // Campaign Menu Functions
+    let currentMenuElement = null;
+
+    window.openCampaignMenu = function(event, campaignId, campaignStatus) {
+      event.stopPropagation();
+      
+      // Close any existing menu
+      if (currentMenuElement) {
+        currentMenuElement.remove();
+        currentMenuElement = null;
+      }
+
+      const button = event.currentTarget;
+      const menuContainer = button.parentElement;
+
+      // Create menu
+      const menu = document.createElement('div');
+      menu.className = 'campaign-menu';
+      
+      let menuItems = '';
+
+      // Edit - for draft or active
+      if (campaignStatus === 'draft' || campaignStatus === 'active') {
+        menuItems += `
+          <div class="campaign-menu-item" onclick="editCampaign('${campaignId}')">
+            <span class="material-symbols-outlined text-sm">edit</span>
+            <span>📝 Modifier</span>
+          </div>
+        `;
+      }
+
+      // Duplicate - always available
+      menuItems += `
+        <div class="campaign-menu-item" onclick="duplicateCampaignQuick('${campaignId}')">
+          <span class="material-symbols-outlined text-sm">content_copy</span>
+          <span>📋 Dupliquer</span>
+        </div>
+      `;
+
+      // Pause - only for active campaigns
+      if (campaignStatus === 'active') {
+        menuItems += `
+          <div class="campaign-menu-item" onclick="pauseCampaign('${campaignId}')">
+            <span class="material-symbols-outlined text-sm">pause</span>
+            <span>⏸️ Pause</span>
+          </div>
+        `;
+      }
+
+      // Resume - only for paused campaigns
+      if (campaignStatus === 'paused') {
+        menuItems += `
+          <div class="campaign-menu-item" onclick="resumeCampaign('${campaignId}')">
+            <span class="material-symbols-outlined text-sm">play_arrow</span>
+            <span>▶️ Reprendre</span>
+          </div>
+        `;
+      }
+
+      // Delete - only for draft
+      if (campaignStatus === 'draft') {
+        menuItems += `
+          <div class="campaign-menu-item danger" onclick="deleteCampaignQuick('${campaignId}')">
+            <span class="material-symbols-outlined text-sm">delete</span>
+            <span>🗑️ Supprimer</span>
+          </div>
+        `;
+      }
+
+      menu.innerHTML = menuItems;
+      menuContainer.appendChild(menu);
+      currentMenuElement = menu;
+
+      // Close menu on click outside
+      setTimeout(() => {
+        document.addEventListener('click', closeMenuOnClickOutside);
+      }, 0);
+    };
+
+    function closeMenuOnClickOutside() {
+      if (currentMenuElement) {
+        currentMenuElement.remove();
+        currentMenuElement = null;
+      }
+      document.removeEventListener('click', closeMenuOnClickOutside);
+    }
+
+    // Edit Campaign (temporary alert)
+    window.editCampaign = function(campaignId) {
+      closeMenuOnClickOutside();
+      showToast('Fonction "Modifier" en cours de développement', 'info');
+      console.log('Edit campaign:', campaignId);
+    };
+
+    // Duplicate Campaign
+    window.duplicateCampaignQuick = async function(campaignId) {
+      closeMenuOnClickOutside();
+      
+      try {
+        showToast('Duplication en cours...', 'info');
+        
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/${campaignId}/duplicate`, {
+          method: 'POST',
+          headers: headers
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showToast('✅ Campagne dupliquée avec succès!', 'success');
+          await loadCampaigns();
+        } else {
+          showToast(data.message || 'Erreur lors de la duplication', 'error');
+        }
+      } catch (error) {
+        console.error('Error duplicating campaign:', error);
+        showToast('Erreur lors de la duplication de la campagne', 'error');
+      }
+    };
+
+    // Pause Campaign
+    window.pauseCampaign = async function(campaignId) {
+      closeMenuOnClickOutside();
+      
+      if (!confirm('Êtes-vous sûr de vouloir mettre en pause cette campagne?')) {
+        return;
+      }
+
+      try {
+        showToast('Mise en pause en cours...', 'info');
+        
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/${campaignId}/status`, {
+          method: 'PATCH',
+          headers: headers,
+          body: JSON.stringify({ status: 'paused' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showToast('✅ Campagne mise en pause', 'success');
+          await loadCampaigns();
+        } else {
+          showToast(data.message || 'Erreur lors de la mise en pause', 'error');
+        }
+      } catch (error) {
+        console.error('Error pausing campaign:', error);
+        showToast('Erreur lors de la mise en pause de la campagne', 'error');
+      }
+    };
+
+    // Resume Campaign
+    window.resumeCampaign = async function(campaignId) {
+      closeMenuOnClickOutside();
+      
+      try {
+        showToast('Reprise en cours...', 'info');
+        
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/${campaignId}/status`, {
+          method: 'PATCH',
+          headers: headers,
+          body: JSON.stringify({ status: 'active' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showToast('✅ Campagne reprise avec succès!', 'success');
+          await loadCampaigns();
+        } else {
+          showToast(data.message || 'Erreur lors de la reprise', 'error');
+        }
+      } catch (error) {
+        console.error('Error resuming campaign:', error);
+        showToast('Erreur lors de la reprise de la campagne', 'error');
+      }
+    };
+
+    // Delete Campaign
+    window.deleteCampaignQuick = async function(campaignId) {
+      closeMenuOnClickOutside();
+      
+      if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette campagne? Cette action est irréversible.')) {
+        return;
+      }
+
+      try {
+        showToast('Suppression en cours...', 'info');
+        
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${window.API_BASE_URL}/api/campaigns/${campaignId}`, {
+          method: 'DELETE',
+          headers: headers
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showToast('✅ Campagne supprimée avec succès!', 'success');
+          await loadCampaigns();
+        } else {
+          showToast(data.message || 'Erreur lors de la suppression', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting campaign:', error);
+        showToast('Erreur lors de la suppression de la campagne', 'error');
+      }
+    };
 
     // Handle Create Campaign Form
     document.getElementById('create-campaign-form')?.addEventListener('submit', async (e) => {
