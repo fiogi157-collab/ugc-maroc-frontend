@@ -600,8 +600,32 @@
               <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <p>💰 السعر المقترح: ${agreement.price_offered} د.م</p>
                 ${agreement.final_price ? `<p>✅ السعر النهائي: ${agreement.final_price} د.م</p>` : ''}
+                ${agreement.delivery_days ? `<p>⏱️ مدة التسليم: ${agreement.delivery_days} يوم</p>` : ''}
                 ${agreement.deadline ? `<p>📅 الموعد النهائي: ${new Date(agreement.deadline).toLocaleDateString('ar-MA')}</p>` : ''}
-                ${agreement.custom_terms ? `<p>📝 شروط خاصة: ${agreement.custom_terms}</p>` : ''}
+                ${agreement.application_message ? `
+                  <div class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p class="font-medium text-blue-900 dark:text-blue-100">💌 رسالة التقديم:</p>
+                    <p class="text-blue-800 dark:text-blue-200 mt-1">${agreement.application_message}</p>
+                  </div>
+                ` : ''}
+                ${agreement.portfolio_links ? `
+                  <div class="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <p class="font-medium text-purple-900 dark:text-purple-100">🎨 روابط الأعمال السابقة:</p>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      ${JSON.parse(agreement.portfolio_links).map((link, idx) => `
+                        <a href="${link}" target="_blank" class="text-xs px-2 py-1 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full hover:bg-purple-300 dark:hover:bg-purple-700 transition">
+                          رابط ${idx + 1} ↗
+                        </a>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+                ${agreement.additional_notes ? `
+                  <div class="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <p class="font-medium text-green-900 dark:text-green-100">📌 ملاحظات إضافية:</p>
+                    <p class="text-green-800 dark:text-green-200 mt-1">${agreement.additional_notes}</p>
+                  </div>
+                ` : ''}
                 <p class="text-xs text-gray-500">تاريخ التقديم: ${new Date(agreement.created_at).toLocaleDateString('ar-MA')}</p>
               </div>
             </div>
