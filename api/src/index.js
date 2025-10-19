@@ -2825,6 +2825,54 @@ app.post("/api/agreements/apply", authMiddleware, async (req, res) => {
 
     console.log(`📝 Creator application submitted: Creator ${creatorId} → Campaign ${campaign_id}, Proposed: ${priceFloat} MAD (Warning: ${priceWarning})`);
 
+    // Send email notification to brand
+    try {
+      const [brandProfile] = await db.select()
+        .from(profiles)
+        .where(eq(profiles.id, campaign.brand_id));
+
+      if (brandProfile && brandProfile.email && process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        
+        await resend.emails.send({
+          from: 'UGC Maroc <noreply@ugc-maroc.com>',
+          to: brandProfile.email,
+          subject: `🔔 طلب جديد لحملتك: ${campaign.title}`,
+          html: `
+            <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; direction: rtl;">
+              <h2 style="color: #6366f1;">مرحباً ${brandProfile.full_name || 'عزيزي العميل'},</h2>
+              <p>تلقيت طلباً جديداً من مبدع محتوى لحملتك <strong>${campaign.title}</strong></p>
+              
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="margin-top: 0; color: #1f2937;">تفاصيل الطلب:</h3>
+                <ul style="color: #4b5563;">
+                  <li>💰 السعر المقترح: <strong>${priceFloat} د.م</strong></li>
+                  <li>⏱️ مدة التسليم: <strong>${deliveryDaysInt} يوم</strong></li>
+                  <li>💌 رسالة المبدع: <em>${application_message}</em></li>
+                </ul>
+              </div>
+              
+              <p>يمكنك مراجعة الطلب وقبوله أو رفضه من لوحة التحكم الخاصة بك.</p>
+              
+              <a href="${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/brand/campaign-details.html?id=${campaign_id}` : '#'}" 
+                 style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+                عرض الطلب
+              </a>
+              
+              <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                شكراً لاستخدامك UGC Maroc 🇲🇦
+              </p>
+            </div>
+          `
+        });
+
+        console.log(`📧 Email notification sent to brand ${brandProfile.email}`);
+      }
+    } catch (emailError) {
+      console.warn('⚠️ Failed to send email notification:', emailError.message);
+      // Don't fail the entire request if email fails
+    }
+
     return res.status(201).json({
       success: true,
       message: "تم تقديم طلبك بنجاح! في انتظار موافقة العلامة التجارية ✨",
