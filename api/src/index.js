@@ -26,6 +26,13 @@ app.use(cors({
 
 app.use(express.json());
 
+// Request logging middleware for debugging
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.url}`);
+  next();
+});
+
 // Ensure temp directory exists for uploads
 const TEMP_DIR = path.join(__dirname, "../temp");
 await fs.mkdir(TEMP_DIR, { recursive: true }).catch(() => {});

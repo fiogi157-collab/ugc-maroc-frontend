@@ -683,6 +683,20 @@
       return headers;
     }
 
+    // Helper function to safely parse JSON responses
+    async function safeJsonParse(response, errorContext = '') {
+      const contentType = response.headers.get('content-type');
+      
+      // Check if response is actually JSON
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error(`❌ Expected JSON but got ${contentType}:`, text.substring(0, 200));
+        throw new Error(`السيرفر لا يستجيب بشكل صحيح. ${errorContext}`);
+      }
+      
+      return response.json();
+    }
+
     // Toast Notifications
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
@@ -1128,7 +1142,19 @@
         const response = await fetch(`${window.API_BASE_URL}/api/campaigns/brand/${currentUser.id}`, {
           headers: headers
         });
-        const data = await response.json();
+
+        if (!response.ok) {
+          let errorMessage = 'فشل تحميل الحملات';
+          try {
+            const error = await safeJsonParse(response, 'خطأ في الاستجابة');
+            errorMessage = error.message || error.error || errorMessage;
+          } catch (parseError) {
+            errorMessage = `خطأ في الاتصال بالسيرفر (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+
+        const data = await safeJsonParse(response, 'تعذر قراءة بيانات الحملات');
         
         if (data.success) {
           const campaigns = data.campaigns || [];
@@ -1143,9 +1169,12 @@
           
           // Display campaigns
           displayCampaigns(campaigns);
+        } else {
+          throw new Error(data.message || 'فشل تحميل الحملات');
         }
       } catch (error) {
         console.error('Error loading campaigns:', error);
+        showToast(error.message || 'حدث خطأ أثناء تحميل الحملات', 'error');
       }
     }
 

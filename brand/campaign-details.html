@@ -123,10 +123,16 @@
         <span class="material-symbols-outlined text-6xl text-red-600 mb-4">error</span>
         <h2 class="text-2xl font-bold text-red-800 dark:text-red-400 mb-2">خطأ في تحميل الحملة</h2>
         <p class="text-red-700 dark:text-red-300 mb-6" id="error-message"></p>
-        <button onclick="window.location.href='/brand/brand_dashboard_premium.html'" class="action-btn bg-red-600 text-white hover:bg-red-700">
-          <span class="material-symbols-outlined">arrow_back</span>
-          العودة للوحة التحكم
-        </button>
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button onclick="retryLoadCampaign()" class="action-btn bg-primary text-white hover:bg-primary-dark">
+            <span class="material-symbols-outlined">refresh</span>
+            إعادة المحاولة
+          </button>
+          <button onclick="window.location.href='/brand/brand_dashboard_premium.html'" class="action-btn bg-gray-600 text-white hover:bg-gray-700">
+            <span class="material-symbols-outlined">arrow_back</span>
+            العودة للوحة التحكم
+          </button>
+        </div>
       </div>
     </div>
 
@@ -312,6 +318,20 @@
       }
     }
 
+    // Helper function to safely parse JSON responses
+    async function safeJsonParse(response, errorContext = '') {
+      const contentType = response.headers.get('content-type');
+      
+      // Check if response is actually JSON
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error(`❌ Expected JSON but got ${contentType}:`, text.substring(0, 200));
+        throw new Error(`السيرفر لا يستجيب بشكل صحيح. ${errorContext}`);
+      }
+      
+      return response.json();
+    }
+
     async function loadCampaignDetails() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -323,11 +343,18 @@
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'فشل تحميل الحملة');
+          // Try to parse error message, but handle non-JSON responses
+          let errorMessage = 'فشل تحميل الحملة';
+          try {
+            const error = await safeJsonParse(response, 'خطأ في الاستجابة');
+            errorMessage = error.message || error.error || errorMessage;
+          } catch (parseError) {
+            errorMessage = `خطأ في الاتصال بالسيرفر (${response.status})`;
+          }
+          throw new Error(errorMessage);
         }
 
-        campaignData = await response.json();
+        campaignData = await safeJsonParse(response, 'تعذر قراءة بيانات الحملة');
         renderCampaign();
         
       } catch (error) {
@@ -485,6 +512,14 @@
       document.getElementById('error-state').classList.remove('hidden');
       document.getElementById('error-message').textContent = message;
     }
+
+    // Retry loading campaign
+    window.retryLoadCampaign = function() {
+      document.getElementById('error-state').classList.add('hidden');
+      document.getElementById('loading-state').classList.remove('hidden');
+      document.getElementById('main-content').classList.add('hidden');
+      loadCampaignDetails();
+    };
 
     // Action functions
     window.editCampaign = () => {
