@@ -1,0 +1,79 @@
+Prompt technique — Création d’un système de paiement Escrow pour UGC Maroc
+
+Crée un système complet de paiement Escrow sécurisé intégré dans une plateforme web nommée UGC Maroc.
+
+Objectif : sécuriser les transactions entre les marques (brands) et les créateurs (créatifs UGC).
+
+⚙️ Fonctionnalités principales :
+
+Création d’un contrat Escrow par campagne :
+
+Lorsqu’une marque crée une campagne et choisit un budget, ce budget est bloqué dans un compte Escrow virtuel.
+
+Les fonds ne sont pas transférés au créateur avant validation du contenu.
+
+États du paiement :
+
+pending_funds → fonds déposés par la marque, en attente de validation.
+
+under_review → le créateur a soumis le contenu, la marque évalue.
+
+released → la marque valide, les fonds sont libérés vers le créateur.
+
+disputed → en cas de litige, les fonds restent bloqués.
+
+Déclencheurs automatiques :
+
+Libération automatique après validation manuelle de la marque.
+
+Notification email + tableau de bord mis à jour.
+
+Si litige, ouverture d’un ticket de support vers DEVORA Escrow Mediation.
+
+Architecture suggérée :
+
+Frontend : React / Next.js (tableaux de bord marques et créateurs).
+
+Backend : Node.js + Express.
+
+Base de données : Supabase ou PostgreSQL.
+
+Paiement : intégration API Stripe ou PayPal (mode “Escrow / Connect”).
+
+Webhook sécurisé : pour suivre les états (payment_intent.succeeded, payment_release).
+
+Sécurité :
+
+Chaque transaction a un ID unique lié à la campagne et aux deux utilisateurs.
+
+Historique complet des mouvements conservé dans la base de données.
+
+Authentification JWT + chiffrement SSL.
+
+Table escrow_transactions (exemple SQL) :
+
+id SERIAL PRIMARY KEY,
+campaign_id UUID REFERENCES campaigns(id),
+brand_id UUID REFERENCES brands(id),
+creator_id UUID REFERENCES creators(id),
+amount DECIMAL(10,2),
+status VARCHAR(20) CHECK (status IN ('pending_funds', 'under_review', 'released', 'disputed')),
+created_at TIMESTAMP DEFAULT NOW(),
+updated_at TIMESTAMP DEFAULT NOW()
+
+
+API Routes Backend :
+
+POST /escrow/deposit → dépôt du budget par la marque.
+
+POST /escrow/release → libération du paiement au créateur.
+
+POST /escrow/dispute → signaler un litige.
+
+GET /escrow/status/:id → vérifier l’état d’une transaction.
+
+Optionnel : créer un tableau de bord Escrow Admin (DEVORA) pour superviser les transactions et résoudre les litiges.
+
+🔒 Objectif global :
+
+Garantir que les marques ne paient que lorsque le contenu est validé, et que les créateurs soient protégés contre les refus injustifiés, tout en offrant transparence, traçabilité et sécurité financière.
