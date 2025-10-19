@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import { Resend } from "resend";
 import multer from "multer";
 import fs from "fs/promises";
@@ -12,13 +14,36 @@ import watermarkService from "../services/watermark.js";
 import { createCompleteProfile } from "../db/storage.js";
 import { authMiddleware, ownershipMiddleware } from "../middleware/auth.js";
 import { db } from "../db/client.js";
-import { escrowTransactions, creatorEarnings, creatorWithdrawals, campaigns, submissions, wallets } from "../db/schema.js";
+import { 
+  escrowTransactions, 
+  creatorEarnings, 
+  creatorWithdrawals, 
+  campaigns, 
+  submissions, 
+  wallets,
+  campaignAgreements,
+  walletReservations,
+  agreementEscrow,
+  agreementEarnings,
+  negotiationMessages,
+  disputeCases,
+  ratings
+} from "../db/schema.js";
 import { eq, and, sql, desc } from "drizzle-orm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const httpServer = createServer(app);
+
+// Configure Socket.IO with CORS
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 // CORS configuration
 app.use(cors({
@@ -2293,6 +2318,1537 @@ app.patch("/api/submissions/:id/reject", authMiddleware, async (req, res) => {
   }
 });
 
+// =====================================================
+// 🤝 AGREEMENT ENDPOINTS - NEW AGREEMENT-BASED SYSTEM
+// =====================================================
+
+// POST /api/agreements/create - Créer une invitation avec réservation virtuelle
+app.post("/api/agreements/create", authMiddleware, async (req, res) => {
+  try {
+    const brandId = req.user.id;
+    const { 
+      campaign_id, 
+      creator_id, 
+      price_offered,
+      deadline,
+      custom_terms 
+    } = req.body;
+
+    // Validate required fields
+    if (!campaign_id || !creator_id || !price_offered) {
+      return res.status(400).json({
+        success: false,
+        message: "جميع الحقول مطلوبة (حملة، منشئ محتوى، سعر)"
+      });
+    }
+
+    // Validate price
+    const priceFloat = parseFloat(price_offered);
+    if (isNaN(priceFloat) || priceFloat <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "السعر المعروض يجب أن يكون أكبر من صفر"
+      });
+    }
+
+    // Check campaign exists and belongs to brand
+    const [campaign] = await db.select()
+      .from(campaigns)
+      .where(eq(campaigns.id, campaign_id));
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "الحملة غير موجودة"
+      });
+    }
+
+    if (campaign.brand_id !== brandId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإنشاء اتفاقيات لهذه الحملة"
+      });
+    }
+
+    // Check if agreement already exists
+    const existingAgreement = await db.select()
+      .from(campaignAgreements)
+      .where(
+        and(
+          eq(campaignAgreements.campaign_id, campaign_id),
+          eq(campaignAgreements.creator_id, creator_id)
+        )
+      );
+
+    if (existingAgreement.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "يوجد بالفعل اتفاق مع هذا المنشئ لهذه الحملة"
+      });
+    }
+
+    // Get brand wallet
+    const [wallet] = await db.select()
+      .from(wallets)
+      .where(eq(wallets.user_id, brandId));
+
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: "المحفظة غير موجودة"
+      });
+    }
+
+    // Calculate available balance (total - reserved)
+    const activeReservations = await db.select()
+      .from(walletReservations)
+      .where(
+        and(
+          eq(walletReservations.brand_id, brandId),
+          eq(walletReservations.status, 'active')
+        )
+      );
+
+    const totalReserved = activeReservations.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+    const availableBalance = parseFloat(wallet.balance) - totalReserved;
+
+    if (availableBalance < priceFloat) {
+      return res.status(400).json({
+        success: false,
+        message: `رصيد غير كافي. المتوفر: ${availableBalance.toFixed(2)} د.م، المطلوب: ${priceFloat.toFixed(2)} د.م`,
+        available_balance: availableBalance,
+        required_amount: priceFloat
+      });
+    }
+
+    // Create agreement (status: invited)
+    const [newAgreement] = await db.insert(campaignAgreements)
+      .values({
+        campaign_id: parseInt(campaign_id),
+        brand_id: brandId,
+        creator_id: creator_id,
+        price_offered: priceFloat.toFixed(2),
+        final_price: priceFloat.toFixed(2), // Initially same as offered
+        deadline: deadline ? new Date(deadline) : null,
+        custom_terms: custom_terms || null,
+        status: 'invited',
+        created_at: new Date(),
+        updated_at: new Date()
+      })
+      .returning();
+
+    // Create virtual reservation (expires in 48h)
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 48);
+
+    await db.insert(walletReservations)
+      .values({
+        brand_id: brandId,
+        agreement_id: newAgreement.id,
+        campaign_id: parseInt(campaign_id),
+        creator_id: creator_id,
+        amount: priceFloat.toFixed(2),
+        status: 'active',
+        expires_at: expiresAt,
+        created_at: new Date()
+      });
+
+    console.log(`✅ Agreement invitation created: Brand ${brandId} → Creator ${creator_id}, Price: ${priceFloat} MAD`);
+
+    return res.status(201).json({
+      success: true,
+      message: `تم إرسال دعوة الاتفاق بنجاح! تنتهي صلاحية الحجز في ${expiresAt.toLocaleString('ar-MA')}`,
+      agreement: {
+        id: newAgreement.id,
+        campaign_id: newAgreement.campaign_id,
+        creator_id: newAgreement.creator_id,
+        price_offered: parseFloat(newAgreement.price_offered),
+        status: newAgreement.status,
+        deadline: newAgreement.deadline,
+        expires_at: expiresAt
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error creating agreement:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إنشاء الاتفاق",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/agreements/:id/accept - Creator accepte l'invitation
+app.patch("/api/agreements/:id/accept", authMiddleware, async (req, res) => {
+  try {
+    const creatorId = req.user.id;
+    const agreementId = parseInt(req.params.id);
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    // Verify creator
+    if (agreement.creator_id !== creatorId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بقبول هذا الاتفاق"
+      });
+    }
+
+    // Check status
+    if (agreement.status !== 'invited') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن قبول الاتفاق. الحالة الحالية: " + agreement.status
+      });
+    }
+
+    // Get reservation
+    const [reservation] = await db.select()
+      .from(walletReservations)
+      .where(
+        and(
+          eq(walletReservations.agreement_id, agreementId),
+          eq(walletReservations.status, 'active')
+        )
+      );
+
+    if (!reservation) {
+      return res.status(400).json({
+        success: false,
+        message: "الحجز غير موجود أو منتهي الصلاحية"
+      });
+    }
+
+    // Check if reservation expired
+    if (new Date(reservation.expires_at) < new Date()) {
+      // Auto-expire the reservation
+      await db.update(walletReservations)
+        .set({ 
+          status: 'expired',
+          updated_at: new Date()
+        })
+        .where(eq(walletReservations.id, reservation.id));
+
+      return res.status(400).json({
+        success: false,
+        message: "انتهت صلاحية هذه الدعوة"
+      });
+    }
+
+    // ATOMIC TRANSACTION: Convert reservation → escrow + debit wallet
+    const escrowAmount = parseFloat(agreement.final_price);
+
+    await db.transaction(async (tx) => {
+      // 1. Update agreement status
+      await tx.update(campaignAgreements)
+        .set({ 
+          status: 'negotiating',
+          updated_at: new Date()
+        })
+        .where(eq(campaignAgreements.id, agreementId));
+
+      // 2. Convert reservation to escrow
+      await tx.update(walletReservations)
+        .set({ 
+          status: 'converted',
+          updated_at: new Date()
+        })
+        .where(eq(walletReservations.id, reservation.id));
+
+      // 3. Debit brand wallet (escrow funds locked)
+      await tx.update(wallets)
+        .set({ 
+          balance: sql`balance - ${escrowAmount}`,
+          updated_at: new Date()
+        })
+        .where(eq(wallets.user_id, agreement.brand_id));
+
+      // 4. Create escrow entry
+      await tx.insert(agreementEscrow)
+        .values({
+          agreement_id: agreementId,
+          brand_id: agreement.brand_id,
+          creator_id: agreement.creator_id,
+          amount: agreement.final_price,
+          status: 'active',
+          created_at: new Date(),
+          updated_at: new Date()
+        });
+    });
+
+    console.log(`✅ Agreement accepted: Agreement #${agreementId}, Escrow created for ${agreement.final_price} MAD, Wallet debited`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم قبول الاتفاق بنجاح! الآن يمكنك البدء في التفاوض 🎉",
+      agreement: {
+        id: agreement.id,
+        status: 'negotiating',
+        final_price: parseFloat(agreement.final_price)
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error accepting agreement:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في قبول الاتفاق",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/agreements - Liste les agreements (filtrable par role, status, campaign)
+app.get("/api/agreements", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { status, campaign_id, role } = req.query;
+
+    // Determine if user is brand or creator
+    const isBrand = role === 'brand' || req.query.as_brand === 'true';
+    
+    let query = db.select({
+      id: campaignAgreements.id,
+      campaign_id: campaignAgreements.campaign_id,
+      brand_id: campaignAgreements.brand_id,
+      creator_id: campaignAgreements.creator_id,
+      price_offered: campaignAgreements.price_offered,
+      final_price: campaignAgreements.final_price,
+      status: campaignAgreements.status,
+      deadline: campaignAgreements.deadline,
+      custom_terms: campaignAgreements.custom_terms,
+      created_at: campaignAgreements.created_at,
+      updated_at: campaignAgreements.updated_at,
+      campaign_title: campaigns.title,
+      campaign_description: campaigns.description
+    })
+      .from(campaignAgreements)
+      .leftJoin(campaigns, eq(campaignAgreements.campaign_id, campaigns.id));
+
+    // Filter by user role
+    if (isBrand) {
+      query = query.where(eq(campaignAgreements.brand_id, userId));
+    } else {
+      query = query.where(eq(campaignAgreements.creator_id, userId));
+    }
+
+    // Optional filters
+    if (status) {
+      query = query.where(
+        and(
+          isBrand ? eq(campaignAgreements.brand_id, userId) : eq(campaignAgreements.creator_id, userId),
+          eq(campaignAgreements.status, status)
+        )
+      );
+    }
+
+    if (campaign_id) {
+      query = query.where(
+        and(
+          isBrand ? eq(campaignAgreements.brand_id, userId) : eq(campaignAgreements.creator_id, userId),
+          eq(campaignAgreements.campaign_id, parseInt(campaign_id))
+        )
+      );
+    }
+
+    const agreements = await query.orderBy(desc(campaignAgreements.created_at));
+
+    return res.status(200).json({
+      success: true,
+      agreements: agreements.map(a => ({
+        ...a,
+        price_offered: parseFloat(a.price_offered),
+        final_price: parseFloat(a.final_price)
+      })),
+      count: agreements.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching agreements:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب الاتفاقات",
+      error: error.message
+    });
+  }
+});
+
+// =====================================================
+// 💬 NEGOTIATION ENDPOINTS - HTTP REST API
+// =====================================================
+
+// GET /api/agreements/:id/messages - Récupère l'historique des messages
+app.get("/api/agreements/:id/messages", authMiddleware, async (req, res) => {
+  try {
+    const agreementId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    // Verify user is part of agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    if (agreement.brand_id !== userId && agreement.creator_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول إلى هذه المحادثة"
+      });
+    }
+
+    // Get all messages
+    const messages = await db.select()
+      .from(negotiationMessages)
+      .where(eq(negotiationMessages.agreement_id, agreementId))
+      .orderBy(negotiationMessages.created_at);
+
+    // Mark messages as read for current user
+    await db.update(negotiationMessages)
+      .set({ is_read: true })
+      .where(
+        and(
+          eq(negotiationMessages.agreement_id, agreementId),
+          sql`${negotiationMessages.sender_id} != ${userId}`
+        )
+      );
+
+    return res.status(200).json({
+      success: true,
+      messages: messages,
+      count: messages.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching messages:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب الرسائل",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/agreements/:id/counter-offer - Faire une contre-proposition
+app.patch("/api/agreements/:id/counter-offer", authMiddleware, async (req, res) => {
+  try {
+    const agreementId = parseInt(req.params.id);
+    const userId = req.user.id;
+    const { new_price, new_deadline, new_terms } = req.body;
+
+    // Validate new_price
+    if (!new_price || parseFloat(new_price) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "السعر الجديد يجب أن يكون أكبر من صفر"
+      });
+    }
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    // Verify user is part of agreement
+    if (agreement.brand_id !== userId && agreement.creator_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتعديل هذا الاتفاق"
+      });
+    }
+
+    // Check status
+    if (agreement.status !== 'negotiating') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن التفاوض. الحالة الحالية: " + agreement.status
+      });
+    }
+
+    // Update agreement with new terms
+    const updateData = {
+      final_price: parseFloat(new_price).toFixed(2),
+      updated_at: new Date()
+    };
+
+    if (new_deadline) {
+      updateData.deadline = new Date(new_deadline);
+    }
+
+    if (new_terms) {
+      updateData.custom_terms = new_terms;
+    }
+
+    await db.update(campaignAgreements)
+      .set(updateData)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    // Create notification message
+    const notificationText = `عرض جديد: ${parseFloat(new_price).toFixed(2)} د.م`;
+    await db.insert(negotiationMessages)
+      .values({
+        agreement_id: agreementId,
+        sender_id: userId,
+        message_text: notificationText,
+        is_read: false,
+        created_at: new Date()
+      });
+
+    console.log(`💰 Counter offer made on agreement #${agreementId}: ${new_price} MAD`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم إرسال العرض الجديد بنجاح!",
+      agreement: {
+        id: agreementId,
+        final_price: parseFloat(new_price),
+        deadline: updateData.deadline || agreement.deadline,
+        custom_terms: updateData.custom_terms || agreement.custom_terms
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error making counter offer:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إرسال العرض الجديد",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/agreements/:id/finalize - Finaliser l'agreement
+app.patch("/api/agreements/:id/finalize", authMiddleware, async (req, res) => {
+  try {
+    const agreementId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    // Verify user is part of agreement
+    if (agreement.brand_id !== userId && agreement.creator_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بإتمام هذا الاتفاق"
+      });
+    }
+
+    // Check status
+    if (agreement.status !== 'negotiating') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن إتمام الاتفاق. الحالة الحالية: " + agreement.status
+      });
+    }
+
+    // Update agreement to 'active' (finalized)
+    await db.update(campaignAgreements)
+      .set({ 
+        status: 'active',
+        updated_at: new Date()
+      })
+      .where(eq(campaignAgreements.id, agreementId));
+
+    // Update escrow amount if price changed during negotiation
+    await db.update(agreementEscrow)
+      .set({ 
+        amount: agreement.final_price,
+        updated_at: new Date()
+      })
+      .where(eq(agreementEscrow.agreement_id, agreementId));
+
+    console.log(`✅ Agreement #${agreementId} finalized at ${agreement.final_price} MAD`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم إتمام الاتفاق بنجاح! يمكنك الآن البدء في إنشاء المحتوى 🎉",
+      agreement: {
+        id: agreementId,
+        status: 'active',
+        final_price: parseFloat(agreement.final_price)
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error finalizing agreement:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إتمام الاتفاق",
+      error: error.message
+    });
+  }
+});
+
+// =====================================================
+// 📹 SUBMISSION ENDPOINTS - AGREEMENT-BASED SYSTEM
+// =====================================================
+
+// POST /api/agreements/:id/submit - Creator soumet vidéo (uses existing upload-video then links to agreement)
+app.post("/api/agreements/:id/submit", authMiddleware, uploadVideo.single("video"), async (req, res) => {
+  let tempInputPath = null;
+  let tempOutputPath = null;
+
+  try {
+    const agreementId = parseInt(req.params.id);
+    const creatorId = req.user.id;
+
+    // Validate video file
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "لم يتم رفع ملف الفيديو"
+      });
+    }
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    // Verify creator
+    if (agreement.creator_id !== creatorId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالتقديم لهذا الاتفاق"
+      });
+    }
+
+    // Check status
+    if (agreement.status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن التقديم. الحالة الحالية: " + agreement.status
+      });
+    }
+
+    tempInputPath = req.file.path;
+    const fileSize = req.file.size;
+
+    // Get campaign name for watermark
+    const [campaign] = await db.select()
+      .from(campaigns)
+      .where(eq(campaigns.id, agreement.campaign_id));
+    const campaignName = campaign?.title || "UGC Maroc";
+
+    // Apply watermark
+    console.log("🎨 Applying watermark...");
+    tempOutputPath = await watermarkService.addWatermark(
+      tempInputPath,
+      "UGC Maroc",
+      campaignName
+    );
+
+    // Generate unique key for R2
+    const videoId = uuidv4();
+    const fileExtension = path.extname(req.file.originalname);
+    const r2Key = `submissions/agreement-${agreementId}/${videoId}${fileExtension}`;
+
+    // Upload to R2
+    console.log(`☁️ Uploading to R2: ${r2Key}`);
+    const uploadResult = await r2Service.uploadFileToR2(
+      tempOutputPath,
+      r2Key,
+      "video/mp4"
+    );
+
+    // Create submission
+    const [submission] = await db.insert(submissions)
+      .values({
+        campaign_id: agreement.campaign_id,
+        creator_id: creatorId,
+        agreement_id: agreementId,
+        video_url: uploadResult.publicUrl,
+        r2_key: r2Key,
+        file_size: fileSize,
+        status: 'pending',
+        submitted_at: new Date()
+      })
+      .returning();
+
+    // Update agreement status
+    await db.update(campaignAgreements)
+      .set({ 
+        status: 'pending_review',
+        updated_at: new Date()
+      })
+      .where(eq(campaignAgreements.id, agreementId));
+
+    console.log(`✅ Submission created for agreement #${agreementId}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم رفع المحتوى بنجاح! في انتظار المراجعة ✨",
+      submission: {
+        id: submission.id,
+        video_url: submission.video_url,
+        status: submission.status
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error submitting video:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في رفع المحتوى",
+      error: error.message
+    });
+  } finally {
+    // Cleanup temp files
+    if (tempInputPath) await fs.unlink(tempInputPath).catch(() => {});
+    if (tempOutputPath) await fs.unlink(tempOutputPath).catch(() => {});
+  }
+});
+
+// PATCH /api/submissions/:id/approve - Brand approves (ATOMIC: release escrow + create earnings)
+app.patch("/api/submissions/:id/approve", authMiddleware, async (req, res) => {
+  try {
+    const submissionId = parseInt(req.params.id);
+    const brandId = req.user.id;
+
+    // Get submission
+    const [submission] = await db.select()
+      .from(submissions)
+      .where(eq(submissions.id, submissionId));
+
+    if (!submission) {
+      return res.status(404).json({
+        success: false,
+        message: "المحتوى غير موجود"
+      });
+    }
+
+    if (!submission.agreement_id) {
+      return res.status(400).json({
+        success: false,
+        message: "هذا المحتوى غير مرتبط باتفاق"
+      });
+    }
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, submission.agreement_id));
+
+    // Verify brand
+    if (agreement.brand_id !== brandId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالموافقة على هذا المحتوى"
+      });
+    }
+
+    // Check status
+    if (submission.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن الموافقة. الحالة الحالية: " + submission.status
+      });
+    }
+
+    // ATOMIC TRANSACTION: Release escrow + create earnings
+    const finalPrice = parseFloat(agreement.final_price);
+    const platformFee = finalPrice * 0.15; // 15% commission
+    const netAmount = finalPrice - platformFee;
+
+    await db.transaction(async (tx) => {
+      // 1. Update submission
+      await tx.update(submissions)
+        .set({ 
+          status: 'approved',
+          reviewed_at: new Date()
+        })
+        .where(eq(submissions.id, submissionId));
+
+      // 2. Release escrow
+      await tx.update(agreementEscrow)
+        .set({ 
+          status: 'released',
+          released_at: new Date(),
+          updated_at: new Date()
+        })
+        .where(eq(agreementEscrow.agreement_id, submission.agreement_id));
+
+      // 3. Create earnings for creator
+      await tx.insert(agreementEarnings)
+        .values({
+          creator_id: submission.creator_id,
+          agreement_id: submission.agreement_id,
+          submission_id: submissionId,
+          gross_amount: finalPrice.toFixed(2),
+          platform_fee: platformFee.toFixed(2),
+          net_amount: netAmount.toFixed(2),
+          status: 'available',
+          earned_at: new Date()
+        });
+
+      // 4. Update agreement status
+      await tx.update(campaignAgreements)
+        .set({ 
+          status: 'completed',
+          updated_at: new Date()
+        })
+        .where(eq(campaignAgreements.id, submission.agreement_id));
+    });
+
+    console.log(`✅ Submission #${submissionId} approved. Creator earned ${netAmount.toFixed(2)} MAD`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم الموافقة على المحتوى! تم تحويل الأرباح للمنشئ 🎉",
+      earnings: {
+        gross_amount: finalPrice,
+        platform_fee: platformFee,
+        net_amount: netAmount
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error approving submission:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في الموافقة على المحتوى",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/submissions/:id/request-revision - Brand requests revision
+app.patch("/api/submissions/:id/request-revision", authMiddleware, async (req, res) => {
+  try {
+    const submissionId = parseInt(req.params.id);
+    const brandId = req.user.id;
+    const { feedback } = req.body;
+
+    if (!feedback) {
+      return res.status(400).json({
+        success: false,
+        message: "الملاحظات مطلوبة"
+      });
+    }
+
+    // Get submission & verify
+    const [submission] = await db.select()
+      .from(submissions)
+      .where(eq(submissions.id, submissionId));
+
+    if (!submission || !submission.agreement_id) {
+      return res.status(404).json({
+        success: false,
+        message: "المحتوى غير موجود"
+      });
+    }
+
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, submission.agreement_id));
+
+    if (agreement.brand_id !== brandId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك"
+      });
+    }
+
+    // Update submission
+    await db.update(submissions)
+      .set({ 
+        status: 'revision_requested',
+        feedback: feedback,
+        reviewed_at: new Date()
+      })
+      .where(eq(submissions.id, submissionId));
+
+    // Update agreement status back to active
+    await db.update(campaignAgreements)
+      .set({ 
+        status: 'active',
+        updated_at: new Date()
+      })
+      .where(eq(campaignAgreements.id, submission.agreement_id));
+
+    console.log(`🔄 Revision requested for submission #${submissionId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم طلب التعديل بنجاح"
+    });
+  } catch (error) {
+    console.error("❌ Error requesting revision:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في طلب التعديل",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/submissions/:id/reject - Brand rejects (opens dispute if creator disagrees)
+app.patch("/api/submissions/:id/reject", authMiddleware, async (req, res) => {
+  try {
+    const submissionId = parseInt(req.params.id);
+    const brandId = req.user.id;
+    const { reason } = req.body;
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: "سبب الرفض مطلوب"
+      });
+    }
+
+    // Get submission & verify
+    const [submission] = await db.select()
+      .from(submissions)
+      .where(eq(submissions.id, submissionId));
+
+    if (!submission || !submission.agreement_id) {
+      return res.status(404).json({
+        success: false,
+        message: "المحتوى غير موجود"
+      });
+    }
+
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, submission.agreement_id));
+
+    if (agreement.brand_id !== brandId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك"
+      });
+    }
+
+    // Update submission
+    await db.update(submissions)
+      .set({ 
+        status: 'rejected',
+        feedback: reason,
+        reviewed_at: new Date()
+      })
+      .where(eq(submissions.id, submissionId));
+
+    // Update agreement status
+    await db.update(campaignAgreements)
+      .set({ 
+        status: 'rejected',
+        updated_at: new Date()
+      })
+      .where(eq(campaignAgreements.id, submission.agreement_id));
+
+    console.log(`❌ Submission #${submissionId} rejected`);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم رفض المحتوى. يمكن للمنشئ فتح نزاع إذا لم يوافق"
+    });
+  } catch (error) {
+    console.error("❌ Error rejecting submission:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في رفض المحتوى",
+      error: error.message
+    });
+  }
+});
+
+// =====================================================
+// ⚖️ DISPUTE ENDPOINTS
+// =====================================================
+
+// POST /api/disputes/create - Open a dispute
+app.post("/api/disputes/create", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { agreement_id, reason, evidence } = req.body;
+
+    if (!agreement_id || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "معرف الاتفاق والسبب مطلوبان"
+      });
+    }
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, parseInt(agreement_id)));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    // Verify user is part of agreement
+    if (agreement.brand_id !== userId && agreement.creator_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بفتح نزاع لهذا الاتفاق"
+      });
+    }
+
+    // Create dispute
+    const [dispute] = await db.insert(disputeCases)
+      .values({
+        agreement_id: parseInt(agreement_id),
+        opened_by: userId,
+        reason: reason,
+        evidence: evidence || null,
+        status: 'open',
+        created_at: new Date()
+      })
+      .returning();
+
+    // Update agreement status
+    await db.update(campaignAgreements)
+      .set({ 
+        status: 'disputed',
+        updated_at: new Date()
+      })
+      .where(eq(campaignAgreements.id, parseInt(agreement_id)));
+
+    console.log(`⚖️ Dispute opened: #${dispute.id} for agreement #${agreement_id}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم فتح النزاع بنجاح. سيتم مراجعته من قبل الإدارة",
+      dispute: {
+        id: dispute.id,
+        status: dispute.status
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error creating dispute:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في فتح النزاع",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/disputes - List disputes (admin only)
+app.get("/api/disputes", authMiddleware, async (req, res) => {
+  try {
+    const { status } = req.query;
+    
+    // Admin role check (MVP: check user_id, production: add role field to profiles)
+    const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(id => id);
+    if (!ADMIN_USER_IDS.includes(req.user.id)) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بالوصول (إداريون فقط)"
+      });
+    }
+
+    let query = db.select({
+      id: disputeCases.id,
+      agreement_id: disputeCases.agreement_id,
+      opened_by: disputeCases.opened_by,
+      reason: disputeCases.reason,
+      evidence: disputeCases.evidence,
+      status: disputeCases.status,
+      resolution: disputeCases.resolution,
+      resolved_by: disputeCases.resolved_by,
+      resolved_at: disputeCases.resolved_at,
+      created_at: disputeCases.created_at
+    })
+      .from(disputeCases);
+
+    if (status && ['open', 'resolved'].includes(status)) {
+      query = query.where(eq(disputeCases.status, status));
+    }
+
+    const disputes = await query.orderBy(desc(disputeCases.created_at));
+
+    return res.status(200).json({
+      success: true,
+      disputes: disputes,
+      count: disputes.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching disputes:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب النزاعات",
+      error: error.message
+    });
+  }
+});
+
+// PATCH /api/disputes/:id/resolve - Resolve dispute (admin only, ATOMIC)
+app.patch("/api/disputes/:id/resolve", authMiddleware, async (req, res) => {
+  try {
+    const disputeId = parseInt(req.params.id);
+    const adminId = req.user.id;
+    const { resolution, award_to } = req.body; // award_to: 'creator', 'brand', or 'split'
+
+    // Admin role check (MVP: check user_id, production: add role field to profiles)
+    const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '').split(',').filter(id => id);
+    if (!ADMIN_USER_IDS.includes(adminId)) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بحل النزاعات (إداريون فقط)"
+      });
+    }
+
+    if (!resolution || !award_to || !['creator', 'brand', 'split'].includes(award_to)) {
+      return res.status(400).json({
+        success: false,
+        message: "القرار وجهة التحويل مطلوبة (creator/brand/split)"
+      });
+    }
+
+    // Get dispute
+    const [dispute] = await db.select()
+      .from(disputeCases)
+      .where(eq(disputeCases.id, disputeId));
+
+    if (!dispute) {
+      return res.status(404).json({
+        success: false,
+        message: "النزاع غير موجود"
+      });
+    }
+
+    if (dispute.status !== 'open') {
+      return res.status(400).json({
+        success: false,
+        message: "النزاع تم حله بالفعل"
+      });
+    }
+
+    // Get agreement & escrow
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, dispute.agreement_id));
+
+    const [escrow] = await db.select()
+      .from(agreementEscrow)
+      .where(eq(agreementEscrow.agreement_id, dispute.agreement_id));
+
+    if (!escrow || escrow.status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        message: "لا يوجد رصيد محجوز لهذا الاتفاق"
+      });
+    }
+
+    const totalAmount = parseFloat(escrow.amount);
+    const platformFee = totalAmount * 0.15;
+
+    // ATOMIC TRANSACTION: Release escrow based on admin decision
+    await db.transaction(async (tx) => {
+      if (award_to === 'creator') {
+        // Full amount to creator (minus platform fee)
+        const netAmount = totalAmount - platformFee;
+        
+        await tx.insert(agreementEarnings)
+          .values({
+            creator_id: agreement.creator_id,
+            agreement_id: agreement.id,
+            submission_id: null, // No submission in dispute
+            gross_amount: totalAmount.toFixed(2),
+            platform_fee: platformFee.toFixed(2),
+            net_amount: netAmount.toFixed(2),
+            status: 'available',
+            earned_at: new Date()
+          });
+
+      } else if (award_to === 'brand') {
+        // Refund to brand wallet (no platform fee)
+        await tx.update(wallets)
+          .set({ 
+            balance: sql`balance + ${totalAmount}`,
+            updated_at: new Date()
+          })
+          .where(eq(wallets.user_id, agreement.brand_id));
+
+      } else if (award_to === 'split') {
+        // 50/50 split
+        const creatorShare = (totalAmount * 0.5) - (platformFee * 0.5);
+        const brandShare = totalAmount * 0.5;
+
+        await tx.insert(agreementEarnings)
+          .values({
+            creator_id: agreement.creator_id,
+            agreement_id: agreement.id,
+            submission_id: null,
+            gross_amount: (totalAmount * 0.5).toFixed(2),
+            platform_fee: (platformFee * 0.5).toFixed(2),
+            net_amount: creatorShare.toFixed(2),
+            status: 'available',
+            earned_at: new Date()
+          });
+
+        await tx.update(wallets)
+          .set({ 
+            balance: sql`balance + ${brandShare}`,
+            updated_at: new Date()
+          })
+          .where(eq(wallets.user_id, agreement.brand_id));
+      }
+
+      // Release escrow
+      await tx.update(agreementEscrow)
+        .set({ 
+          status: 'released',
+          released_at: new Date(),
+          updated_at: new Date()
+        })
+        .where(eq(agreementEscrow.agreement_id, dispute.agreement_id));
+
+      // Update dispute
+      await tx.update(disputeCases)
+        .set({ 
+          status: 'resolved',
+          resolution: resolution,
+          resolved_by: adminId,
+          resolved_at: new Date()
+        })
+        .where(eq(disputeCases.id, disputeId));
+
+      // Update agreement
+      await tx.update(campaignAgreements)
+        .set({ 
+          status: 'dispute_resolved',
+          updated_at: new Date()
+        })
+        .where(eq(campaignAgreements.id, dispute.agreement_id));
+    });
+
+    console.log(`⚖️ Dispute #${disputeId} resolved: ${award_to}`);
+
+    return res.status(200).json({
+      success: true,
+      message: `تم حل النزاع بنجاح (التحويل: ${award_to})`,
+      dispute: {
+        id: disputeId,
+        resolution: award_to,
+        status: 'resolved'
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error resolving dispute:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في حل النزاع",
+      error: error.message
+    });
+  }
+});
+
+// =====================================================
+// ⭐ RATING ENDPOINTS
+// =====================================================
+
+// POST /api/agreements/:id/rate - Rate after completion
+app.post("/api/agreements/:id/rate", authMiddleware, async (req, res) => {
+  try {
+    const agreementId = parseInt(req.params.id);
+    const userId = req.user.id;
+    const { score, comment } = req.body;
+
+    if (!score || score < 1 || score > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "التقييم يجب أن يكون بين 1 و 5 نجوم"
+      });
+    }
+
+    // Get agreement
+    const [agreement] = await db.select()
+      .from(campaignAgreements)
+      .where(eq(campaignAgreements.id, agreementId));
+
+    if (!agreement) {
+      return res.status(404).json({
+        success: false,
+        message: "الاتفاق غير موجود"
+      });
+    }
+
+    // Verify user is part of agreement
+    if (agreement.brand_id !== userId && agreement.creator_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "غير مصرح لك بتقييم هذا الاتفاق"
+      });
+    }
+
+    // Check if agreement is completed
+    if (!['completed', 'dispute_resolved'].includes(agreement.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "يمكن التقييم فقط بعد إتمام الاتفاق"
+      });
+    }
+
+    // Determine who is being rated
+    const toUser = userId === agreement.brand_id ? agreement.creator_id : agreement.brand_id;
+
+    // Check if already rated
+    const existingRating = await db.select()
+      .from(ratings)
+      .where(
+        and(
+          eq(ratings.agreement_id, agreementId),
+          eq(ratings.from_user, userId)
+        )
+      );
+
+    if (existingRating.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "لقد قمت بالتقييم بالفعل"
+      });
+    }
+
+    // Create rating
+    const [rating] = await db.insert(ratings)
+      .values({
+        agreement_id: agreementId,
+        from_user: userId,
+        to_user: toUser,
+        score: parseInt(score),
+        comment: comment || null,
+        created_at: new Date()
+      })
+      .returning();
+
+    console.log(`⭐ Rating created: ${score} stars for user ${toUser}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "تم إرسال التقييم بنجاح!",
+      rating: {
+        id: rating.id,
+        score: rating.score
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error creating rating:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في إرسال التقييم",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/users/:id/ratings - Get user's ratings & reputation
+app.get("/api/users/:id/ratings", async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Get all ratings received by user
+    const userRatings = await db.select()
+      .from(ratings)
+      .where(eq(ratings.to_user, userId))
+      .orderBy(desc(ratings.created_at));
+
+    if (userRatings.length === 0) {
+      return res.status(200).json({
+        success: true,
+        ratings: [],
+        reputation: {
+          average_score: 0,
+          total_ratings: 0,
+          score_distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        }
+      });
+    }
+
+    // Calculate statistics
+    const totalScore = userRatings.reduce((sum, r) => sum + r.score, 0);
+    const averageScore = totalScore / userRatings.length;
+    
+    const scoreDistribution = userRatings.reduce((dist, r) => {
+      dist[r.score] = (dist[r.score] || 0) + 1;
+      return dist;
+    }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+
+    return res.status(200).json({
+      success: true,
+      ratings: userRatings,
+      reputation: {
+        average_score: averageScore.toFixed(2),
+        total_ratings: userRatings.length,
+        score_distribution: scoreDistribution
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error fetching ratings:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب التقييمات",
+      error: error.message
+    });
+  }
+});
+
+// =====================================================
+// 💰 WALLET ENDPOINTS - NEW AGREEMENT-BASED SYSTEM
+// =====================================================
+
+// GET /api/wallet/balance-detailed - Récupère balance avec réservations
+app.get("/api/wallet/balance-detailed", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Fetch wallet
+    const [wallet] = await db.select()
+      .from(wallets)
+      .where(eq(wallets.user_id, userId));
+
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: "المحفظة غير موجودة"
+      });
+    }
+
+    // Fetch active reservations
+    const activeReservations = await db.select({
+      id: walletReservations.id,
+      amount: walletReservations.amount,
+      campaign_id: walletReservations.campaign_id,
+      creator_id: walletReservations.creator_id,
+      expires_at: walletReservations.expires_at,
+      created_at: walletReservations.created_at
+    })
+      .from(walletReservations)
+      .where(
+        and(
+          eq(walletReservations.brand_id, userId),
+          eq(walletReservations.status, 'active')
+        )
+      )
+      .orderBy(desc(walletReservations.created_at));
+
+    // Calculate totals
+    const totalReserved = activeReservations.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+    const totalBalance = parseFloat(wallet.balance || 0);
+    const pendingBalance = parseFloat(wallet.pending_balance || 0);
+    const availableBalance = totalBalance - totalReserved;
+
+    return res.status(200).json({
+      success: true,
+      wallet: {
+        user_id: wallet.user_id,
+        total_balance: totalBalance,
+        pending_balance: pendingBalance, // En attente validation admin
+        reserved_balance: totalReserved, // Bloqué pour invitations
+        available_balance: Math.max(0, availableBalance), // Disponible pour nouvelles invitations
+        currency: wallet.currency || 'MAD'
+      },
+      active_reservations: activeReservations.map(r => ({
+        ...r,
+        amount: parseFloat(r.amount)
+      })),
+      summary: {
+        total_reservations: activeReservations.length,
+        oldest_reservation: activeReservations.length > 0 
+          ? activeReservations[activeReservations.length - 1].created_at 
+          : null
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error fetching wallet balance:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب معلومات المحفظة",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/wallet/reservations - Liste toutes les réservations (active + expired)
+app.get("/api/wallet/reservations", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { status } = req.query; // Filter by status: 'active', 'converted', 'expired', 'cancelled'
+
+    let query = db.select({
+      id: walletReservations.id,
+      amount: walletReservations.amount,
+      campaign_id: walletReservations.campaign_id,
+      creator_id: walletReservations.creator_id,
+      status: walletReservations.status,
+      expires_at: walletReservations.expires_at,
+      created_at: walletReservations.created_at,
+      updated_at: walletReservations.updated_at,
+      campaign_title: campaigns.title
+    })
+      .from(walletReservations)
+      .leftJoin(campaigns, eq(walletReservations.campaign_id, campaigns.id))
+      .where(eq(walletReservations.brand_id, userId));
+
+    // Optional status filter
+    if (status && ['active', 'converted', 'expired', 'cancelled'].includes(status)) {
+      query = query.where(
+        and(
+          eq(walletReservations.brand_id, userId),
+          eq(walletReservations.status, status)
+        )
+      );
+    }
+
+    const reservations = await query.orderBy(desc(walletReservations.created_at));
+
+    return res.status(200).json({
+      success: true,
+      reservations: reservations.map(r => ({
+        ...r,
+        amount: parseFloat(r.amount),
+        is_expired: r.status === 'active' && new Date(r.expires_at) < new Date()
+      })),
+      count: reservations.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching reservations:", error);
+    return res.status(500).json({
+      success: false,
+      message: "خطأ في جلب الحجوزات",
+      error: error.message
+    });
+  }
+});
+
 // Serve static files with proper cache control
 app.use(express.static(path.join(__dirname, "../../"), {
   setHeaders: (res, filePath) => {
@@ -2309,10 +3865,95 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../../index.html"));
 });
 
+// =====================================================
+// 💬 SOCKET.IO - REAL-TIME NEGOTIATION
+// =====================================================
+
+io.on("connection", (socket) => {
+  console.log(`🔌 User connected: ${socket.id}`);
+
+  // Join negotiation room for specific agreement
+  socket.on("join_negotiation", async ({ agreement_id, user_id }) => {
+    const roomName = `agreement_${agreement_id}`;
+    socket.join(roomName);
+    console.log(`👥 User ${user_id} joined negotiation room: ${roomName}`);
+    
+    // Notify room
+    socket.to(roomName).emit("user_joined", { user_id, timestamp: new Date() });
+  });
+
+  // Leave negotiation room
+  socket.on("leave_negotiation", ({ agreement_id, user_id }) => {
+    const roomName = `agreement_${agreement_id}`;
+    socket.leave(roomName);
+    console.log(`👋 User ${user_id} left negotiation room: ${roomName}`);
+  });
+
+  // Send negotiation message
+  socket.on("send_message", async ({ agreement_id, sender_id, message_text }) => {
+    try {
+      const roomName = `agreement_${agreement_id}`;
+      
+      // Save message to database
+      const [newMessage] = await db.insert(negotiationMessages)
+        .values({
+          agreement_id: parseInt(agreement_id),
+          sender_id: sender_id,
+          message_text: message_text,
+          is_read: false,
+          created_at: new Date()
+        })
+        .returning();
+
+      // Broadcast to room (including sender for confirmation)
+      io.to(roomName).emit("new_message", {
+        id: newMessage.id,
+        agreement_id: newMessage.agreement_id,
+        sender_id: newMessage.sender_id,
+        message_text: newMessage.message_text,
+        is_read: newMessage.is_read,
+        created_at: newMessage.created_at
+      });
+
+      console.log(`💬 Message sent in room ${roomName} by ${sender_id}`);
+    } catch (error) {
+      console.error("❌ Error sending message:", error);
+      socket.emit("message_error", { error: error.message });
+    }
+  });
+
+  // Counter offer notification
+  socket.on("counter_offer", ({ agreement_id, sender_id, new_price }) => {
+    const roomName = `agreement_${agreement_id}`;
+    socket.to(roomName).emit("counter_offer_received", {
+      agreement_id,
+      sender_id,
+      new_price,
+      timestamp: new Date()
+    });
+    console.log(`💰 Counter offer in room ${roomName}: ${new_price} MAD`);
+  });
+
+  // Typing indicator
+  socket.on("typing", ({ agreement_id, user_id, is_typing }) => {
+    const roomName = `agreement_${agreement_id}`;
+    socket.to(roomName).emit("user_typing", {
+      user_id,
+      is_typing,
+      timestamp: new Date()
+    });
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`🔌 User disconnected: ${socket.id}`);
+  });
+});
+
 // Start server on port 5000 for Replit
 const PORT = 5000;
-app.listen(PORT, "0.0.0.0", () => {
+httpServer.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
   console.log(`📡 API endpoints available at /api/*`);
   console.log(`🎬 Video upload endpoint: POST /api/upload-video`);
+  console.log(`💬 Socket.IO negotiation enabled`);
 });

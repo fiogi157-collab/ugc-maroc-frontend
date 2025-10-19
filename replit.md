@@ -60,6 +60,16 @@ The platform features an Arabic RTL (Right-to-Left) layout using the Cairo font,
     - Public CDN URLs for playback.
 - **User Roles**: Distinct dashboards and functionalities for Creators, Brands, and Administrators.
 - **Security**: Row-Level Security (RLS) policies in Supabase ensure data privacy. Environment variables are used for sensitive API keys.
+- **Agreement-Based Escrow System** (MVP Implementation):
+    - **Virtual Wallet Reservations**: Brands create campaigns without blocking funds; virtual reservations prevent over-inviting
+    - **Individual Agreements**: Brands create agreements via application or invitation, negotiate terms via real-time WebSocket messaging
+    - **Escrow on Finalization**: Funds blocked only when agreement accepted (reservation→escrow conversion + wallet debit)
+    - **Re-submission Workflow**: Brands can request revisions, creators resubmit, or reject submissions
+    - **Manual Dispute Resolution**: Admin-only access (ADMIN_USER_IDS env var) with split/refund options
+    - **Mutual Rating System**: Post-completion feedback for brands and creators
+    - **Atomic Transactions**: All critical flows (accept, approve, dispute) wrapped in db.transaction() for data integrity
+    - **Platform Fee**: 15% commission on all released escrow payments to creators
+    - **Socket.IO Integration**: Real-time negotiation messaging with WebSocket events
 
 ### System Design Choices
 - **Unified Server Architecture**: A single Express server serves both static files and API endpoints.
