@@ -661,10 +661,44 @@ function formatDeadline(deadline) {
 }
 
 // Apply to campaign
-function applyCampaign(campaignId) {
-  showToast('قريباً! سنضيف نموذج التقديم على الحملات', 'info');
-  // TODO: Redirect to application form
-  // window.location.href = `/creator/apply-campaign.html?id=${campaignId}`;
+async function applyCampaign(campaignId) {
+  try {
+    // Check if creator already applied to this campaign
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showToast('الرجاء تسجيل الدخول للمتابعة', 'error');
+      window.location.href = '/auth/creator-login.html';
+      return;
+    }
+
+    const checkResponse = await fetch(`/api/campaigns/${campaignId}/check-application`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (checkResponse.ok) {
+      const result = await checkResponse.json();
+      
+      if (result.has_applied) {
+        showToast('لقد قدمت بالفعل طلباً لهذه الحملة', 'info');
+        return;
+      }
+    }
+
+    // Open application modal
+    if (window.applicationModal) {
+      applicationModal.show(campaignId);
+    } else {
+      showToast('خطأ في تحميل نموذج التقديم', 'error');
+    }
+  } catch (error) {
+    console.error('Error checking application status:', error);
+    // Still open modal even if check fails
+    if (window.applicationModal) {
+      applicationModal.show(campaignId);
+    }
+  }
 }
 
 // Toggle bookmark
@@ -806,6 +840,10 @@ if (window.supabaseClient) {
 }
 </script>
 
+<script src="/js/utils.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/application-modal.js"></script>
 <script src="/js/nav-links.js"></script>
 <script src="/js/dark-mode-toggle.js"></script>
 </body>
