@@ -201,6 +201,12 @@
             </button>
           </div>
 
+          <!-- Messages -->
+          <a href="/brand/chat.html" class="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+            <span class="material-symbols-outlined message-icon text-gray-600 dark:text-gray-400">chat</span>
+            <span class="message-badge-count absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full hidden"></span>
+          </a>
+
           <!-- Notifications -->
           <button class="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
             <span class="material-symbols-outlined">notifications</span>
@@ -338,14 +344,14 @@
         </button>
 
         <!-- Action 5: Messages -->
-        <button onclick="showToast('قريباً - نظام الرسائل سيكون متاحاً قريباً', 'info')" class="group bg-white dark:bg-card-dark border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-right hover-lift hover:border-purple-500">
+        <a href="/brand/chat.html" class="group bg-white dark:bg-card-dark border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-right hover-lift hover:border-purple-500 block">
           <div class="flex items-center justify-between mb-3">
-            <span class="material-symbols-outlined text-3xl text-purple-600">mail</span>
-            <span class="text-xs bg-red-500 text-white px-2 py-1 rounded-full">3</span>
+            <span class="material-symbols-outlined text-3xl text-purple-600 message-icon">chat</span>
+            <span class="message-badge-count text-xs bg-red-500 text-white px-2 py-1 rounded-full hidden">0</span>
           </div>
           <div class="font-bold text-lg mb-1">الرسائل</div>
           <div class="text-sm text-gray-600 dark:text-gray-400">تواصل مع المبدعين</div>
-        </button>
+        </a>
       </div>
     </div>
 
@@ -1301,5 +1307,6 @@
 
   <script src="/js/nav-links.js"></script>
   <script src="/js/dark-mode-toggle.js"></script>
+  <script src="/js/message-badge.js"></script>
 </body>
 </html>

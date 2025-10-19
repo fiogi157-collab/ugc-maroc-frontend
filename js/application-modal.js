@@ -552,5 +552,5 @@ class ApplicationModal {
   }
 }
 
-// Instance globale
-const applicationModal = new ApplicationModal();
+// Instance globale (accessible depuis toutes les pages)
+window.applicationModal = new ApplicationModal();
