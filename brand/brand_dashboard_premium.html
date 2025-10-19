@@ -691,7 +691,7 @@
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
         console.error(`❌ Expected JSON but got ${contentType}:`, text.substring(0, 200));
-        throw new Error(`السيرفر لا يستجيب بشكل صحيح. ${errorContext}`);
+        throw new Error('عذراً، حدث خطأ مؤقت في تحميل البيانات. يرجى المحاولة مرة أخرى');
       }
       
       return response.json();
@@ -1341,11 +1341,10 @@
       document.removeEventListener('click', closeMenuOnClickOutside);
     }
 
-    // Edit Campaign (temporary alert)
+    // Edit Campaign - Redirect to wizard in edit mode
     window.editCampaign = function(campaignId) {
       closeMenuOnClickOutside();
-      showToast('Fonction "Modifier" en cours de développement', 'info');
-      console.log('Edit campaign:', campaignId);
+      window.location.href = `/brand/create-campaign-wizard.html?edit=${campaignId}`;
     };
 
     // Duplicate Campaign
@@ -1379,7 +1378,7 @@
     window.pauseCampaign = async function(campaignId) {
       closeMenuOnClickOutside();
       
-      if (!confirm('Êtes-vous sûr de vouloir mettre en pause cette campagne?')) {
+      if (!confirm('هل أنت متأكد من إيقاف هذه الحملة مؤقتاً؟')) {
         return;
       }
 
@@ -1439,7 +1438,7 @@
     window.deleteCampaignQuick = async function(campaignId) {
       closeMenuOnClickOutside();
       
-      if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette campagne? Cette action est irréversible.')) {
+      if (!confirm('⚠️ هل أنت متأكد من حذف هذه الحملة؟ هذا الإجراء لا يمكن التراجع عنه.')) {
         return;
       }
 

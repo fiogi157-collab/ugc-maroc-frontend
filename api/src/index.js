@@ -127,9 +127,16 @@ app.post("/api/send-email", async (req, res) => {
 
 // Environment config endpoint for frontend
 app.get("/api/config", (req, res) => {
+  // Construct API URL from Replit domain or use the request host
+  const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+  const apiUrl = replitDomain 
+    ? `https://${replitDomain}` 
+    : `${req.protocol}://${req.get('host')}`;
+  
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || "",
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ""
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
+    apiUrl: apiUrl
   });
 });
 
