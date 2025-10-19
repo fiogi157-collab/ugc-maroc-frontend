@@ -113,6 +113,12 @@ export const campaignAgreements = pgTable("campaign_agreements", {
   custom_terms: text("custom_terms"), // Message/terms from creator or brand
   custom_clauses: text("custom_clauses"), // Custom contract conditions
   template_clauses: text("template_clauses"), // JSON array of selected template clauses
+  // Detailed application fields for creator applications
+  application_message: text("application_message"), // Motivation message from creator
+  portfolio_links: text("portfolio_links"), // JSON array of portfolio URLs
+  delivery_days: integer("delivery_days"), // Proposed delivery time in days
+  additional_notes: text("additional_notes"), // Additional notes from creator
+  portfolio_files: text("portfolio_files"), // JSON array of uploaded portfolio file URLs
   submission_id: integer("submission_id").references(() => submissions.id, { onDelete: "set null" }),
   revision_count: integer("revision_count").default(0),
   max_revisions: integer("max_revisions").default(2),
