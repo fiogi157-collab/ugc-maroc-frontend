@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
@@ -9,11 +11,45 @@ import multer from "multer";
 import fs from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import deepseekService from "../services/deepseek.js";
-import r2Service from "../services/r2.js";
+import r2Service from "../services/r2-simple.js";
 import watermarkService from "../services/watermark.js";
 import { createCompleteProfile } from "../db/storage.js";
 import { authMiddleware, ownershipMiddleware } from "../middleware/auth.js";
 import { db } from "../db/client.js";
+
+// Import security middleware
+import { 
+  authLimiter, 
+  apiLimiter, 
+  uploadLimiter, 
+  paymentLimiter, 
+  emailLimiter, 
+  aiLimiter,
+  strictLimiter,
+  publicLimiter,
+  defaultLimiter 
+} from "../middleware/rateLimiting.js";
+import { 
+  validateRequest, 
+  sanitizeQuery,
+  validateParams,
+  authSchema,
+  profileSchema,
+  campaignSchema,
+  gigSchema,
+  messageSchema,
+  paymentSchema,
+  withdrawalSchema,
+  reviewSchema,
+  uuidParamSchema,
+  userIdParamSchema,
+  orderIdParamSchema
+} from "../middleware/validation.js";
+import { 
+  healthCheckMiddleware, 
+  readinessCheck, 
+  livenessCheck 
+} from "../middleware/healthChecks.js";
 import { 
   escrowTransactions, 
   creatorEarnings, 
@@ -33,9 +69,28 @@ import {
   bankChangeRequests,
   platformSettings,
   conversations,
-  messages
+  messages,
+  orders,
+  payments,
+  creatorBalances,
+  payoutRequests,
+  webhookEvents,
+  gigs,
+  gigOptions,
+  negotiations,
+  contracts
 } from "../db/schema.js";
 import { eq, and, sql, desc } from "drizzle-orm";
+
+// Import AI routes
+import aiVisionRoutes from "../routes/ai-vision.js";
+import smartMatchingRoutes from "../routes/smart-matching.js";
+import emailRoutes from "../routes/emails.js";
+import cookieRoutes from "../routes/cookies.js";
+import backupRoutes from "../routes/backup.js";
+import reviewsRoutes from "../routes/reviews.js";
+import adminRoutes from "../routes/admin.js";
+import badgesRoutes from "../routes/badges.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,14 +106,44 @@ const io = new Server(httpServer, {
   }
 });
 
+// Security middleware (applied first)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.openrouter.ai", "https://api.resend.com", "https://api.stripe.com"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
 // CORS configuration
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
-app.use(express.json());
+// Basic middleware
+app.use(cookieParser());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Global rate limiting
+app.use(defaultLimiter);
+
+// Query sanitization for all routes
+app.use(sanitizeQuery);
+
+// Health check endpoints (before other routes)
+app.get('/health', healthCheckMiddleware);
+app.get('/health/ready', readinessCheck);
+app.get('/health/live', livenessCheck);
 
 // Request logging middleware for debugging
 app.use((req, res, next) => {
@@ -1069,7 +1154,7 @@ app.delete("/api/campaigns/:id", authMiddleware, async (req, res) => {
 });
 
 // Upload media files for campaign (images/videos)
-app.post("/api/campaigns/upload-media", authMiddleware, uploadMedia.array('media', 5), async (req, res) => {
+app.post("/api/campaigns/upload-media", uploadLimiter, authMiddleware, uploadMedia.array('media', 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
@@ -1106,7 +1191,7 @@ app.post("/api/campaigns/upload-media", authMiddleware, uploadMedia.array('media
 });
 
 // Generate campaign description using AI (auto-detect language)
-app.post("/api/ai/generate-description", authMiddleware, async (req, res) => {
+app.post("/api/ai/generate-description", aiLimiter, authMiddleware, async (req, res) => {
   try {
     const { title } = req.body;
 
@@ -1270,53 +1355,88 @@ app.post("/api/upload-video", uploadVideo.single("video"), async (req, res) => {
     tempInputPath = req.file.path;
     tempOutputPath = path.join(path.dirname(tempInputPath), `output-${fileName}`);
 
-    // Apply watermark using FFmpeg (sanitize campaign name to prevent injection)
-    console.log("🎨 Applying watermark...");
+    // Apply branding watermark using FFmpeg (sanitize campaign name to prevent injection)
+    console.log("🎨 Applying branding watermark...");
     const sanitizedCampaignName = (campaignName || "UGC Maroc").replace(/['"\\]/g, '');
-    const watermarkResult = await watermarkService.applyWatermark(
+    const brandingOutputPath = path.join(path.dirname(tempInputPath), `branding-${fileName}`);
+    
+    const brandingResult = await watermarkService.applyWatermark(
       tempInputPath,
-      tempOutputPath,
+      brandingOutputPath,
       {
         campaignName: sanitizedCampaignName,
         position: "bottom-right"
       }
     );
 
-    if (!watermarkResult.success) {
-      throw new Error("فشل في تطبيق العلامة المائية");
+    if (!brandingResult.success) {
+      throw new Error("فشل في تطبيق العلامة المائية للعلامة التجارية");
     }
 
-    // Upload to Cloudflare R2 (stream from disk, no memory load)
-    const r2Key = campaignId 
-      ? `videos/campaign-${campaignId}/${fileName}`
-      : `videos/${fileName}`;
+    // Apply preview watermark on top of branding watermark
+    console.log("🔒 Applying preview watermark...");
+    const previewOutputPath = path.join(path.dirname(tempInputPath), `preview-${fileName}`);
+    
+    const previewResult = await watermarkService.addPreviewWatermark(
+      brandingOutputPath,
+      previewOutputPath
+    );
 
-    console.log(`☁️ Uploading to R2: ${r2Key}`);
-    const uploadResult = await r2Service.uploadFileToR2(
-      tempOutputPath,
-      r2Key,
+    if (!previewResult.success) {
+      throw new Error("فشل في تطبيق العلامة المائية للمعاينة");
+    }
+
+    // Upload both versions to Cloudflare R2
+    const baseR2Key = campaignId 
+      ? `videos/campaign-${campaignId}/${videoId}`
+      : `videos/${videoId}`;
+
+    // Upload branded version (final after payment)
+    const brandedR2Key = `${baseR2Key}/branded${originalExtension}`;
+    console.log(`☁️ Uploading branded version to R2: ${brandedR2Key}`);
+    const brandedUploadResult = await r2Service.uploadFileToR2(
+      brandingOutputPath,
+      brandedR2Key,
       req.file.mimetype
     );
 
-    // Cleanup temp files (both input and output)
+    // Upload preview version (visible before payment)
+    const previewR2Key = `${baseR2Key}/preview${originalExtension}`;
+    console.log(`☁️ Uploading preview version to R2: ${previewR2Key}`);
+    const previewUploadResult = await r2Service.uploadFileToR2(
+      previewOutputPath,
+      previewR2Key,
+      req.file.mimetype
+    );
+
+    // Cleanup temp files (input, branding, and preview)
     console.log("🧹 Cleaning up temporary files...");
     await fs.unlink(tempInputPath).catch((err) => console.warn("Cleanup warning:", err.message));
-    await fs.unlink(tempOutputPath).catch((err) => console.warn("Cleanup warning:", err.message));
+    await fs.unlink(brandingOutputPath).catch((err) => console.warn("Cleanup warning:", err.message));
+    await fs.unlink(previewOutputPath).catch((err) => console.warn("Cleanup warning:", err.message));
 
-    console.log("✅ Video upload completed successfully!");
+    console.log("✅ Video upload with double watermarking completed successfully!");
 
-    // Return success response
+    // Return success response with both URLs
     return res.status(200).json({
       success: true,
-      message: "تم رفع الفيديو بنجاح! ✨",
+      message: "تم رفع الفيديو بنجاح مع الحماية المزدوجة! ✨",
       data: {
         videoId: videoId,
         fileName: fileName,
-        publicUrl: uploadResult.publicUrl,
-        r2Key: uploadResult.key,
-        size: uploadResult.size,
+        // Preview version (visible before payment)
+        watermarkedUrl: previewUploadResult.publicUrl,
+        watermarkedR2Key: previewUploadResult.key,
+        // Original version (accessible after payment)
+        originalUrl: brandedUploadResult.publicUrl,
+        originalR2Key: brandedUploadResult.key,
+        // Legacy compatibility
+        publicUrl: previewUploadResult.publicUrl,
+        r2Key: previewUploadResult.key,
+        size: previewUploadResult.size,
         originalName: req.file.originalname,
-        mimeType: req.file.mimetype
+        mimeType: req.file.mimetype,
+        watermarkStatus: "preview_active" // Indicates preview watermark is active
       }
     });
 
@@ -1329,6 +1449,16 @@ app.post("/api/upload-video", uploadVideo.single("video"), async (req, res) => {
     }
     if (tempOutputPath) {
       await fs.unlink(tempOutputPath).catch(() => {});
+    }
+    // Cleanup branding and preview files if they exist
+    const brandingOutputPath = tempInputPath ? path.join(path.dirname(tempInputPath), `branding-${path.basename(tempInputPath)}`) : null;
+    const previewOutputPath = tempInputPath ? path.join(path.dirname(tempInputPath), `preview-${path.basename(tempInputPath)}`) : null;
+    
+    if (brandingOutputPath) {
+      await fs.unlink(brandingOutputPath).catch(() => {});
+    }
+    if (previewOutputPath) {
+      await fs.unlink(previewOutputPath).catch(() => {});
     }
 
     return res.status(500).json({
@@ -1751,7 +1881,7 @@ app.get("/api/creator/earnings", authMiddleware, async (req, res) => {
 });
 
 // POST /api/creator/withdrawal - Request withdrawal
-app.post("/api/creator/withdrawal", authMiddleware, async (req, res) => {
+app.post("/api/creator/withdrawal", paymentLimiter, authMiddleware, async (req, res) => {
   try {
     const creator_id = req.user.id;
     const { amount, bank_name, rib, account_holder } = req.body;
@@ -3439,7 +3569,7 @@ app.patch("/api/agreements/:id/finalize", authMiddleware, async (req, res) => {
 // =====================================================
 
 // POST /api/agreements/:id/submit - Creator soumet vidéo (uses existing upload-video then links to agreement)
-app.post("/api/agreements/:id/submit", authMiddleware, uploadVideo.single("video"), async (req, res) => {
+app.post("/api/agreements/:id/submit", uploadLimiter, authMiddleware, uploadVideo.single("video"), async (req, res) => {
   let tempInputPath = null;
   let tempOutputPath = null;
 
@@ -4854,10 +4984,7 @@ app.use(express.static(path.join(__dirname, "../../"), {
   }
 }));
 
-// SPA fallback - serve index.html for all non-API routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../index.html"));
-});
+// SPA fallback moved to end of file
 
 // =====================================================
 // ========================================
@@ -5558,11 +5685,64 @@ io.on("connection", (socket) => {
   });
 });
 
+// Import routes
+import authRoutes from "../routes/auth.js";
+import ordersRoutes from "../routes/orders.js";
+import paymentsRoutes from "../routes/payments.js";
+import withdrawalRoutes from "../routes/withdrawal.js";
+import gigsRoutes from "../routes/gigs.js";
+import negotiationsRoutes from "../routes/negotiations.js";
+import contractsRoutes from "../routes/contracts.js";
+import submissionsRoutes from "../routes/submissions.js";
+
+// Use routes
+app.use("/api/auth", authRoutes);
+app.use("/api/orders", ordersRoutes);
+app.use("/api/payments", paymentsRoutes);
+app.use("/api/withdrawal", withdrawalRoutes);
+app.use("/api/gigs", gigsRoutes);
+app.use("/api/negotiations", negotiationsRoutes);
+app.use("/api/contracts", contractsRoutes);
+app.use("/api/submissions", submissionsRoutes);
+app.use("/api/ai-vision", aiVisionRoutes);
+app.use("/api/smart-matching", smartMatchingRoutes);
+app.use("/api/emails", emailRoutes);
+app.use("/api/cookies", cookieRoutes);
+app.use("/api/backup", backupRoutes);
+app.use("/api/reviews", reviewsRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/badges", badgesRoutes);
+
+// SPA fallback - serve index.html for all non-API routes (must be last)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../index.html"));
+});
+
 // Start server on port 5000 for Replit
 const PORT = 5000;
-httpServer.listen(PORT, "0.0.0.0", () => {
+httpServer.listen(PORT, "0.0.0.0", async () => {
   console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
   console.log(`📡 API endpoints available at /api/*`);
   console.log(`🎬 Video upload endpoint: POST /api/upload-video`);
   console.log(`💬 Socket.IO negotiation enabled`);
+  console.log(`💳 Stripe payment endpoints: /api/payments/*`);
+  console.log(`📦 Orders endpoints: /api/orders/*`);
+  console.log(`💰 Withdrawal endpoints: /api/withdrawal/*`);
+  console.log(`🤖 AI Vision endpoints: /api/ai-vision/*`);
+  console.log(`🎯 Smart Matching endpoints: /api/smart-matching/*`);
+  console.log(`📧 Email endpoints: /api/emails/*`);
+  console.log(`🍪 Cookie endpoints: /api/cookies/*`);
+  console.log(`💾 Backup endpoints: /api/backup/*`);
+  console.log(`⭐ Reviews endpoints: /api/reviews/*`);
+  console.log(`👑 Admin endpoints: /api/admin/*`);
+  console.log(`🏆 Badges endpoints: /api/badges/*`);
+  
+  // Initialize backup service
+  try {
+    const backupService = (await import('../services/backup.js')).default;
+    await backupService.initialize();
+    console.log(`✅ Backup service initialized successfully`);
+  } catch (error) {
+    console.error(`❌ Failed to initialize backup service:`, error);
+  }
 });

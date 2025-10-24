@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement Sécurisé - UGC Maroc</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script type="module" src="/js/supabaseClient.js"></script>
+    <script defer src="/js/config.js"></script>
+    <script defer src="/js/api.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #5b13ec 0%, #7c3aed 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+        }
+        
+        .checkout-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .checkout-header {
+            background: linear-gradient(135deg, #5b13ec 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .checkout-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .checkout-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .checkout-body {
+            padding: 2rem;
+        }
+        
+        .order-summary {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 0.75rem;
+            border-top: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .summary-label {
+            color: #64748b;
+        }
+        
+        .summary-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+        
+        .payment-section {
+            margin-bottom: 2rem;
+        }
+        
+        .payment-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1e293b;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        #payment-element {
+            margin-bottom: 1.5rem;
+        }
+        
+        .payment-button {
+            width: 100%;
+            background: #5b13ec;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .payment-button:hover:not(:disabled) {
+            background: #4a0fd5;
+            transform: translateY(-2px);
+        }
+        
+        .payment-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .security-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .security-badge {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .security-text {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-align: center;
+            margin: 0;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #fecaca;
+            display: none;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #bbf7d0;
+            display: none;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #5b13ec;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            transition: color 0.3s;
+        }
+        
+        .back-link:hover {
+            color: #4a0fd5;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>💳 Paiement Sécurisé</h1>
+            <p>Finalisez votre commande en toute sécurité</p>
+        </div>
+        
+        <div class="checkout-body">
+            <a href="javascript:history.back()" class="back-link">
+                ← Retour
+            </a>
+            
+            <div class="error-message" id="error-message"></div>
+            <div class="success-message" id="success-message"></div>
+            
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Montant créateur :</span>
+                    <span class="summary-value" id="creator-amount">0 MAD</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Frais Stripe (5%) :</span>
+                    <span class="summary-value" id="stripe-fee">0 MAD</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Total à payer :</span>
+                    <span class="summary-value" id="total-amount">0 MAD</span>
+                </div>
+            </div>
+            
+            <div class="payment-section">
+                <h3>Informations de paiement</h3>
+                <div id="payment-element">
+                    <!-- Stripe Elements sera injecté ici -->
+                </div>
+                
+                <button id="submit-payment" class="payment-button" disabled>
+                    <span id="submit-text">💳 Payer Maintenant</span>
+                    <span id="submit-loading" class="loading-spinner"></span>
+                </button>
+            </div>
+            
+            <div class="security-badges">
+                <span class="security-badge">🔒 SSL Sécurisé</span>
+                <span class="security-badge">💳 Stripe</span>
+                <span class="security-badge">🛡️ Protégé</span>
+            </div>
+            <p class="security-text">
+                Vos informations de paiement sont chiffrées et sécurisées par Stripe.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        class CheckoutHandler {
+            constructor() {
+                this.stripe = null;
+                this.elements = null;
+                this.paymentElement = null;
+                this.orderData = null;
+                this.paymentIntent = null;
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    // Récupérer les données de la commande depuis l'URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const orderId = urlParams.get('order_id');
+                    
+                    if (!orderId) {
+                        this.showError('ID de commande manquant');
+                        return;
+                    }
+                    
+                    // Récupérer les détails de la commande
+                    await this.loadOrderDetails(orderId);
+                    
+                    // Initialiser Stripe
+                    await this.initStripe();
+                    
+                } catch (error) {
+                    console.error('Erreur initialisation:', error);
+                    this.showError('Erreur lors du chargement de la page');
+                }
+            }
+            
+            async loadOrderDetails(orderId) {
+                try {
+                    const response = await window.api.orders.get(orderId);
+                    
+                    if (!response.success) {
+                        throw new Error(response.message || 'Erreur lors du chargement de la commande');
+                    }
+                    
+                    this.orderData = response.data;
+                    this.updateOrderSummary();
+                    
+                } catch (error) {
+                    console.error('Erreur chargement commande:', error);
+                    this.showError('Impossible de charger les détails de la commande');
+                }
+            }
+            
+            updateOrderSummary() {
+                if (!this.orderData) return;
+                
+                document.getElementById('creator-amount').textContent = 
+                    `${parseFloat(this.orderData.amount_mad).toFixed(2)} MAD`;
+                document.getElementById('stripe-fee').textContent = 
+                    `${parseFloat(this.orderData.stripe_fee_mad).toFixed(2)} MAD`;
+                document.getElementById('total-amount').textContent = 
+                    `${parseFloat(this.orderData.total_paid_mad).toFixed(2)} MAD`;
+            }
+            
+            async initStripe() {
+                try {
+                    // Créer le PaymentIntent
+                    const response = await window.api.payments.stripeCheckout({
+                        order_id: this.orderData.id
+                    });
+                    
+                    if (!response.success) {
+                        throw new Error(response.message || 'Erreur lors de la création du paiement');
+                    }
+                    
+                    this.paymentIntent = response.data;
+                    
+                    // Initialiser Stripe Elements
+                    this.stripe = Stripe('pk_test_51ONQ4HJ1vlmXRNIzDZXVcGmSEnWJLx6QAUfw62xGCytRvyex6F3KovJuQlkGgkYDQzvOzd5UFEp5OXjcwewIyMZH00r0qIrWui');
+                    this.elements = this.stripe.elements({
+                        clientSecret: this.paymentIntent.client_secret
+                    });
+                    
+                    this.paymentElement = this.elements.create('payment');
+                    this.paymentElement.mount('#payment-element');
+                    
+                    // Activer le bouton de paiement
+                    document.getElementById('submit-payment').disabled = false;
+                    
+                    // Gérer les erreurs de saisie
+                    this.paymentElement.on('change', (event) => {
+                        if (event.error) {
+                            this.showError(event.error.message);
+                        } else {
+                            this.hideError();
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('Erreur initialisation Stripe:', error);
+                    this.showError('Erreur lors de l\'initialisation du paiement');
+                }
+            }
+            
+            async handlePayment() {
+                const submitButton = document.getElementById('submit-payment');
+                const submitText = document.getElementById('submit-text');
+                const submitLoading = document.getElementById('submit-loading');
+                
+                // Désactiver le bouton et afficher le loading
+                submitButton.disabled = true;
+                submitText.style.display = 'none';
+                submitLoading.style.display = 'block';
+                
+                try {
+                    const { error } = await this.stripe.confirmPayment({
+                        elements: this.elements,
+                        confirmParams: {
+                            return_url: `${window.location.origin}/brand/agreement-success.html?order_id=${this.orderData.id}`,
+                        },
+                    });
+                    
+                    if (error) {
+                        this.showError(error.message);
+                        // Réactiver le bouton
+                        submitButton.disabled = false;
+                        submitText.style.display = 'block';
+                        submitLoading.style.display = 'none';
+                    }
+                    // Si pas d'erreur, l'utilisateur sera redirigé vers la page de succès
+                    
+                } catch (error) {
+                    console.error('Erreur paiement:', error);
+                    this.showError('Erreur lors du traitement du paiement');
+                    
+                    // Réactiver le bouton
+                    submitButton.disabled = false;
+                    submitText.style.display = 'block';
+                    submitLoading.style.display = 'none';
+                }
+            }
+            
+            showError(message) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+            
+            hideError() {
+                document.getElementById('error-message').style.display = 'none';
+            }
+            
+            showSuccess(message) {
+                const successDiv = document.getElementById('success-message');
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+        }
+        
+        // Initialiser quand la page est chargée
+        document.addEventListener('DOMContentLoaded', () => {
+            new CheckoutHandler();
+        });
+        
+        // Gérer le clic sur le bouton de paiement
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('submit-payment').addEventListener('click', async () => {
+                const handler = window.checkoutHandler;
+                if (handler) {
+                    await handler.handlePayment();
+                }
+            });
+        });
+    </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>

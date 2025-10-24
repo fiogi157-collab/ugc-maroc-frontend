@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات ملفات تعريف الارتباط - UGC Maroc</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Styles spécifiques pour la page de gestion des cookies */
+        .cookie-settings-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 2rem 0;
+        }
+
+        .cookie-settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .cookie-settings-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .cookie-settings-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .cookie-settings-subtitle {
+            font-size: 1.125rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cookie-settings-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .cookie-category {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #f8fafc;
+        }
+
+        .cookie-category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .cookie-category-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .cookie-category-description {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .cookie-category-services {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cookie-category-services h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .cookie-category-services ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cookie-category-services li {
+            padding: 0.25rem 0;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .cookie-category-services li:before {
+            content: "•";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .cookie-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .cookie-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .cookie-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+
+        .cookie-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .cookie-toggle input:checked + .cookie-slider {
+            background-color: #10b981;
+        }
+
+        .cookie-toggle input:checked + .cookie-slider:before {
+            transform: translateX(30px);
+        }
+
+        .cookie-toggle.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cookie-toggle.disabled .cookie-slider {
+            cursor: not-allowed;
+        }
+
+        .cookie-settings-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .cookie-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+
+        .cookie-btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .cookie-btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .cookie-btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .cookie-btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .cookie-btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+
+        .cookie-btn-outline:hover {
+            background: #f3f4f6;
+        }
+
+        .cookie-settings-info {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .cookie-settings-info h3 {
+            color: #1e40af;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
+        }
+
+        .cookie-settings-info p {
+            color: #1e40af;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .cookie-settings-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .cookie-settings-footer a {
+            color: #5b13ec;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        .cookie-settings-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cookie-settings-container {
+                padding: 0 0.5rem;
+            }
+
+            .cookie-settings-title {
+                font-size: 2rem;
+            }
+
+            .cookie-settings-card {
+                padding: 1.5rem;
+            }
+
+            .cookie-category {
+                padding: 1rem;
+            }
+
+            .cookie-settings-actions {
+                flex-direction: column;
+            }
+
+            .cookie-btn {
+                width: 100%;
+            }
+        }
+
+        /* Animation */
+        .cookie-settings-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cookie-settings-page">
+        <div class="cookie-settings-container">
+            <!-- Header -->
+            <div class="cookie-settings-header">
+                <h1 class="cookie-settings-title">إعدادات ملفات تعريف الارتباط</h1>
+                <p class="cookie-settings-subtitle">
+                    إدارة تفضيلاتك لملفات تعريف الارتباط والخصوصية. يمكنك اختيار أنواع ملفات تعريف الارتباط التي تريد قبولها.
+                </p>
+            </div>
+
+            <!-- Info Card -->
+            <div class="cookie-settings-info">
+                <h3>ℹ️ معلومات مهمة</h3>
+                <p>يمكنك تغيير إعدادات ملفات تعريف الارتباط في أي وقت. سيتم حفظ تفضيلاتك وتطبيقها على جميع صفحات الموقع.</p>
+            </div>
+
+            <!-- Cookie Settings Card -->
+            <div class="cookie-settings-card">
+                <h2 style="margin-top: 0; color: #1e293b;">إدارة ملفات تعريف الارتباط</h2>
+                
+                <!-- Essential Cookies -->
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3 class="cookie-category-title">ملفات تعريف الارتباط الضرورية</h3>
+                        <div class="cookie-toggle disabled">
+                            <input type="checkbox" checked disabled>
+                            <span class="cookie-slider"></span>
+                        </div>
+                    </div>
+                    <p class="cookie-category-description">
+                        هذه الملفات ضرورية لتشغيل الموقع ولا يمكن تعطيلها. تشمل ملفات الجلسة والمصادقة والأمان.
+                    </p>
+                    <div class="cookie-category-services">
+                        <h4>الخدمات المستخدمة:</h4>
+                        <ul>
+                            <li>مصادقة المستخدم</li>
+                            <li>حماية الأمان</li>
+                            <li>إدارة الجلسة</li>
+                            <li>حماية من التزوير</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Functional Cookies -->
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3 class="cookie-category-title">ملفات تعريف الارتباط الوظيفية</h3>
+                        <div class="cookie-toggle">
+                            <input type="checkbox" id="functional-toggle" checked>
+                            <span class="cookie-slider"></span>
+                        </div>
+                    </div>
+                    <p class="cookie-category-description">
+                        هذه الملفات تساعد على تحسين وظائف الموقع مثل تذكر تفضيلاتك وإعداداتك واللغة المفضلة.
+                    </p>
+                    <div class="cookie-category-services">
+                        <h4>الخدمات المستخدمة:</h4>
+                        <ul>
+                            <li>حفظ تفضيلات المستخدم</li>
+                            <li>تذكر إعدادات اللغة</li>
+                            <li>حفظ المسودات</li>
+                            <li>تحسين تجربة المستخدم</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Analytics Cookies -->
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3 class="cookie-category-title">ملفات تعريف الارتباط التحليلية</h3>
+                        <div class="cookie-toggle">
+                            <input type="checkbox" id="analytics-toggle" checked>
+                            <span class="cookie-slider"></span>
+                        </div>
+                    </div>
+                    <p class="cookie-category-description">
+                        نستخدم هذه الملفات لفهم كيفية استخدامك للموقع وتحسين تجربتك. جميع البيانات مجهولة الهوية.
+                    </p>
+                    <div class="cookie-category-services">
+                        <h4>الخدمات المستخدمة:</h4>
+                        <ul>
+                            <li>Microsoft Clarity (تحليل السلوك)</li>
+                            <li>Google Analytics (إحصائيات الموقع)</li>
+                            <li>Mixpanel (تحليل التحويلات)</li>
+                            <li>تحليلات مخصصة (UGC Maroc)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Marketing Cookies -->
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3 class="cookie-category-title">ملفات تعريف الارتباط التسويقية</h3>
+                        <div class="cookie-toggle">
+                            <input type="checkbox" id="marketing-toggle">
+                            <span class="cookie-slider"></span>
+                        </div>
+                    </div>
+                    <p class="cookie-category-description">
+                        نستخدم هذه الملفات لعرض الإعلانات المناسبة لك على مواقع أخرى وتحسين تجربة التسويق.
+                    </p>
+                    <div class="cookie-category-services">
+                        <h4>الخدمات المستخدمة:</h4>
+                        <ul>
+                            <li>Facebook Pixel (إعادة الاستهداف)</li>
+                            <li>Google Ads (الإعلانات المستهدفة)</li>
+                            <li>TikTok Pixel (اكتساب المبدعين)</li>
+                            <li>LinkedIn Insight (B2B)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="cookie-settings-actions">
+                    <button class="cookie-btn cookie-btn-secondary" onclick="rejectAll()">
+                        رفض الكل
+                    </button>
+                    <button class="cookie-btn cookie-btn-outline" onclick="resetToDefaults()">
+                        إعادة تعيين
+                    </button>
+                    <button class="cookie-btn cookie-btn-primary" onclick="savePreferences()">
+                        حفظ التفضيلات
+                    </button>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="cookie-settings-card">
+                <h2 style="margin-top: 0; color: #1e293b;">معلومات إضافية</h2>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: #374151; margin-bottom: 0.5rem;">مدة الحفظ</h3>
+                    <ul style="color: #64748b; line-height: 1.6;">
+                        <li><strong>ملفات تعريف الارتباط الضرورية:</strong> حتى إغلاق المتصفح</li>
+                        <li><strong>ملفات تعريف الارتباط الوظيفية:</strong> 365 يوم</li>
+                        <li><strong>ملفات تعريف الارتباط التحليلية:</strong> 13 شهر</li>
+                        <li><strong>ملفات تعريف الارتباط التسويقية:</strong> 90 يوم</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: #374151; margin-bottom: 0.5rem;">حقوقك</h3>
+                    <ul style="color: #64748b; line-height: 1.6;">
+                        <li>يمكنك تغيير إعداداتك في أي وقت</li>
+                        <li>يمكنك طلب حذف بياناتك الشخصية</li>
+                        <li>يمكنك تصدير بياناتك</li>
+                        <li>يمكنك إلغاء الاشتراك في أي وقت</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: #374151; margin-bottom: 0.5rem;">اتصل بنا</h3>
+                    <p style="color: #64748b; line-height: 1.6;">
+                        إذا كان لديك أي أسئلة حول ملفات تعريف الارتباط أو الخصوصية، 
+                        يرجى التواصل معنا على: 
+                        <a href="mailto:privacy@ugcmaroc.com" style="color: #5b13ec;">privacy@ugcmaroc.com</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="cookie-settings-footer">
+                <a href="/privacy-policy.html">سياسة الخصوصية</a>
+                <a href="/terms-of-service.html">شروط الخدمة</a>
+                <a href="/contact.html">اتصل بنا</a>
+                <a href="/index.html">العودة للصفحة الرئيسية</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/cookie-manager.js"></script>
+    <script>
+        // Initialize cookie settings page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentSettings();
+        });
+
+        // Load current cookie settings
+        function loadCurrentSettings() {
+            const consent = window.cookieManager.getConsent();
+            
+            document.getElementById('functional-toggle').checked = consent.functional;
+            document.getElementById('analytics-toggle').checked = consent.analytics;
+            document.getElementById('marketing-toggle').checked = consent.marketing;
+        }
+
+        // Save preferences
+        function savePreferences() {
+            const functional = document.getElementById('functional-toggle').checked;
+            const analytics = document.getElementById('analytics-toggle').checked;
+            const marketing = document.getElementById('marketing-toggle').checked;
+
+            const consent = {
+                essential: true,
+                functional: functional,
+                analytics: analytics,
+                marketing: marketing
+            };
+
+            const userId = window.cookieManager.getCurrentUserId();
+            window.cookieManager.updateConsent(consent, userId);
+
+            // Show success message
+            showNotification('تم حفظ تفضيلاتك بنجاح!', 'success');
+        }
+
+        // Reject all except essential
+        function rejectAll() {
+            const consent = {
+                essential: true,
+                functional: false,
+                analytics: false,
+                marketing: false
+            };
+
+            const userId = window.cookieManager.getCurrentUserId();
+            window.cookieManager.updateConsent(consent, userId);
+
+            // Update UI
+            document.getElementById('functional-toggle').checked = false;
+            document.getElementById('analytics-toggle').checked = false;
+            document.getElementById('marketing-toggle').checked = false;
+
+            showNotification('تم رفض جميع ملفات تعريف الارتباط غير الضرورية', 'info');
+        }
+
+        // Reset to defaults
+        function resetToDefaults() {
+            const consent = {
+                essential: true,
+                functional: true,
+                analytics: true,
+                marketing: false
+            };
+
+            const userId = window.cookieManager.getCurrentUserId();
+            window.cookieManager.updateConsent(consent, userId);
+
+            // Update UI
+            document.getElementById('functional-toggle').checked = true;
+            document.getElementById('analytics-toggle').checked = true;
+            document.getElementById('marketing-toggle').checked = false;
+
+            showNotification('تم إعادة تعيين الإعدادات إلى القيم الافتراضية', 'info');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 10000;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

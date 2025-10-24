@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Commandes - UGC Maroc</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module" src="/js/supabaseClient.js"></script>
+    <script defer src="/js/config.js"></script>
+    <script defer src="/js/api.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #5b13ec 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .filters {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+        
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+        
+        .refresh-btn {
+            background: #5b13ec;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #4a0fd5;
+        }
+        
+        .orders-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .order-id {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 1.1rem;
+        }
+        
+        .order-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-cancelled {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .detail-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: #5b13ec;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4a0fd5;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading-spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #5b13ec;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #fecaca;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn.active {
+            background: #5b13ec;
+            color: white;
+            border-color: #5b13ec;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📦 Mes Commandes</h1>
+        <p>Suivez l'état de vos commandes et paiements</p>
+    </div>
+    
+    <div class="container">
+        <div class="filters">
+            <div class="filter-group">
+                <label>Statut</label>
+                <select id="status-filter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="PENDING_PAYMENT">En attente de paiement</option>
+                    <option value="PAID">Payé</option>
+                    <option value="FAILED">Échoué</option>
+                    <option value="CANCELLED">Annulé</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Rechercher</label>
+                <input type="text" id="search-input" class="search-input" placeholder="ID commande, créateur...">
+            </div>
+            
+            <button id="refresh-btn" class="refresh-btn">
+                <span>🔄</span>
+                <span>Actualiser</span>
+            </button>
+        </div>
+        
+        <div class="error-message" id="error-message" style="display: none;"></div>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Chargement de vos commandes...</p>
+        </div>
+        
+        <div class="orders-grid" id="orders-grid" style="display: none;">
+            <!-- Les commandes seront injectées ici -->
+        </div>
+        
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-state-icon">📦</div>
+            <h3>Aucune commande trouvée</h3>
+            <p>Vous n'avez pas encore passé de commandes.</p>
+            <a href="/brand/brand-creators-marketplace.html" class="btn btn-primary">
+                🎯 Trouver des créateurs
+            </a>
+        </div>
+        
+        <div class="pagination" id="pagination" style="display: none;">
+            <!-- La pagination sera injectée ici -->
+        </div>
+    </div>
+
+    <script>
+        class OrdersHistoryHandler {
+            constructor() {
+                this.orders = [];
+                this.filteredOrders = [];
+                this.currentPage = 1;
+                this.itemsPerPage = 10;
+                this.filters = {
+                    status: '',
+                    search: ''
+                };
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    await this.loadOrders();
+                    this.setupEventListeners();
+                } catch (error) {
+                    console.error('Erreur initialisation:', error);
+                    this.showError('Erreur lors du chargement des commandes');
+                }
+            }
+            
+            async loadOrders() {
+                try {
+                    this.showLoading();
+                    
+                    const response = await window.api.orders.getAll();
+                    
+                    if (!response.success) {
+                        throw new Error(response.message || 'Erreur lors du chargement');
+                    }
+                    
+                    this.orders = response.data;
+                    this.applyFilters();
+                    this.renderOrders();
+                    
+                } catch (error) {
+                    console.error('Erreur chargement commandes:', error);
+                    this.showError('Impossible de charger vos commandes');
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('status-filter').addEventListener('change', (e) => {
+                    this.filters.status = e.target.value;
+                    this.applyFilters();
+                    this.renderOrders();
+                });
+                
+                document.getElementById('search-input').addEventListener('input', (e) => {
+                    this.filters.search = e.target.value.toLowerCase();
+                    this.applyFilters();
+                    this.renderOrders();
+                });
+                
+                document.getElementById('refresh-btn').addEventListener('click', () => {
+                    this.loadOrders();
+                });
+            }
+            
+            applyFilters() {
+                this.filteredOrders = this.orders.filter(order => {
+                    const matchesStatus = !this.filters.status || order.status === this.filters.status;
+                    const matchesSearch = !this.filters.search || 
+                        order.id.toString().includes(this.filters.search) ||
+                        (order.creator_name && order.creator_name.toLowerCase().includes(this.filters.search)) ||
+                        (order.campaign_title && order.campaign_title.toLowerCase().includes(this.filters.search));
+                    
+                    return matchesStatus && matchesSearch;
+                });
+                
+                this.currentPage = 1;
+            }
+            
+            renderOrders() {
+                const container = document.getElementById('orders-grid');
+                const emptyState = document.getElementById('empty-state');
+                const pagination = document.getElementById('pagination');
+                
+                if (this.filteredOrders.length === 0) {
+                    container.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    pagination.style.display = 'none';
+                    return;
+                }
+                
+                container.style.display = 'grid';
+                emptyState.style.display = 'none';
+                
+                // Pagination
+                const totalPages = Math.ceil(this.filteredOrders.length / this.itemsPerPage);
+                const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+                const endIndex = startIndex + this.itemsPerPage;
+                const pageOrders = this.filteredOrders.slice(startIndex, endIndex);
+                
+                // Rendre les commandes
+                container.innerHTML = pageOrders.map(order => this.renderOrderCard(order)).join('');
+                
+                // Rendre la pagination
+                if (totalPages > 1) {
+                    this.renderPagination(totalPages);
+                    pagination.style.display = 'flex';
+                } else {
+                    pagination.style.display = 'none';
+                }
+            }
+            
+            renderOrderCard(order) {
+                const statusClass = this.getStatusClass(order.status);
+                const statusText = this.getStatusText(order.status);
+                const actions = this.getOrderActions(order);
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-id">Commande #${order.id}</div>
+                            <div class="order-status ${statusClass}">${statusText}</div>
+                        </div>
+                        
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Créateur</span>
+                                <span class="detail-value">${order.creator_name || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Campagne</span>
+                                <span class="detail-value">${order.campaign_title || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Montant créateur</span>
+                                <span class="detail-value">${parseFloat(order.amount_mad).toFixed(2)} MAD</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total payé</span>
+                                <span class="detail-value">${parseFloat(order.total_paid_mad).toFixed(2)} MAD</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Date</span>
+                                <span class="detail-value">${new Date(order.created_at).toLocaleDateString('fr-FR')}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-actions">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            getStatusClass(status) {
+                switch (status) {
+                    case 'PENDING_PAYMENT': return 'status-pending';
+                    case 'PAID': return 'status-paid';
+                    case 'FAILED': return 'status-failed';
+                    case 'CANCELLED': return 'status-cancelled';
+                    default: return 'status-pending';
+                }
+            }
+            
+            getStatusText(status) {
+                switch (status) {
+                    case 'PENDING_PAYMENT': return 'En attente';
+                    case 'PAID': return 'Payé';
+                    case 'FAILED': return 'Échoué';
+                    case 'CANCELLED': return 'Annulé';
+                    default: return status;
+                }
+            }
+            
+            getOrderActions(order) {
+                let actions = [];
+                
+                if (order.status === 'PENDING_PAYMENT') {
+                    actions.push(`
+                        <a href="/brand/checkout.html?order_id=${order.id}" class="btn btn-primary">
+                            💳 Payer
+                        </a>
+                    `);
+                    actions.push(`
+                        <button onclick="cancelOrder(${order.id})" class="btn btn-danger">
+                            🚫 Annuler
+                        </button>
+                    `);
+                } else if (order.status === 'PAID') {
+                    actions.push(`
+                        <a href="/brand/chat.html?agreement_id=${order.agreement_id}" class="btn btn-primary">
+                            💬 Contacter
+                        </a>
+                    `);
+                }
+                
+                actions.push(`
+                    <a href="/brand/brand-campaign-details-ar.html?id=${order.campaign_id}" class="btn btn-secondary">
+                        📋 Détails
+                    </a>
+                `);
+                
+                return actions.join('');
+            }
+            
+            renderPagination(totalPages) {
+                const pagination = document.getElementById('pagination');
+                let html = '';
+                
+                // Bouton précédent
+                html += `
+                    <button class="pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} 
+                            onclick="goToPage(${this.currentPage - 1})">
+                        ← Précédent
+                    </button>
+                `;
+                
+                // Pages
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= this.currentPage - 2 && i <= this.currentPage + 2)) {
+                        html += `
+                            <button class="pagination-btn ${i === this.currentPage ? 'active' : ''}" 
+                                    onclick="goToPage(${i})">
+                                ${i}
+                            </button>
+                        `;
+                    } else if (i === this.currentPage - 3 || i === this.currentPage + 3) {
+                        html += `<span class="pagination-btn">...</span>`;
+                    }
+                }
+                
+                // Bouton suivant
+                html += `
+                    <button class="pagination-btn" ${this.currentPage === totalPages ? 'disabled' : ''} 
+                            onclick="goToPage(${this.currentPage + 1})">
+                        Suivant →
+                    </button>
+                `;
+                
+                pagination.innerHTML = html;
+            }
+            
+            showLoading() {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('orders-grid').style.display = 'none';
+                document.getElementById('empty-state').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+            }
+            
+            showError(message) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('orders-grid').style.display = 'none';
+                document.getElementById('empty-state').style.display = 'none';
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = message;
+            }
+        }
+        
+        // Variables globales pour les fonctions de pagination
+        let ordersHandler;
+        
+        function goToPage(page) {
+            if (ordersHandler) {
+                ordersHandler.currentPage = page;
+                ordersHandler.renderOrders();
+            }
+        }
+        
+        async function cancelOrder(orderId) {
+            if (!confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+                return;
+            }
+            
+            try {
+                const response = await window.api.orders.cancel(orderId);
+                
+                if (response.success) {
+                    alert('Commande annulée avec succès');
+                    ordersHandler.loadOrders();
+                } else {
+                    alert('Erreur lors de l\'annulation : ' + response.message);
+                }
+            } catch (error) {
+                console.error('Erreur annulation:', error);
+                alert('Erreur lors de l\'annulation de la commande');
+            }
+        }
+        
+        // Initialiser quand la page est chargée
+        document.addEventListener('DOMContentLoaded', () => {
+            ordersHandler = new OrdersHistoryHandler();
+        });
+    </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>

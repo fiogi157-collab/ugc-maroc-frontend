@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGC Maroc - اكتشف الحملات</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5b13ec',
+            'background-light': '#F3F4F6',
+            'background-dark': '#0F172A',
+            'card-light': '#FFFFFF',
+            'card-dark': '#1A1A2E',
+          },
+          fontFamily: {
+            display: ["Cairo", "sans-serif"],
+            body: ["Cairo", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+<style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 400;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+    }
+    
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      min-width: 300px;
+      max-width: 400px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      animation: slideInRight 0.3s ease-out;
+      direction: rtl;
+    }
+    
+    .toast.success { background: #10B981; color: white; }
+    .toast.error { background: #EF4444; color: white; }
+    .toast.info { background: #3B82F6; color: white; }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(-100%); opacity: 0; }
+    }
+    
+    .toast.hiding {
+      animation: slideOutRight 0.3s ease-out forwards;
+    }
+    
+    /* Skeleton Loading */
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    
+    .skeleton {
+      background: linear-gradient(to right, #f0f0f0 8%, #f8f8f8 18%, #f0f0f0 33%);
+      background-size: 1000px 100%;
+      animation: shimmer 2s infinite;
+    }
+    
+    /* Hover Effects */
+    .campaign-card {
+      transition: all 0.3s ease;
+    }
+    
+    .campaign-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(124, 58, 237, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<script>
+  document.documentElement.classList.add('dark');
+</script>
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <a href="/creator/creator_dashboard_1.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <div class="text-primary text-2xl font-bold">UGC Maroc</div>
+      </a>
+      
+      <!-- Breadcrumb -->
+      <nav class="hidden md:flex items-center gap-2 text-sm">
+        <a href="/creator/creator_dashboard_1.html" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">الرئيسية</a>
+        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_left</span>
+        <span class="text-gray-900 dark:text-white font-semibold">اكتشف الحملات</span>
+      </nav>
+      
+      <!-- Profile -->
+      <div class="flex items-center gap-3">
+        <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative">
+          <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">notifications</span>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+        </button>
+        <a href="/creator/creator_dashboard_1.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img id="user-avatar" class="h-9 w-9 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700" src="https://ui-avatars.com/api/?name=Creator&background=7C3AED&color=fff&rounded=true" alt="Profile"/>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex flex-col lg:flex-row gap-8">
+    
+    <!-- Sidebar Filters -->
+    <aside class="lg:w-80 space-y-6">
+      <!-- Stats Overview -->
+      <div class="bg-gradient-to-br from-primary to-purple-600 p-6 rounded-2xl text-white">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="material-symbols-outlined text-3xl">campaign</span>
+          <div>
+            <div id="total-campaigns" class="text-3xl font-bold">0</div>
+            <div class="text-sm opacity-90">حملة متاحة</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="bg-white/20 rounded-lg p-3">
+            <div class="text-xs opacity-90">ميزانية متوسطة</div>
+            <div id="avg-budget" class="text-lg font-bold">0 د.م</div>
+          </div>
+          <div class="bg-white/20 rounded-lg p-3">
+            <div class="text-xs opacity-90">للمبتدئين</div>
+            <div id="beginner-count" class="text-lg font-bold">0</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Search -->
+      <div class="bg-card-light dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary">auto_awesome</span>
+          <h3 class="font-bold text-gray-900 dark:text-white">بحث ذكي</h3>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">اشرح ما تبحث عنه بكلماتك</p>
+        <button id="ai-search-btn" class="w-full bg-primary text-white px-4 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-all hover:shadow-lg flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">psychology</span>
+          <span>ابحث بالذكاء الاصطناعي</span>
+        </button>
+      </div>
+      
+      <!-- Filters -->
+      <div class="bg-card-light dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-4">تصفية النتائج</h3>
+        
+        <!-- Category Filter -->
+        <div class="mb-4">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">الفئة</label>
+          <select id="category-filter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-primary focus:border-primary">
+            <option value="">الكل</option>
+            <option value="beauty">الجمال</option>
+            <option value="fashion">الموضة</option>
+            <option value="tech">التكنولوجيا</option>
+            <option value="food">الطعام</option>
+            <option value="travel">السفر</option>
+          </select>
+        </div>
+        
+        <!-- Budget Range -->
+        <div class="mb-4">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">الميزانية (د.م)</label>
+          <input id="budget-slider" type="range" min="0" max="5000" step="100" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary"/>
+          <div class="flex justify-between text-xs mt-2 text-gray-600 dark:text-gray-400">
+            <span>0</span>
+            <span id="budget-value">5000+</span>
+          </div>
+        </div>
+        
+        <!-- Difficulty -->
+        <div class="mb-4">
+          <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">المستوى</label>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="filter-beginner" class="rounded text-primary focus:ring-primary" checked/>
+              <span class="text-sm">للمبتدئين ✨</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="filter-intermediate" class="rounded text-primary focus:ring-primary" checked/>
+              <span class="text-sm">متوسط</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="filter-expert" class="rounded text-primary focus:ring-primary" checked/>
+              <span class="text-sm">خبير</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Reset Button -->
+        <button id="reset-filters" class="w-full mt-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          إعادة تعيين الفلاتر
+        </button>
+      </div>
+      
+      <!-- Beginner Guide -->
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-5 rounded-xl border-2 border-green-200 dark:border-green-800">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-green-600 dark:text-green-400">school</span>
+          <h4 class="font-bold text-green-800 dark:text-green-200">دليل المبتدئين</h4>
+        </div>
+        <p class="text-sm text-green-700 dark:text-green-300 mb-3">جديد على UGC Maroc؟ نساعدك على البدء!</p>
+        <button onclick="alert('قريباً! سنضيف دليل تفصيلي للمبتدئين')" class="text-sm font-semibold text-green-600 dark:text-green-400 hover:underline">تعلم كيف تبدأ →</button>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <div class="flex-1">
+      <!-- Search Bar -->
+      <div class="mb-6">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+          <input id="search-input" type="text" placeholder="ابحث عن حملة، علامة تجارية..." class="w-full h-14 pr-12 pl-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-shadow"/>
+        </div>
+      </div>
+      
+      <!-- Quick Filters -->
+      <div class="flex items-center gap-3 mb-6 flex-wrap">
+        <span class="text-sm text-gray-600 dark:text-gray-400">تصفية سريعة:</span>
+        <button class="quick-filter px-4 py-2 bg-primary/10 dark:bg-primary/20 text-primary rounded-full text-sm font-medium hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors flex items-center gap-2" data-filter="beginner">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span>
+          <span>للمبتدئين</span>
+        </button>
+        <button class="quick-filter px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" data-filter="urgent">
+          🔥 عاجل
+        </button>
+        <button class="quick-filter px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" data-filter="high-budget">
+          💰 ميزانية عالية
+        </button>
+        
+        <!-- Sort -->
+        <div class="mr-auto flex items-center gap-2">
+          <span class="text-sm text-gray-600 dark:text-gray-400">ترتيب:</span>
+          <select id="sort-select" class="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-primary focus:border-primary">
+            <option value="newest">الأحدث</option>
+            <option value="budget-high">الميزانية (الأعلى)</option>
+            <option value="deadline">الموعد النهائي</option>
+            <option value="ai-match">🤖 الأنسب لي</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- AI Recommendations Section -->
+      <div id="ai-section" class="mb-8 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-primary/10 rounded-lg">
+              <span class="material-symbols-outlined text-primary text-2xl">auto_awesome</span>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">مخصص لك</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400">حملات مثالية بناءً على ملفك الشخصي</p>
+            </div>
+          </div>
+          <span class="text-xs bg-primary/20 text-primary px-3 py-1 rounded-full font-medium">AI</span>
+        </div>
+        <div id="ai-campaigns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+          <!-- AI matched campaigns will be inserted here -->
+        </div>
+      </div>
+      
+      <!-- Beginner Friendly Section -->
+      <div id="beginner-section" class="mb-8 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-green-500/10 rounded-lg">
+              <span class="material-symbols-outlined text-green-500 text-2xl">school</span>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">مثالي للمبتدئين</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400">ابدأ رحلتك مع حملات سهلة ومضمونة</p>
+            </div>
+          </div>
+          <span class="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-3 py-1 rounded-full font-medium">✨ جديد</span>
+        </div>
+        <div id="beginner-campaigns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+          <!-- Beginner campaigns will be inserted here -->
+        </div>
+      </div>
+      
+      <!-- All Campaigns -->
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">campaign</span>
+          <span>جميع الحملات</span>
+          <span id="campaign-count" class="text-lg font-normal text-gray-500 dark:text-gray-400">(0)</span>
+        </h2>
+      </div>
+      
+      <!-- Campaigns Grid -->
+      <div id="campaigns-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <!-- Loading skeletons -->
+        <div class="campaign-card bg-card-light dark:bg-card-dark rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div class="skeleton h-48 w-full"></div>
+          <div class="p-4">
+            <div class="skeleton h-4 w-3/4 mb-2 rounded"></div>
+            <div class="skeleton h-6 w-full mb-3 rounded"></div>
+            <div class="skeleton h-10 w-full rounded"></div>
+          </div>
+        </div>
+        <div class="campaign-card bg-card-light dark:bg-card-dark rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div class="skeleton h-48 w-full"></div>
+          <div class="p-4">
+            <div class="skeleton h-4 w-3/4 mb-2 rounded"></div>
+            <div class="skeleton h-6 w-full mb-3 rounded"></div>
+            <div class="skeleton h-10 w-full rounded"></div>
+          </div>
+        </div>
+        <div class="campaign-card bg-card-light dark:bg-card-dark rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div class="skeleton h-48 w-full"></div>
+          <div class="p-4">
+            <div class="skeleton h-4 w-3/4 mb-2 rounded"></div>
+            <div class="skeleton h-6 w-full mb-3 rounded"></div>
+            <div class="skeleton h-10 w-full rounded"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Load More -->
+      <div class="mt-8 flex justify-center">
+        <button id="load-more-btn" class="hidden px-6 py-3 bg-primary/10 dark:bg-primary/20 text-primary rounded-xl font-semibold hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+          تحميل المزيد
+        </button>
+      </div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden text-center py-12">
+        <span class="material-symbols-outlined text-gray-400 text-6xl mb-4">search_off</span>
+        <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">لم نجد أي حملات</h3>
+        <p class="text-gray-500 dark:text-gray-400">جرب تغيير معايير البحث أو الفلاتر</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/auth.js"></script>
+
+<script>
+// Toast Notification System
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
+  
+  toast.innerHTML = `
+    <span class="material-symbols-outlined text-2xl">${icon}</span>
+    <span class="flex-1 font-medium">${message}</span>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+// Global state
+let allCampaigns = [];
+let currentUser = null;
+let creatorProfile = null;
+
+// Initialize page
+async function initializePage() {
+  try {
+    // Get current user
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    
+    if (!user) {
+      // Allow viewing campaigns without login for better UX
+      console.log('⚠️ User not logged in - showing public campaigns');
+      currentUser = null;
+    } else {
+      currentUser = user;
+    }
+    
+    // Load campaigns (public for everyone)
+    await loadCampaigns();
+    
+    // Load AI recommendations (only for logged-in users)
+    if (user) {
+      await loadAIRecommendations();
+    }
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+  } catch (error) {
+    console.error('Error initializing page:', error);
+    showToast('حدث خطأ أثناء تحميل الصفحة', 'error');
+  }
+}
+
+// Load campaigns from API
+async function loadCampaigns() {
+  try {
+    console.log('🔍 Loading campaigns...');
+    console.log('API URL:', window.API_BASE_URL);
+    
+    const url = `${window.API_BASE_URL}/api/campaigns/available`;
+    console.log('Full URL:', url);
+    
+    const response = await fetch(url);
+    console.log('Response status:', response.status);
+    
+    const result = await response.json();
+    console.log('Response data:', result);
+    
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to load campaigns');
+    }
+    
+    allCampaigns = result.campaigns || [];
+    console.log(`✅ Loaded ${allCampaigns.length} campaigns`);
+    
+    // Update stats
+    updateStats();
+    
+    // Display campaigns
+    displayCampaigns(allCampaigns);
+    
+    // Display beginner section
+    displayBeginnerCampaigns();
+    
+  } catch (error) {
+    console.error('❌ Error loading campaigns:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      apiUrl: window.API_BASE_URL
+    });
+    document.getElementById('campaigns-grid').innerHTML = `
+      <div class="col-span-full text-center py-12">
+        <span class="material-symbols-outlined text-gray-400 text-6xl mb-4">error</span>
+        <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">حدث خطأ في تحميل الحملات</h3>
+        <p class="text-gray-500 dark:text-gray-400">يرجى المحاولة مرة أخرى لاحقاً</p>
+      </div>
+    `;
+  }
+}
+
+// Load AI recommendations
+async function loadAIRecommendations() {
+  try {
+    // First get creator profile
+    const profileResponse = await fetch(`${window.API_BASE_URL}/api/profile/${currentUser.id}`);
+    const profileResult = await profileResponse.json();
+    
+    if (!profileResult.success) {
+      console.log('No creator profile found, skipping AI recommendations');
+      return;
+    }
+    
+    creatorProfile = profileResult.profile;
+    
+    // Call AI API
+    const aiResponse = await fetch(`${window.API_BASE_URL}/api/ai/match-creators`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        creatorProfile: creatorProfile,
+        campaigns: allCampaigns.slice(0, 10) // Send first 10 for matching
+      })
+    });
+    
+    const aiResult = await aiResponse.json();
+    
+    if (aiResult.success && aiResult.recommendations) {
+      // Show AI section
+      document.getElementById('ai-section').classList.remove('hidden');
+      
+      // Display AI matched campaigns (top 3)
+      const topCampaigns = allCampaigns.slice(0, 3);
+      displayAICampaigns(topCampaigns);
+    }
+    
+  } catch (error) {
+    console.error('Error loading AI recommendations:', error);
+    // Silently fail - AI is optional
+  }
+}
+
+// Update stats
+function updateStats() {
+  const beginnerCampaigns = allCampaigns.filter(c => c.difficulty === 'beginner' || c.budget < 500);
+  const totalBudget = allCampaigns.reduce((sum, c) => sum + (c.budget || 0), 0);
+  const avgBudget = allCampaigns.length > 0 ? Math.round(totalBudget / allCampaigns.length) : 0;
+  
+  document.getElementById('total-campaigns').textContent = allCampaigns.length;
+  document.getElementById('avg-budget').textContent = avgBudget + ' د.م';
+  document.getElementById('beginner-count').textContent = beginnerCampaigns.length;
+}
+
+// Display campaigns
+function displayCampaigns(campaigns) {
+  const grid = document.getElementById('campaigns-grid');
+  document.getElementById('campaign-count').textContent = `(${campaigns.length})`;
+  
+  if (campaigns.length === 0) {
+    grid.innerHTML = '';
+    document.getElementById('empty-state').classList.remove('hidden');
+    return;
+  }
+  
+  document.getElementById('empty-state').classList.add('hidden');
+  
+  grid.innerHTML = campaigns.map(campaign => createCampaignCard(campaign)).join('');
+}
+
+// Display AI campaigns
+function displayAICampaigns(campaigns) {
+  const container = document.getElementById('ai-campaigns');
+  container.innerHTML = campaigns.map((campaign, index) => {
+    const matchScore = 95 - (index * 7); // Mock AI score
+    return createCampaignCard(campaign, { aiMatch: true, matchScore });
+  }).join('');
+}
+
+// Display beginner campaigns
+function displayBeginnerCampaigns() {
+  const beginnerCampaigns = allCampaigns.filter(c => c.difficulty === 'beginner' || c.budget < 500).slice(0, 3);
+  
+  if (beginnerCampaigns.length > 0) {
+    document.getElementById('beginner-section').classList.remove('hidden');
+    const container = document.getElementById('beginner-campaigns');
+    container.innerHTML = beginnerCampaigns.map(campaign => createCampaignCard(campaign, { beginnerFriendly: true })).join('');
+  }
+}
+
+// Create campaign card HTML
+function createCampaignCard(campaign, options = {}) {
+  const { aiMatch = false, matchScore = 0, beginnerFriendly = false } = options;
+  
+  // Determine difficulty badge
+  let difficultyBadge = '';
+  let difficultyColor = '';
+  
+  if (campaign.difficulty === 'beginner' || campaign.budget < 500) {
+    difficultyBadge = '✨ مثالي للمبتدئين';
+    difficultyColor = 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+  } else if (campaign.difficulty === 'intermediate') {
+    difficultyBadge = 'متوسط';
+    difficultyColor = 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
+  } else {
+    difficultyBadge = 'خبير';
+    difficultyColor = 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+  }
+  
+  // Mock image (you can add real images to campaigns)
+  const placeholderImage = 'https://images.unsplash.com/photo-1557821552-17105176677c?w=800&h=600&fit=crop';
+  
+  return `
+    <div class="campaign-card bg-card-light dark:bg-card-dark rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 relative">
+      ${aiMatch ? `
+        <div class="absolute top-3 left-3 z-10 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span>
+          <span>Match ${matchScore}%</span>
+        </div>
+      ` : ''}
+      
+      ${beginnerFriendly ? `
+        <div class="absolute top-3 left-3 z-10 bg-green-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+          <span>✨</span>
+          <span>مثالي للبدء</span>
+        </div>
+      ` : ''}
+      
+      <!-- Image -->
+      <div class="h-48 bg-cover bg-center" style="background-image: url('${campaign.image_url || placeholderImage}')"></div>
+      
+      <!-- Content -->
+      <div class="p-5">
+        <!-- Brand name -->
+        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">${campaign.brand_name || 'علامة تجارية'}</div>
+        
+        <!-- Title -->
+        <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-3 line-clamp-2">${campaign.title}</h3>
+        
+        <!-- Info -->
+        <div class="flex items-center gap-4 mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <div class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">schedule</span>
+            <span>${formatDeadline(campaign.deadline)}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">payments</span>
+            <span class="font-semibold text-primary">${campaign.budget} د.م</span>
+          </div>
+        </div>
+        
+        <!-- Difficulty Badge -->
+        <div class="flex items-center gap-2 text-sm ${difficultyColor} rounded-lg p-2 mb-4">
+          <span class="material-symbols-outlined text-base">
+            ${campaign.difficulty === 'beginner' ? 'star' : campaign.difficulty === 'intermediate' ? 'hourglass_top' : 'workspace_premium'}
+          </span>
+          <span>${difficultyBadge}</span>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex gap-2">
+          <button onclick="applyCampaign('${campaign.id}')" class="flex-1 bg-primary text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-primary/90 transition-all">
+            قدم الآن
+          </button>
+          <button onclick="toggleBookmark('${campaign.id}')" class="p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">bookmark</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Format deadline
+function formatDeadline(deadline) {
+  if (!deadline) return 'غير محدد';
+  
+  const date = new Date(deadline);
+  const now = new Date();
+  const diffTime = date - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return 'منتهي';
+  if (diffDays === 0) return 'ينتهي اليوم';
+  if (diffDays === 1) return 'ينتهي غداً';
+  if (diffDays < 7) return `ينتهي في ${diffDays} أيام`;
+  if (diffDays < 30) return `ينتهي في ${Math.ceil(diffDays / 7)} أسابيع`;
+  return `ينتهي في ${Math.ceil(diffDays / 30)} شهر`;
+}
+
+// Apply to campaign
+async function applyCampaign(campaignId) {
+  try {
+    // Check if creator already applied to this campaign
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showToast('الرجاء تسجيل الدخول للمتابعة', 'error');
+      window.location.href = '/auth/creator-login.html';
+      return;
+    }
+
+    const checkResponse = await fetch(`/api/campaigns/${campaignId}/check-application`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (checkResponse.ok) {
+      const result = await checkResponse.json();
+      
+      if (result.has_applied) {
+        showToast('لقد قدمت بالفعل طلباً لهذه الحملة', 'info');
+        return;
+      }
+    }
+
+    // Open application modal
+    if (window.applicationModal) {
+      applicationModal.show(campaignId);
+    } else {
+      showToast('خطأ في تحميل نموذج التقديم', 'error');
+    }
+  } catch (error) {
+    console.error('Error checking application status:', error);
+    // Still open modal even if check fails
+    if (window.applicationModal) {
+      applicationModal.show(campaignId);
+    }
+  }
+}
+
+// Toggle bookmark
+function toggleBookmark(campaignId) {
+  showToast('تمت إضافة الحملة إلى المحفوظات', 'success');
+  // TODO: Implement bookmark functionality
+}
+
+// Setup event listeners
+function setupEventListeners() {
+  // Search
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    const filtered = allCampaigns.filter(c => 
+      c.title.toLowerCase().includes(query) || 
+      (c.brand_name && c.brand_name.toLowerCase().includes(query))
+    );
+    displayCampaigns(filtered);
+  });
+  
+  // Category filter
+  document.getElementById('category-filter').addEventListener('change', applyFilters);
+  
+  // Budget slider
+  const budgetSlider = document.getElementById('budget-slider');
+  const budgetValue = document.getElementById('budget-value');
+  budgetSlider.addEventListener('input', (e) => {
+    const value = e.target.value;
+    budgetValue.textContent = value >= 5000 ? '5000+' : value;
+    applyFilters();
+  });
+  
+  // Difficulty checkboxes
+  document.getElementById('filter-beginner').addEventListener('change', applyFilters);
+  document.getElementById('filter-intermediate').addEventListener('change', applyFilters);
+  document.getElementById('filter-expert').addEventListener('change', applyFilters);
+  
+  // Reset filters
+  document.getElementById('reset-filters').addEventListener('click', () => {
+    document.getElementById('category-filter').value = '';
+    document.getElementById('budget-slider').value = 0;
+    document.getElementById('budget-value').textContent = '5000+';
+    document.getElementById('filter-beginner').checked = true;
+    document.getElementById('filter-intermediate').checked = true;
+    document.getElementById('filter-expert').checked = true;
+    displayCampaigns(allCampaigns);
+  });
+  
+  // Sort
+  document.getElementById('sort-select').addEventListener('change', (e) => {
+    const sortBy = e.target.value;
+    let sorted = [...allCampaigns];
+    
+    if (sortBy === 'newest') {
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sortBy === 'budget-high') {
+      sorted.sort((a, b) => b.budget - a.budget);
+    } else if (sortBy === 'deadline') {
+      sorted.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    } else if (sortBy === 'ai-match') {
+      showToast('الترتيب بالذكاء الاصطناعي قريباً!', 'info');
+    }
+    
+    displayCampaigns(sorted);
+  });
+  
+  // AI Search
+  document.getElementById('ai-search-btn').addEventListener('click', () => {
+    showToast('البحث بالذكاء الاصطناعي قريباً!', 'info');
+  });
+  
+  // Quick filters
+  document.querySelectorAll('.quick-filter').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const filter = e.currentTarget.dataset.filter;
+      
+      // Toggle active state
+      document.querySelectorAll('.quick-filter').forEach(b => {
+        b.classList.remove('bg-primary/10', 'dark:bg-primary/20', 'text-primary');
+        b.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+      });
+      e.currentTarget.classList.add('bg-primary/10', 'dark:bg-primary/20', 'text-primary');
+      e.currentTarget.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+      
+      // Apply filter
+      if (filter === 'beginner') {
+        const filtered = allCampaigns.filter(c => c.difficulty === 'beginner' || c.budget < 500);
+        displayCampaigns(filtered);
+      } else if (filter === 'urgent') {
+        const filtered = allCampaigns.filter(c => {
+          const days = Math.ceil((new Date(c.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+          return days < 7;
+        });
+        displayCampaigns(filtered);
+      } else if (filter === 'high-budget') {
+        const filtered = allCampaigns.filter(c => c.budget >= 1000);
+        displayCampaigns(filtered);
+      }
+    });
+  });
+}
+
+// Apply filters
+function applyFilters() {
+  const category = document.getElementById('category-filter').value;
+  const maxBudget = parseInt(document.getElementById('budget-slider').value);
+  const includeBeginner = document.getElementById('filter-beginner').checked;
+  const includeIntermediate = document.getElementById('filter-intermediate').checked;
+  const includeExpert = document.getElementById('filter-expert').checked;
+  
+  let filtered = allCampaigns.filter(campaign => {
+    // Category filter
+    if (category && campaign.category !== category) return false;
+    
+    // Budget filter
+    if (maxBudget > 0 && campaign.budget > maxBudget) return false;
+    
+    // Difficulty filter
+    const isBeginner = campaign.difficulty === 'beginner' || campaign.budget < 500;
+    const isIntermediate = campaign.difficulty === 'intermediate';
+    const isExpert = campaign.difficulty === 'expert';
+    
+    if (isBeginner && !includeBeginner) return false;
+    if (isIntermediate && !includeIntermediate) return false;
+    if (isExpert && !includeExpert) return false;
+    
+    return true;
+  });
+  
+  displayCampaigns(filtered);
+}
+
+// Initialize when Supabase is ready
+if (window.supabaseClient) {
+  initializePage();
+} else {
+  window.addEventListener('supabaseReady', initializePage);
+}
+</script>
+
+<script src="/js/utils.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/application-modal.js"></script>
+<script src="/js/nav-links.js"></script>
+<script src="/js/dark-mode-toggle.js"></script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>

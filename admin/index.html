@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>UGC Maroc - لوحة تحكم المسؤولين الذكية</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="لوحة تحكم المسؤولين الذكية لمنصة UGC Maroc - إدارة شاملة مع الذكاء الاصطناعي"/>
+    <meta name="keywords" content="admin dashboard, UGC Maroc, إدارة المنصة, ذكاء اصطناعي"/>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5b13ec",
+                        "primary-light": "rgba(91, 19, 236, 0.1)",
+                        "primary-dark": "#4a0fd5",
+                        "secondary": "#7c3aed",
+                        "accent": "#a78bfa",
+                        "background-light": "#f7f8fc",
+                        "background-dark": "#10162B",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1a223c",
+                        "text-light": "#0f172a",
+                        "text-dark": "#e2e8f0",
+                        "muted-light": "#64748b",
+                        "muted-dark": "#94a3b8",
+                        "border-light": "#e2e8f0",
+                        "border-dark": "#334155",
+                        "success": "#10b981",
+                        "warning": "#f59e0b",
+                        "error": "#ef4444",
+                        "info": "#3b82f6"
+                    },
+                    fontFamily: {
+                        "display": ["Cairo", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'glow-primary': '0 0 20px rgba(91, 19, 236, 0.3)',
+                        'glow-success': '0 0 20px rgba(16, 185, 129, 0.3)',
+                        'glow-warning': '0 0 20px rgba(245, 158, 11, 0.3)',
+                        'glow-error': '0 0 20px rgba(239, 68, 68, 0.3)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                    }
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+        }
+        
+        /* Custom Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #5b13ec, #7c3aed, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #5b13ec;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a0fd5;
+        }
+        
+        /* Hover Effects */
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Loading States */
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        .dark .loading-skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        /* AI Badge */
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Status Indicators */
+        .status-indicator {
+            position: relative;
+        }
+        
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, transparent, currentColor, transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            animation: rotate 2s linear infinite;
+        }
+        
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Sidebar */
+        @media (max-width: 768px) {
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .mobile-sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-card-light dark:bg-card-dark border-l border-border-light dark:border-border-dark z-50 mobile-sidebar lg:translate-x-0">
+        <!-- Brand -->
+        <div class="p-6 border-b border-border-light dark:border-border-dark">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-text-light dark:text-text-dark">UGC Maroc</h1>
+                    <p class="text-xs text-muted-light dark:text-muted-dark">لوحة التحكم الذكية</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="p-4 space-y-2">
+            <a href="#overview" data-tab="overview" class="nav-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">dashboard</span>
+                <span>نظرة عامة</span>
+                <div class="ai-badge ml-auto">AI</div>
+            </a>
+            
+            <a href="#users" data-tab="users" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">groups</span>
+                <span>المستخدمون</span>
+                <span class="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">1.2K</span>
+            </a>
+            
+            <a href="#campaigns" data-tab="campaigns" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">campaign</span>
+                <span>الحملات</span>
+                <span class="ml-auto bg-success text-white text-xs px-2 py-1 rounded-full">45</span>
+            </a>
+            
+            <a href="#withdrawals" data-tab="withdrawals" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+                <span>طلبات السحب</span>
+                <span class="ml-auto bg-warning text-white text-xs px-2 py-1 rounded-full" id="withdrawals-count">0</span>
+            </a>
+            
+            <a href="#disputes" data-tab="disputes" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">gavel</span>
+                <span>النزاعات</span>
+                <span class="ml-auto bg-error text-white text-xs px-2 py-1 rounded-full">3</span>
+            </a>
+            
+            <a href="#tickets" data-tab="tickets" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">support_agent</span>
+                <span>التذاكر</span>
+                <span class="ml-auto bg-info text-white text-xs px-2 py-1 rounded-full">8</span>
+            </a>
+            
+            <a href="#analytics" data-tab="analytics" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">analytics</span>
+                <span>التحليلات</span>
+                <div class="ai-badge ml-auto">AI</div>
+            </a>
+            
+            <a href="#ai-insights" data-tab="ai-insights" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">psychology</span>
+                <span>الذكاء الاصطناعي</span>
+                <div class="ai-badge ml-auto">NEW</div>
+            </a>
+            
+            <a href="#settings" data-tab="settings" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
+                <span class="material-symbols-outlined text-lg">settings</span>
+                <span>الإعدادات</span>
+            </a>
+        </nav>
+        
+        <!-- User Profile -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-border-light dark:border-border-dark">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-primary-light dark:bg-primary/20">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd1c62l_RSYWcCWNNbPGGQEmDU_pom-1FdQPvhkY7fKGNgJAvPnN1yl3DXHT0-wWzPcxGXu50vmx-E42ROtcGFvOAI8_S0mjBBWCuGxZtXkIfae-HbnCpQpbCVS29xa75X3pKMrFrSQE35HguHCCVyUeSckuZ6ErFDK7QfkXhc7JA3An9Ue43jk7uk-ltrTZSdS0dRIb_0yJIjGqmayi8U-McAi41qC-9RBiHA-4buvzRF42aOExc76QlaLhxSkVUh82jBjrZxgwo" 
+                     alt="Admin Avatar" class="w-10 h-10 rounded-full border-2 border-primary">
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-text-light dark:text-text-dark">المسؤول الرئيسي</p>
+                    <p class="text-xs text-muted-light dark:text-muted-dark">admin@ugcmaroc.ma</p>
+                </div>
+                <button id="logout-btn" class="p-2 rounded-lg hover:bg-primary/20 text-muted-light dark:text-muted-dark hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-lg">logout</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="lg:mr-64 min-h-screen">
+        <!-- Top Bar -->
+        <header class="sticky top-0 z-30 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-sm border-b border-border-light dark:border-border-dark">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center gap-4">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg hover:bg-primary-light dark:hover:bg-primary/20 text-muted-light dark:text-muted-dark">
+                        <span class="material-symbols-outlined text-xl">menu</span>
+                    </button>
+                    <div>
+                        <h1 id="page-title" class="text-2xl font-bold text-text-light dark:text-text-dark">نظرة عامة</h1>
+                        <p id="page-subtitle" class="text-sm text-muted-light dark:text-muted-dark">مرحباً بك في لوحة التحكم الذكية</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- AI Assistant Toggle -->
+                    <button id="ai-assistant-btn" class="relative p-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white hover:shadow-glow-primary transition-all duration-300">
+                        <span class="material-symbols-outlined text-xl">psychology</span>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full animate-pulse"></div>
+                    </button>
+                    
+                    <!-- Search -->
+                    <div class="relative hidden md:block">
+                        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted-light dark:text-muted-dark">search</span>
+                        <input type="text" placeholder="بحث ذكي..." 
+                               class="w-64 pl-4 pr-10 py-2 rounded-xl bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:border-primary focus:ring-2 focus:ring-primary/20 text-text-light dark:text-text-dark placeholder-muted-light dark:placeholder-muted-dark">
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <button class="relative p-3 rounded-xl hover:bg-primary-light dark:hover:bg-primary/20 text-muted-light dark:text-muted-dark transition-colors">
+                        <span class="material-symbols-outlined text-xl">notifications</span>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full animate-pulse"></span>
+                    </button>
+                    
+                    <!-- Dark Mode Toggle -->
+                    <button id="dark-mode-toggle" class="p-3 rounded-xl hover:bg-primary-light dark:hover:bg-primary/20 text-muted-light dark:text-muted-dark transition-colors">
+                        <span class="material-symbols-outlined text-xl">dark_mode</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Content Panels -->
+        <div class="p-6">
+            <!-- Overview Panel -->
+            <div id="panel-overview" class="panel active">
+                <!-- AI Insights Banner -->
+                <div class="mb-8 p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 dark:border-primary/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-xl bg-gradient-to-r from-primary to-secondary">
+                                <span class="material-symbols-outlined text-2xl text-white">auto_awesome</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-text-light dark:text-text-dark">توصيات الذكاء الاصطناعي</h3>
+                                <p class="text-sm text-muted-light dark:text-muted-dark">تحليل ذكي للأداء والفرص المحسنة</p>
+                            </div>
+                        </div>
+                        <button class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-semibold hover:shadow-glow-primary transition-all duration-300">
+                            عرض التوصيات
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="kpi-card hover-lift bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/50">
+                                <span class="material-symbols-outlined text-2xl text-blue-500">groups</span>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                        <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark mb-2">إجمالي المستخدمين</h3>
+                        <p class="text-3xl font-bold text-text-light dark:text-text-dark mb-2">1,247</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-success font-semibold">+12.5%</span>
+                            <span class="text-xs text-muted-light dark:text-muted-dark">من الشهر الماضي</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card hover-lift bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 rounded-xl bg-green-100 dark:bg-green-900/50">
+                                <span class="material-symbols-outlined text-2xl text-green-500">trending_up</span>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                        <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark mb-2">إجمالي الإيرادات</h3>
+                        <p class="text-3xl font-bold text-text-light dark:text-text-dark mb-2">45.2K د.م</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-success font-semibold">+8.3%</span>
+                            <span class="text-xs text-muted-light dark:text-muted-dark">من الشهر الماضي</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card hover-lift bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 rounded-xl bg-orange-100 dark:bg-orange-900/50">
+                                <span class="material-symbols-outlined text-2xl text-orange-500">campaign</span>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                        <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark mb-2">الحملات النشطة</h3>
+                        <p class="text-3xl font-bold text-text-light dark:text-text-dark mb-2">23</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-success font-semibold">+3</span>
+                            <span class="text-xs text-muted-light dark:text-muted-dark">هذا الأسبوع</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card hover-lift bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/50">
+                                <span class="material-symbols-outlined text-2xl text-purple-500">psychology</span>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                        <h3 class="text-sm font-medium text-muted-light dark:text-muted-dark mb-2">معدل الرضا</h3>
+                        <p class="text-3xl font-bold text-text-light dark:text-text-dark mb-2">94.2%</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-success font-semibold">+2.1%</span>
+                            <span class="text-xs text-muted-light dark:text-muted-dark">من الشهر الماضي</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts and Analytics -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Revenue Chart -->
+                    <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">اتجاه الإيرادات</h3>
+                            <div class="ai-badge">AI تحليل</div>
+                        </div>
+                        <div class="h-64 flex items-center justify-center">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-4xl text-muted-light dark:text-muted-dark mb-2">show_chart</span>
+                                <p class="text-muted-light dark:text-muted-dark">رسم بياني تفاعلي للإيرادات</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Activity -->
+                    <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">نشاط المستخدمين</h3>
+                            <div class="ai-badge">AI تحليل</div>
+                        </div>
+                        <div class="h-64 flex items-center justify-center">
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-4xl text-muted-light dark:text-muted-dark mb-2">timeline</span>
+                                <p class="text-muted-light dark:text-muted-dark">رسم بياني تفاعلي للنشاط</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">النشاط الأخير</h3>
+                        <button class="text-sm text-primary hover:text-primary-dark font-medium">عرض الكل</button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-background-light dark:bg-background-dark">
+                            <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
+                                <span class="material-symbols-outlined text-green-500">person_add</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-text-light dark:text-text-dark">مستخدم جديد انضم للمنصة</p>
+                                <p class="text-xs text-muted-light dark:text-muted-dark">منذ 5 دقائق</p>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-background-light dark:bg-background-dark">
+                            <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                                <span class="material-symbols-outlined text-blue-500">campaign</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-text-light dark:text-text-dark">حملة جديدة تم إنشاؤها</p>
+                                <p class="text-xs text-muted-light dark:text-muted-dark">منذ 15 دقيقة</p>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-background-light dark:bg-background-dark">
+                            <div class="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/50">
+                                <span class="material-symbols-outlined text-orange-500">account_balance_wallet</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-text-light dark:text-text-dark">عملية سحب جديدة</p>
+                                <p class="text-xs text-muted-light dark:text-muted-dark">منذ 30 دقيقة</p>
+                            </div>
+                            <div class="ai-badge">AI</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other Panels (Hidden by default) -->
+            <div id="panel-users" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">إدارة المستخدمين</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى إدارة المستخدمين سيتم إضافته هنا...</p>
+                </div>
+            </div>
+            
+            <div id="panel-campaigns" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">إدارة الحملات</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى إدارة الحملات سيتم إضافته هنا...</p>
+                </div>
+            </div>
+            
+            <div id="panel-withdrawals" class="panel hidden">
+                <div class="space-y-6">
+                    <!-- Header -->
+                    <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-text-light dark:text-text-dark">طلبات السحب</h2>
+                                <p class="text-muted-light dark:text-muted-dark">إدارة طلبات سحب الأرباح من المبدعين</p>
+                            </div>
+                            <button onclick="loadWithdrawals()" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                <span class="material-symbols-outlined">refresh</span>
+                                تحديث
+                            </button>
+                        </div>
+                        
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-xl text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-blue-100 text-sm">في الانتظار</p>
+                                        <p class="text-2xl font-bold" id="pending-count">0</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-3xl opacity-80">hourglass_empty</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-xl text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-green-100 text-sm">مكتملة</p>
+                                        <p class="text-2xl font-bold" id="completed-count">0</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-3xl opacity-80">check_circle</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-red-500 to-red-600 p-4 rounded-xl text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-red-100 text-sm">مرفوضة</p>
+                                        <p class="text-2xl font-bold" id="rejected-count">0</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-3xl opacity-80">cancel</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-xl text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-purple-100 text-sm">إجمالي المبلغ</p>
+                                        <p class="text-2xl font-bold" id="total-amount">0 MAD</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-3xl opacity-80">account_balance_wallet</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div class="flex-1 min-w-64">
+                                <input type="text" id="withdrawals-search" placeholder="البحث عن مبدع أو رقم الطلب..." 
+                                       class="w-full px-4 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                            </div>
+                            
+                            <select id="withdrawals-status-filter" class="px-4 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+                                <option value="">جميع الحالات</option>
+                                <option value="PENDING">في الانتظار</option>
+                                <option value="APPROVED">موافق عليه</option>
+                                <option value="PROCESSING">قيد المعالجة</option>
+                                <option value="COMPLETED">مكتمل</option>
+                                <option value="REJECTED">مرفوض</option>
+                            </select>
+                            
+                            <button onclick="filterWithdrawals()" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
+                                تصفية
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Withdrawals Table -->
+                    <div class="bg-card-light dark:bg-card-dark rounded-2xl border border-border-light dark:border-border-dark overflow-hidden">
+                        <div class="p-6 border-b border-border-light dark:border-border-dark">
+                            <h3 class="text-lg font-semibold text-text-light dark:text-text-dark">قائمة طلبات السحب</h3>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-background-light dark:bg-background-dark">
+                                    <tr>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">المبدع</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">المبلغ</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">الصافي</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">البنك</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">الحالة</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">التاريخ</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-muted-light dark:text-muted-dark uppercase tracking-wider">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="withdrawals-table-body" class="divide-y divide-border-light dark:divide-border-dark">
+                                    <!-- Les données ستتم إضافتها هنا -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div id="withdrawals-loading" class="p-8 text-center">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <p class="mt-2 text-muted-light dark:text-muted-dark">جاري تحميل طلبات السحب...</p>
+                        </div>
+                        
+                        <div id="withdrawals-empty" class="p-8 text-center hidden">
+                            <span class="material-symbols-outlined text-6xl text-muted-light dark:text-muted-dark mb-4">account_balance_wallet</span>
+                            <p class="text-muted-light dark:text-muted-dark">لا توجد طلبات سحب</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="panel-disputes" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">إدارة النزاعات</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى إدارة النزاعات سيتم إضافته هنا...</p>
+                </div>
+            </div>
+            
+            <div id="panel-tickets" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">إدارة التذاكر</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى إدارة التذاكر سيتم إضافته هنا...</p>
+                </div>
+            </div>
+            
+            <div id="panel-analytics" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">التحليلات المتقدمة</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى التحليلات المتقدمة سيتم إضافته هنا...</p>
+                </div>
+            </div>
+            
+            <div id="panel-ai-insights" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">الذكاء الاصطناعي</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى الذكاء الاصطناعي سيتم إضافته هنا...</p>
+                </div>
+            </div>
+            
+            <div id="panel-settings" class="panel hidden">
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl border border-border-light dark:border-border-dark">
+                    <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-6">إعدادات النظام</h2>
+                    <p class="text-muted-light dark:text-muted-dark">محتوى إعدادات النظام سيتم إضافته هنا...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- AI Assistant Modal -->
+    <div id="ai-assistant-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card-light dark:bg-card-dark rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div class="p-6 border-b border-border-light dark:border-border-dark">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-xl bg-gradient-to-r from-primary to-secondary">
+                            <span class="material-symbols-outlined text-white text-xl">psychology</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-text-light dark:text-text-dark">المساعد الذكي</h3>
+                            <p class="text-sm text-muted-light dark:text-muted-dark">اسأل أي شيء عن المنصة</p>
+                        </div>
+                    </div>
+                    <button id="close-ai-modal" class="p-2 rounded-lg hover:bg-primary-light dark:hover:bg-primary/20 text-muted-light dark:text-muted-dark">
+                        <span class="material-symbols-outlined text-xl">close</span>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="p-4 rounded-xl bg-background-light dark:bg-background-dark">
+                        <p class="text-sm text-text-light dark:text-text-dark">مرحباً! أنا المساعد الذكي لمنصة UGC Maroc. كيف يمكنني مساعدتك اليوم؟</p>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="اكتب سؤالك هنا..." 
+                               class="flex-1 px-4 py-3 rounded-xl bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:border-primary focus:ring-2 focus:ring-primary/20 text-text-light dark:text-text-dark">
+                        <button class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-semibold hover:shadow-glow-primary transition-all duration-300">
+                            <span class="material-symbols-outlined">send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/dashboard-admin.js"></script>
+    
+    <script>
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            
+            mobileMenuBtn?.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                mobileOverlay.classList.toggle('hidden');
+            });
+            
+            mobileOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                mobileOverlay.classList.add('hidden');
+            });
+            
+            // Dark mode toggle
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            darkModeToggle?.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+            });
+            
+            // Load dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // AI Assistant Modal
+            const aiAssistantBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            const closeAiModal = document.getElementById('close-ai-modal');
+            
+            aiAssistantBtn?.addEventListener('click', () => {
+                aiModal.classList.remove('hidden');
+            });
+            
+            closeAiModal?.addEventListener('click', () => {
+                aiModal.classList.add('hidden');
+            });
+            
+            // Tab navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            const panels = document.querySelectorAll('.panel');
+            const pageTitle = document.getElementById('page-title');
+            const pageSubtitle = document.getElementById('page-subtitle');
+            
+            const tabTitles = {
+                'overview': { title: 'نظرة عامة', subtitle: 'مرحباً بك في لوحة التحكم الذكية' },
+                'users': { title: 'إدارة المستخدمين', subtitle: 'مراقبة وإدارة قاعدة المستخدمين' },
+                'campaigns': { title: 'إدارة الحملات', subtitle: 'مراقبة وإدارة الحملات التسويقية' },
+                'withdrawals': { title: 'العمليات المالية', subtitle: 'إدارة المعاملات والمدفوعات' },
+                'disputes': { title: 'إدارة النزاعات', subtitle: 'حل وإدارة النزاعات' },
+                'tickets': { title: 'إدارة التذاكر', subtitle: 'دعم العملاء وإدارة التذاكر' },
+                'analytics': { title: 'التحليلات المتقدمة', subtitle: 'تحليل البيانات والأداء' },
+                'ai-insights': { title: 'الذكاء الاصطناعي', subtitle: 'توصيات وتحليلات ذكية' },
+                'settings': { title: 'إعدادات النظام', subtitle: 'إعدادات المنصة العامة' }
+            };
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links and panels
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    panels.forEach(p => p.classList.add('hidden'));
+                    
+                    // Add active class to clicked link
+                    link.classList.add('active');
+                    
+                    // Show corresponding panel
+                    const tab = link.dataset.tab;
+                    const panel = document.getElementById(`panel-${tab}`);
+                    if (panel) {
+                        panel.classList.remove('hidden');
+                        panel.classList.add('active');
+                    }
+                    
+                    // Update page title and subtitle
+                    if (tabTitles[tab]) {
+                        pageTitle.textContent = tabTitles[tab].title;
+                        pageSubtitle.textContent = tabTitles[tab].subtitle;
+                    }
+                    
+                    // Close mobile menu if open
+                    sidebar.classList.remove('open');
+                    mobileOverlay.classList.add('hidden');
+                });
+            });
+            
+            // Logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            logoutBtn?.addEventListener('click', async () => {
+                if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                    try {
+                        await window.supabaseClient?.auth.signOut();
+                        localStorage.clear();
+                        window.location.href = '/auth/creator-login.html';
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    }
+                }
+            });
+            
+            // Add loading animations to KPI cards
+            const kpiCards = document.querySelectorAll('.kpi-card');
+            kpiCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 100}ms`;
+                card.classList.add('animate-fade-in');
+            });
+        });
+
+        // Withdrawals management functions
+        let withdrawalsData = [];
+        let filteredWithdrawals = [];
+
+        async function loadWithdrawals() {
+            try {
+                document.getElementById('withdrawals-loading').classList.remove('hidden');
+                document.getElementById('withdrawals-empty').classList.add('hidden');
+                document.getElementById('withdrawals-table-body').innerHTML = '';
+
+                const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals`, {
+                    headers: {
+                        'Authorization': `Bearer ${await getAuthToken()}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    withdrawalsData = data.data;
+                    filteredWithdrawals = [...withdrawalsData];
+                    renderWithdrawals();
+                    updateWithdrawalsStats();
+                    updateWithdrawalsCount();
+                } else {
+                    showNotification('خطأ في تحميل طلبات السحب', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading withdrawals:', error);
+                showNotification('خطأ في تحميل طلبات السحب', 'error');
+            } finally {
+                document.getElementById('withdrawals-loading').classList.add('hidden');
+            }
+        }
+
+        function renderWithdrawals() {
+            const tbody = document.getElementById('withdrawals-table-body');
+            
+            if (filteredWithdrawals.length === 0) {
+                document.getElementById('withdrawals-empty').classList.remove('hidden');
+                return;
+            }
+
+            tbody.innerHTML = filteredWithdrawals.map(withdrawal => {
+                const bankDetails = JSON.parse(withdrawal.bank_details || '{}');
+                const statusClass = getStatusClass(withdrawal.status);
+                const statusText = getStatusText(withdrawal.status);
+                
+                return `
+                    <tr class="hover:bg-background-light dark:hover:bg-background-dark transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center">
+                                        ${withdrawal.creator_name ? withdrawal.creator_name.charAt(0).toUpperCase() : '?'}
+                                    </div>
+                                </div>
+                                <div class="mr-4">
+                                    <div class="text-sm font-medium text-text-light dark:text-text-dark">
+                                        ${withdrawal.creator_name || 'غير محدد'}
+                                    </div>
+                                    <div class="text-sm text-muted-light dark:text-muted-dark">
+                                        #${withdrawal.id}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light dark:text-text-dark">
+                            ${parseFloat(withdrawal.requested_amount).toFixed(2)} MAD
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+                            ${parseFloat(withdrawal.net_amount).toFixed(2)} MAD
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light dark:text-text-dark">
+                            ${bankDetails.bank_name || 'غير محدد'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-light dark:text-muted-dark">
+                            ${new Date(withdrawal.created_at).toLocaleDateString('ar-MA')}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex gap-2">
+                                ${getWithdrawalActions(withdrawal)}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'PENDING': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                case 'APPROVED': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                case 'PROCESSING': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+                case 'COMPLETED': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                case 'REJECTED': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'PENDING': return 'في الانتظار';
+                case 'APPROVED': return 'موافق عليه';
+                case 'PROCESSING': return 'قيد المعالجة';
+                case 'COMPLETED': return 'مكتمل';
+                case 'REJECTED': return 'مرفوض';
+                default: return status;
+            }
+        }
+
+        function getWithdrawalActions(withdrawal) {
+            let actions = [];
+            
+            if (withdrawal.status === 'PENDING') {
+                actions.push(`
+                    <button onclick="approveWithdrawal(${withdrawal.id})" 
+                            class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                        موافقة
+                    </button>
+                `);
+                actions.push(`
+                    <button onclick="rejectWithdrawal(${withdrawal.id})" 
+                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                        رفض
+                    </button>
+                `);
+            } else if (withdrawal.status === 'APPROVED') {
+                actions.push(`
+                    <button onclick="markAsCompleted(${withdrawal.id})" 
+                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                        إكمال
+                    </button>
+                `);
+            }
+            
+            actions.push(`
+                <button onclick="viewWithdrawalDetails(${withdrawal.id})" 
+                        class="text-primary hover:text-primary-dark">
+                    تفاصيل
+                </button>
+            `);
+            
+            return actions.join('');
+        }
+
+        function updateWithdrawalsStats() {
+            const pending = withdrawalsData.filter(w => w.status === 'PENDING').length;
+            const completed = withdrawalsData.filter(w => w.status === 'COMPLETED').length;
+            const rejected = withdrawalsData.filter(w => w.status === 'REJECTED').length;
+            const totalAmount = withdrawalsData.reduce((sum, w) => sum + parseFloat(w.requested_amount), 0);
+
+            document.getElementById('pending-count').textContent = pending;
+            document.getElementById('completed-count').textContent = completed;
+            document.getElementById('rejected-count').textContent = rejected;
+            document.getElementById('total-amount').textContent = `${totalAmount.toFixed(2)} MAD`;
+        }
+
+        function updateWithdrawalsCount() {
+            const pendingCount = withdrawalsData.filter(w => w.status === 'PENDING').length;
+            document.getElementById('withdrawals-count').textContent = pendingCount;
+        }
+
+        function filterWithdrawals() {
+            const search = document.getElementById('withdrawals-search').value.toLowerCase();
+            const status = document.getElementById('withdrawals-status-filter').value;
+
+            filteredWithdrawals = withdrawalsData.filter(withdrawal => {
+                const matchesSearch = !search || 
+                    (withdrawal.creator_name && withdrawal.creator_name.toLowerCase().includes(search)) ||
+                    withdrawal.id.toString().includes(search);
+                
+                const matchesStatus = !status || withdrawal.status === status;
+                
+                return matchesSearch && matchesStatus;
+            });
+
+            renderWithdrawals();
+        }
+
+        async function approveWithdrawal(withdrawalId) {
+            if (!confirm('هل أنت متأكد من الموافقة على هذا الطلب؟')) return;
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${await getAuthToken()}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('تمت الموافقة على الطلب بنجاح', 'success');
+                    await loadWithdrawals();
+                } else {
+                    showNotification(data.message || 'خطأ في الموافقة على الطلب', 'error');
+                }
+            } catch (error) {
+                console.error('Error approving withdrawal:', error);
+                showNotification('خطأ في الموافقة على الطلب', 'error');
+            }
+        }
+
+        async function rejectWithdrawal(withdrawalId) {
+            const reason = prompt('يرجى إدخال سبب الرفض:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await getAuthToken()}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('تم رفض الطلب بنجاح', 'success');
+                    await loadWithdrawals();
+                } else {
+                    showNotification(data.message || 'خطأ في رفض الطلب', 'error');
+                }
+            } catch (error) {
+                console.error('Error rejecting withdrawal:', error);
+                showNotification('خطأ في رفض الطلب', 'error');
+            }
+        }
+
+        async function markAsCompleted(withdrawalId) {
+            if (!confirm('هل أنت متأكد من إكمال هذا الطلب؟')) return;
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${await getAuthToken()}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('تم إكمال الطلب بنجاح', 'success');
+                    await loadWithdrawals();
+                } else {
+                    showNotification(data.message || 'خطأ في إكمال الطلب', 'error');
+                }
+            } catch (error) {
+                console.error('Error completing withdrawal:', error);
+                showNotification('خطأ في إكمال الطلب', 'error');
+            }
+        }
+
+        function viewWithdrawalDetails(withdrawalId) {
+            const withdrawal = withdrawalsData.find(w => w.id === withdrawalId);
+            if (!withdrawal) return;
+
+            const bankDetails = JSON.parse(withdrawal.bank_details || '{}');
+            
+            const details = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-text-light dark:text-text-dark">تفاصيل الطلب</h3>
+                        <p class="text-sm text-muted-light dark:text-muted-dark">#${withdrawal.id}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-muted-light dark:text-muted-dark">المبدع</p>
+                            <p class="font-medium text-text-light dark:text-text-dark">${withdrawal.creator_name || 'غير محدد'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-light dark:text-muted-dark">المبلغ المطلوب</p>
+                            <p class="font-medium text-text-light dark:text-text-dark">${parseFloat(withdrawal.requested_amount).toFixed(2)} MAD</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-light dark:text-muted-dark">المبلغ الصافي</p>
+                            <p class="font-medium text-green-600 dark:text-green-400">${parseFloat(withdrawal.net_amount).toFixed(2)} MAD</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-light dark:text-muted-dark">الحالة</p>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(withdrawal.status)}">
+                                ${getStatusText(withdrawal.status)}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-text-light dark:text-text-dark mb-2">تفاصيل البنك</h4>
+                        <div class="bg-background-light dark:bg-background-dark p-4 rounded-lg">
+                            <p class="text-sm"><strong>البنك:</strong> ${bankDetails.bank_name || 'غير محدد'}</p>
+                            <p class="text-sm"><strong>صاحب الحساب:</strong> ${bankDetails.account_holder || 'غير محدد'}</p>
+                            <p class="text-sm"><strong>RIB:</strong> ${bankDetails.rib || 'غير محدد'}</p>
+                            ${bankDetails.iban ? `<p class="text-sm"><strong>IBAN:</strong> ${bankDetails.iban}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    ${withdrawal.rejection_reason ? `
+                        <div>
+                            <h4 class="font-semibold text-red-600 dark:text-red-400 mb-2">سبب الرفض</h4>
+                            <p class="text-sm text-red-600 dark:text-red-400">${withdrawal.rejection_reason}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Créer une modal pour afficher les détails
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-card-light dark:bg-card-dark p-6 rounded-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-text-light dark:text-text-dark">تفاصيل طلب السحب</h2>
+                        <button onclick="this.closest('.fixed').remove()" class="text-muted-light dark:text-muted-dark hover:text-text-light dark:hover:text-text-dark">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    ${details}
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        async function getAuthToken() {
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            return session?.access_token;
+        }
+
+        function showNotification(message, type = 'info') {
+            // Créer une notification toast
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Load withdrawals when the withdrawals tab is clicked
+        document.addEventListener('DOMContentLoaded', function() {
+            const withdrawalsTab = document.querySelector('[data-tab="withdrawals"]');
+            if (withdrawalsTab) {
+                withdrawalsTab.addEventListener('click', () => {
+                    setTimeout(() => {
+                        loadWithdrawals();
+                    }, 100);
+                });
+            }
+        });
+    </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>

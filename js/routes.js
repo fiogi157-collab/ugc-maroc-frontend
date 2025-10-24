@@ -5,20 +5,25 @@
 const ROUTES = {
   // Brand Routes
   brand: {
-    dashboard: '/brand/brand_dashboard_premium.html',
-    dashboardOld: '/brand/brand_dashboard_-_variant_2.html',
-    campaigns: '/brand/تفاصيل_الحملة_(للعلامات_التجارية).html',
-    createCampaign: '/brand/إنشاء_حملة_جديدة.html',
-    creators: '/brand/سوق_المبدعين_(للعلامات_التجارية).html',
-    wallet: '/brand/محفظة_العلامة_التجارية_والفواتير.html',
-    settings: '/brand/إعدادات_ملف_العلامة_التجارية_4.html',
-    messages: '/brand/messages.html', // To be created
+    dashboard: '/brand/create-campaign-wizard.html',
+    campaigns: '/brand/brand-campaign-details-ar.html',
+    createCampaign: '/brand/create-campaign-wizard.html',
+    creators: '/brand/brand-creators-marketplace.html',
+    wallet: '/brand/orders-history.html',
+    settings: '/brand/brand-profile-settings.html',
+    messages: '/brand/messages.html',
     analytics: '/brand/analytics.html', // To be created
   },
 
-  // Creator Routes (will be added when needed)
+  // Creator Routes
   creator: {
-    dashboard: '/creator/creator_dashboard.html',
+    dashboard: '/creator/ugc-creator-dashboard.html',
+    createGig: '/creator/creator-create-gig.html',
+    browseCampaigns: '/creator/creator-browse-campaigns.html',
+    earnings: '/creator/creator-earnings-history.html',
+    withdrawal: '/creator/withdrawal-redirect.html',
+    profile: '/creator/profile.html',
+    messages: '/creator/messages.html',
   },
 
   // Public Routes

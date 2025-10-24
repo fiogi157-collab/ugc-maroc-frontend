@@ -1,148 +1,0 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>UGC Maroc - تحقق من بريدك الإلكتروني</title>
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#5b13ec",
-            "background-light": "#f6f6f8",
-            "background-dark": "#161022",
-          },
-          fontFamily: {
-            display: ["Manrope"],
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
-    }
-    .animate-float {
-      animation: float 3s ease-in-out infinite;
-    }
-  </style>
-</head>
-<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
-  <div class="flex min-h-screen flex-col items-center justify-center p-4">
-    <div class="w-full max-w-lg">
-      <!-- Logo -->
-      <div class="mb-8 flex justify-center">
-        <div class="text-primary">
-          <svg class="h-16 w-16 animate-float" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Main Card -->
-      <div class="rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg p-8 shadow-xl ring-1 ring-gray-900/5 dark:ring-white/10">
-        <!-- Email Icon -->
-        <div class="flex justify-center mb-6">
-          <div class="rounded-full bg-primary/10 p-6">
-            <svg class="h-16 w-16 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Title -->
-        <h1 class="text-center text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          تحقق من بريدك الإلكتروني 📧
-        </h1>
-
-        <!-- Message -->
-        <div class="text-center space-y-4 mb-8">
-          <p class="text-lg text-gray-600 dark:text-gray-300">
-            شكرًا لاهتمامك بـ UGC Maroc!
-          </p>
-          <p class="text-gray-600 dark:text-gray-400">
-            لقد أرسلنا رسالة تحقق إلى بريدك الإلكتروني المهني. يرجى النقر على الرابط الموجود في الرسالة لتفعيل حساب علامتك التجارية.
-          </p>
-          <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 mt-4">
-            <p class="text-sm text-purple-800 dark:text-purple-200">
-              🏢 <strong>للعلامات التجارية:</strong> سيتم مراجعة حسابك من قبل فريقنا خلال 24-48 ساعة عمل للتحقق من المعلومات.
-            </p>
-          </div>
-        </div>
-
-        <!-- Resend Button -->
-        <button 
-          onclick="resendVerificationEmail()"
-          id="resend-btn"
-          class="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 mb-4">
-          لم تستلم البريد؟ إعادة إرسال
-        </button>
-
-        <!-- Back to login -->
-        <div class="text-center">
-          <a href="/auth/brand-login.html" class="text-sm text-primary hover:underline">
-            العودة إلى تسجيل الدخول
-          </a>
-        </div>
-      </div>
-
-      <!-- Footer Note -->
-      <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-        هل تحتاج إلى مساعدة؟ <a href="mailto:support@ugcmaroc.com" class="text-primary hover:underline">تواصل معنا</a>
-      </p>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/config.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/utils.js"></script>
-
-  <script>
-    async function resendVerificationEmail() {
-      const btn = document.getElementById('resend-btn');
-      btn.disabled = true;
-      btn.textContent = 'جاري الإرسال...';
-
-      try {
-        const email = localStorage.getItem('pending_verification_email');
-        if (!email) {
-          alert('لم نتمكن من العثور على البريد الإلكتروني. يرجى تسجيل الدخول مرة أخرى.');
-          window.location.href = '/auth/brand-signup.html';
-          return;
-        }
-
-        const { error } = await window.supabaseClient.auth.resend({
-          type: 'signup',
-          email: email
-        });
-
-        if (error) throw error;
-
-        window.utils.showToast('تم إعادة إرسال البريد الإلكتروني بنجاح!', 'success');
-        btn.textContent = 'تم الإرسال ✓';
-        
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.textContent = 'لم تستلم البريد؟ إعادة إرسال';
-        }, 5000);
-      } catch (error) {
-        console.error('خطأ:', error);
-        window.utils.showToast('حدث خطأ أثناء إعادة الإرسال', 'error');
-        btn.disabled = false;
-        btn.textContent = 'لم تستلم البريد؟ إعادة إرسال';
-      }
-    }
-  </script>
-  <script src="/js/nav-links.js"></script>
-</body>
-</html>

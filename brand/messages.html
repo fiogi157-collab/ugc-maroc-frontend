@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الرسائل - UGC Maroc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5b13ec',
+            secondary: '#7c3aed'
+          },
+          fontFamily: {
+            'cairo': ['Cairo', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .message-item:hover { background: #f8fafc; }
+    .unread-badge { 
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #5b13ec, #7c3aed);
+      color: white;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center gap-4">
+          <a href="/brand/brand_dashboard_premium.html" class="text-gray-500 hover:text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </a>
+          <h1 class="text-2xl font-bold text-gray-900">💬 الرسائل</h1>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <!-- Search -->
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="البحث في الرسائل..." 
+                   class="w-64 px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+            <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          
+          <!-- Mark all as read -->
+          <button id="markAllRead" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">
+            تعيين الكل كمقروء
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Filters -->
+    <div class="mb-6">
+      <div class="flex gap-2 flex-wrap">
+        <button class="filter-btn active px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition" data-filter="all">
+          جميع الرسائل (12)
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition" data-filter="unread">
+          غير مقروءة (3)
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition" data-filter="negotiations">
+          المفاوضات (5)
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition" data-filter="contracts">
+          العقود (2)
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition" data-filter="support">
+          الدعم (2)
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      
+      <!-- Message Item 1 - Unread Negotiation -->
+      <div class="message-item border-b border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition" data-type="negotiation" data-unread="true">
+        <div class="flex items-start gap-4">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" 
+                 alt="Amina" class="w-12 h-12 rounded-full object-cover">
+            <div class="unread-badge absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center">
+              <span class="text-xs text-white font-bold">3</span>
+            </div>
+          </div>
+          
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-semibold text-gray-900">أمينة الزهراني</h3>
+              <span class="text-sm text-gray-500">منذ 5 دقائق</span>
+            </div>
+            
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">مفاوضة</span>
+              <span class="text-sm text-gray-600">خدمة: فيديو UGC للجمال</span>
+            </div>
+            
+            <p class="text-gray-700 text-sm line-clamp-2">
+              مرحبا! شكرا لاهتمامك بخدمتي. يمكنني تقليل السعر إلى 450 درهم مع إضافة صورة إضافية...
+            </p>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Item 2 - Contract -->
+      <div class="message-item border-b border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition" data-type="contract" data-unread="false">
+        <div class="flex items-start gap-4">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                 alt="Youssef" class="w-12 h-12 rounded-full object-cover">
+          </div>
+          
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-semibold text-gray-900">يوسف المبدع</h3>
+              <span class="text-sm text-gray-500">منذ ساعة</span>
+            </div>
+            
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">عقد</span>
+              <span class="text-sm text-gray-600">خدمة: فيديو TikTok</span>
+            </div>
+            
+            <p class="text-gray-700 text-sm line-clamp-2">
+              ✅ تم توقيع العقد بنجاح! يمكنك الآن المتابعة إلى الدفع. شكرا لثقتك!
+            </p>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Item 3 - Unread Support -->
+      <div class="message-item border-b border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition" data-type="support" data-unread="true">
+        <div class="flex items-start gap-4">
+          <div class="relative">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+              <span class="text-white font-bold text-lg">U</span>
+            </div>
+            <div class="unread-badge absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center">
+              <span class="text-xs text-white font-bold">1</span>
+            </div>
+          </div>
+          
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-semibold text-gray-900">دعم UGC Maroc</h3>
+              <span class="text-sm text-gray-500">منذ ساعتين</span>
+            </div>
+            
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">دعم</span>
+              <span class="text-sm text-gray-600">معلومات الحساب</span>
+            </div>
+            
+            <p class="text-gray-700 text-sm line-clamp-2">
+              مرحبا! تم تحديث نظام الدفع. يمكنك الآن استخدام Stripe للدفع الآمن...
+            </p>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Item 4 - Read Negotiation -->
+      <div class="message-item border-b border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition" data-type="negotiation" data-unread="false">
+        <div class="flex items-start gap-4">
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" 
+                 alt="Fatima" class="w-12 h-12 rounded-full object-cover">
+          </div>
+          
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-semibold text-gray-900">فاطمة المبدعة</h3>
+              <span class="text-sm text-gray-500">أمس</span>
+            </div>
+            
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">مفاوضة</span>
+              <span class="text-sm text-gray-600">خدمة: صور منتجات</span>
+            </div>
+            
+            <p class="text-gray-700 text-sm line-clamp-2">
+              شكرا لك! سأقوم بإنشاء العقد الآن. هل تريد إضافة أي تفاصيل إضافية؟
+            </p>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Load More Button -->
+      <div class="p-4 text-center">
+        <button class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">
+          تحميل المزيد
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+    <div class="flex justify-around py-2">
+      <a href="/brand/brand_dashboard_premium.html" class="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-primary transition">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+        </svg>
+        <span class="text-xs">الرئيسية</span>
+      </a>
+      <a href="/brand/marketplace-gigs.html" class="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-primary transition">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+        <span class="text-xs">الخدمات</span>
+      </a>
+      <a href="/brand/create-campaign-wizard.html" class="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-primary transition">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+        </svg>
+        <span class="text-xs">الحملات</span>
+      </a>
+      <a href="/brand/messages.html" class="flex flex-col items-center py-2 px-3 text-primary">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>
+        <span class="text-xs">الرسائل</span>
+        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+      </a>
+      <a href="/brand/orders-history.html" class="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-primary transition">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <span class="text-xs">الطلبات</span>
+      </a>
+    </div>
+  </nav>
+
+  <script>
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        // Add active class to clicked button
+        btn.classList.add('active');
+        
+        const filter = btn.dataset.filter;
+        const messages = document.querySelectorAll('.message-item');
+        
+        messages.forEach(message => {
+          if (filter === 'all') {
+            message.style.display = 'block';
+          } else if (filter === 'unread') {
+            message.style.display = message.dataset.unread === 'true' ? 'block' : 'none';
+          } else {
+            message.style.display = message.dataset.type === filter ? 'block' : 'none';
+          }
+        });
+      });
+    });
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const messages = document.querySelectorAll('.message-item');
+      
+      messages.forEach(message => {
+        const text = message.textContent.toLowerCase();
+        message.style.display = text.includes(searchTerm) ? 'block' : 'none';
+      });
+    });
+
+    // Mark all as read
+    document.getElementById('markAllRead').addEventListener('click', () => {
+      document.querySelectorAll('.message-item[data-unread="true"]').forEach(message => {
+        message.dataset.unread = 'false';
+        const badge = message.querySelector('.unread-badge');
+        if (badge) badge.remove();
+      });
+      
+      // Update filter counts
+      document.querySelector('[data-filter="unread"]').textContent = 'غير مقروءة (0)';
+      
+      // Show success message
+      const btn = document.getElementById('markAllRead');
+      const originalText = btn.textContent;
+      btn.textContent = 'تم!';
+      btn.classList.add('bg-green-100', 'text-green-800');
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('bg-green-100', 'text-green-800');
+      }, 2000);
+    });
+
+    // Message click handler
+    document.querySelectorAll('.message-item').forEach(message => {
+      message.addEventListener('click', () => {
+        // Mark as read
+        if (message.dataset.unread === 'true') {
+          message.dataset.unread = 'false';
+          const badge = message.querySelector('.unread-badge');
+          if (badge) badge.remove();
+        }
+        
+        // Navigate to chat (placeholder)
+        console.log('Opening chat for message:', message);
+        // window.location.href = '/brand/chat.html?id=' + message.dataset.id;
+      });
+    });
+  </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>
+

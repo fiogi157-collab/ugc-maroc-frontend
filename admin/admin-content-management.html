@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700;900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5b13ec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#161022",
+            },
+            fontFamily: {
+              "display": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<title>UGC Maroc - Admin Panel</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex flex-col min-h-screen">
+<header class="bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-10">
+<div class="container mx-auto px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">UGC Maroc</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary" href="#">الرئيسية</a>
+<a class="text-sm font-medium text-primary dark:text-primary" href="#">المحتوى</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary" href="#">المستخدمون</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary" href="#">التقارير</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary" href="#">الإعدادات</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="relative rounded-full p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-primary">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<img alt="صورة الملف الشخصي للمستخدم" class="h-10 w-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1G7mYnN6vfxE4769STfShYK5W0fwuQui43gy_dbetioyP_r5LJoL1gQjYzku0MRyMp0VSn2GVLXknoYooXHxRy2bTEyCdL7Bhp2qD7gmBHNcr94AB28LIrDZv0akqKBWsq_Dctoq1t7j1MCuGKmVLuxN-nMvVhBSLj998O_wi6ccwbACt3Vbdyo2VN4NMhRTYl6lmlsggQPWKzjOwAvMI4OeIsorwgT4BjrgIB1MviCX21hUf2e3eN0GCGoFeRXPzoaFYm3DKJMQ"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow container mx-auto px-6 py-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<h2 class="text-3xl font-bold text-gray-900 dark:text-white">إدارة محتوى الواجهة الأمامية</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">آخر تحديث: 15 مايو 2024، 10:30 صباحًا بواسطة المشرف_أحمد</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors text-sm">
+<span class="material-symbols-outlined text-base">history</span>
+<span>سجل التغييرات</span>
+</button>
+<button class="flex items-center gap-2 bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-secondary/90 transition-colors text-sm border border-primary">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>معاينة فورية</span>
+</button>
+<button class="flex items-center gap-2 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors text-sm">
+<span class="material-symbols-outlined text-base">publish</span>
+<span>نشر التغييرات</span>
+</button>
+</div>
+</div>
+<div class="space-y-12">
+<div class="bg-white dark:bg-gray-900/50 rounded-lg shadow-md p-6">
+<h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">أقسام الواجهة الأمامية</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="border-b border-gray-200 dark:border-gray-700">
+<tr>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">القسم</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">الحالة</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">إجراءات</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200">واجهة عرض UGC المميزة</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">مفعل</span></td>
+<td class="py-4 px-4"><button class="text-primary hover:underline font-semibold text-sm">تعديل</button></td>
+</tr>
+<tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200">اللافتات الترويجية</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">مفعل</span></td>
+<td class="py-4 px-4"><button class="text-primary hover:underline font-semibold text-sm">تعديل</button></td>
+</tr>
+<tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200">شهادات العملاء</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">مفعل</span></td>
+<td class="py-4 px-4"><button class="text-primary hover:underline font-semibold text-sm">تعديل</button></td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200">قسم 'كيف تعمل المنصة'</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">مفعل</span></td>
+<td class="py-4 px-4"><button class="text-primary hover:underline font-semibold text-sm">تعديل</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-900/50 rounded-lg shadow-md p-6">
+<div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">إدارة واجهة عرض UGC المميزة</h3>
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">اسحب وأفلت لتغيير الترتيب. استخدم المرشحات للعثور على المحتوى المثالي.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-base">add</span>
+<span>إضافة محتوى</span>
+</button>
+<div class="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg">
+<button class="p-2 border-l border-gray-300 dark:border-gray-700 text-primary dark:text-primary bg-gray-100 dark:bg-gray-800"><span class="material-symbols-outlined">grid_view</span></button>
+<button class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary"><span class="material-symbols-outlined">view_list</span></button>
+</div>
+</div>
+</div>
+<div class="flex flex-col md:flex-row gap-4 mb-6">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute top-1/2 -translate-y-1/2 right-3 text-gray-400 dark:text-gray-500">search</span>
+<input class="w-full pl-4 pr-10 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200" placeholder="ابحث في المحتوى..." type="text"/>
+</div>
+<select class="w-full md:w-48 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 py-2 px-3">
+<option>الاختيار الذكي</option>
+<option>الأعلى أداءً</option>
+<option>موصى به</option>
+<option>الأعلى جودة</option>
+</select>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg shadow cursor-move p-4 flex flex-col justify-between">
+<div class="flex-grow">
+<img alt="صورة مصغرة للمحتوى" class="w-full h-32 object-cover rounded-md mb-3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABfwD0mUx8Kb3VmGXyBHH5mXHW6_XHzxx4sM8vqU0QWYX9iXU8wPPxt5ivxiKmup8h2ThheuTPL0_94QYPwFu_Nn62PfrrYzIeHPzYpcd-0bfaAhNVzkn1_dWWqPkoTQWEr_nJ9MBt4XQcK-sJ8aNBjbzkp4tW4wUlj529_DJu-6v7k0mbnByLoz9a-wAdClYwZpkKgncXiHOtaVWskdg-rMtVmwSX55iF0a3auoKTqMGEwiZUbs7T2VfS1At5utKdHBqdOf8Ky5s"/>
+<h4 class="font-bold text-gray-800 dark:text-gray-200">تجربة الطبخ المغربي</h4>
+<div class="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-base text-yellow-500">star</span>
+<span class="mr-1">4.9</span>
+<span class="mx-2">|</span>
+<span class="material-symbols-outlined text-base text-blue-500">visibility</span>
+<span class="mr-1">12.5 ألف</span>
+</div>
+</div>
+<div class="mt-4 flex justify-end space-x-2 space-x-reverse">
+<button class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg shadow cursor-move p-4 flex flex-col justify-between">
+<div class="flex-grow">
+<img alt="صورة مصغرة للمحتوى" class="w-full h-32 object-cover rounded-md mb-3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpwt3A8iRo8fx8YK0YAGwPTS707dxZ_D2g7dnaSwaO1_pXRMm_nfNrrqBvrLspiUjfm4gQFUdhNQAJdHCYQozPeFyk3yPLG9dUkaYl9g4BvVR4ZXN7y3SKgaxtvr5kKwa-n7ZzBhmnyAVZEfANTup0zo_zOVG3i-_RatnksCdVkVYEwfwJ92JVH7g-E93b8XdoXw5hXdn940mo7J67-xTzY6-NAQqcnJyAzmF7DOCz6OHqiIrRY2Mt0H8oXmTIAkrradPSgdGs4EM"/>
+<h4 class="font-bold text-gray-800 dark:text-gray-200">جولة في أسواق مراكش</h4>
+<div class="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-base text-yellow-500">star</span>
+<span class="mr-1">4.8</span>
+<span class="mx-2">|</span>
+<span class="material-symbols-outlined text-base text-blue-500">visibility</span>
+<span class="mr-1">10.2 ألف</span>
+</div>
+</div>
+<div class="mt-4 flex justify-end space-x-2 space-x-reverse">
+<button class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg shadow cursor-move p-4 flex flex-col justify-between">
+<div class="flex-grow">
+<img alt="صورة مصغرة للمحتوى" class="w-full h-32 object-cover rounded-md mb-3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVj1YxMdpPVdbOPblusJrJuSSMoXBxMmh-iZ2hp9LyFs6VTBxxSXzifUZR-OUesJA3mCq6J0PcU-Ohj1DzLr2325WTlSu2QVSI-QxrELa9fnE6JCb1xGY9ubWdGzmhllPBW921S_NL2MKbk4pwciGefRWoKydvrOPKhdQiJmymsfItzaUFVtmgmzWHfBRD2OIk6G7xVQUv0GYW__pPilShB289nMz0RmIksCRbNpLR5zAuDZXH7vvBvMxD_mWg9yyPQYSRRzMw3XI"/>
+<h4 class="font-bold text-gray-800 dark:text-gray-200">الفن المعماري في فاس</h4>
+<div class="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-base text-yellow-500">star</span>
+<span class="mr-1">4.7</span>
+<span class="mx-2">|</span>
+<span class="material-symbols-outlined text-base text-blue-500">visibility</span>
+<span class="mr-1">8.9 ألف</span>
+</div>
+</div>
+<div class="mt-4 flex justify-end space-x-2 space-x-reverse">
+<button class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><span class="material-symbols-outlined text-xl">delete</span></button>
+</div>
+</div>
+<div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl">add_photo_alternate</span>
+<p class="mt-2 text-sm font-medium">إضافة محتوى جديد</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-900/50 rounded-lg shadow-md p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">إدارة جدولة اللافتات</h3>
+<button class="flex items-center gap-2 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-base">add</span>
+<span>إضافة لافتة مجدولة</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="border-b border-gray-200 dark:border-gray-700">
+<tr>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">اللافتة</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">الحالة</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">تاريخ البدء</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">تاريخ الانتهاء</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">إجراءات</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200 font-medium">تخفيضات رمضان 20%</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">نشطة حاليًا</span></td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">2024-03-10</td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">2024-04-09</td>
+<td class="py-4 px-4 text-sm space-x-2 space-x-reverse"><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary">تعديل</button><button class="text-gray-500 dark:text-gray-400 hover:text-red-500">إلغاء</button></td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200 font-medium">عروض الصيف</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">مجدولة</span></td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">2024-06-01</td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">2024-08-31</td>
+<td class="py-4 px-4 text-sm space-x-2 space-x-reverse"><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary">تعديل</button><button class="text-gray-500 dark:text-gray-400 hover:text-red-500">إلغاء</button></td>
+</tr>
+<tr class="border-t border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200 font-medium">عرض خاص</td>
+<td class="py-4 px-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">منتهية</span></td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">2024-01-01</td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">2024-01-31</td>
+<td class="py-4 px-4 text-sm space-x-2 space-x-reverse"><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary">إعادة الجدولة</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-900/50 rounded-lg shadow-md p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">إدارة شهادات العملاء</h3>
+<button class="flex items-center gap-2 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-base">add</span>
+<span>إضافة شهادة جديدة</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="border-b border-gray-200 dark:border-gray-700">
+<tr>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">العميل</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">الشهادة</th>
+<th class="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">إجراءات</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200 font-medium">ليلى العلمي</td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-300 italic">"منصة رائعة، سهلت علي اكتشاف كنوز المغرب."</td>
+<td class="py-4 px-4 text-sm space-x-2 space-x-reverse"><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary">تعديل</button><button class="text-gray-500 dark:text-gray-400 hover:text-red-500">حذف</button><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary cursor-grab"><span class="material-symbols-outlined align-middle">drag_indicator</span></button></td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="py-4 px-4 text-gray-800 dark:text-gray-200 font-medium">أحمد بناني</td>
+<td class="py-4 px-4 text-gray-600 dark:text-gray-300 italic">"تجربة مستخدم ممتازة ودعم فني سريع."</td>
+<td class="py-4 px-4 text-sm space-x-2 space-x-reverse"><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary">تعديل</button><button class="text-gray-500 dark:text-gray-400 hover:text-red-500">حذف</button><button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary cursor-grab"><span class="material-symbols-outlined align-middle">drag_indicator</span></button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+<div class="container mx-auto px-6 py-8">
+<div class="flex flex-col md:flex-row items-center justify-between">
+<div class="text-center md:text-right mb-6 md:mb-0">
+<p class="text-sm text-gray-600 dark:text-gray-400">© 2024 UGC Maroc. جميع الحقوق محفوظة.</p>
+</div>
+<div class="flex items-center gap-6 mb-6 md:mb-0">
+<a class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary" href="#">الشروط والأحكام</a>
+<a class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary" href="#">سياسة الخصوصية</a>
+<a class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary" href="#">المساعدة والدعم</a>
+</div>
+<div class="flex justify-center gap-4">
+<a class="text-gray-500 dark:text-gray-400 hover:text-primary" href="#">
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46 6c-.8.35-1.65.58-2.5.68.9-.53 1.58-1.37 1.9-2.4-.84.5-1.78.86-2.77 1.05C18.25 4.37 17.06 4 15.75 4c-2.48 0-4.5 2.02-4.5 4.5 0 .35.04.7.12 1.03-3.74-.18-7.05-1.98-9.28-4.7C2 5.2 1.87 5.76 1.87 6.35c0 1.56.8 2.94 2 3.75-.74-.02-1.44-.23-2.05-.57v.06c0 2.18 1.55 4 3.6 4.4-.38.1-.78.15-1.18.15-.28 0-.56-.03-.83-.08.57 1.78 2.24 3.08 4.22 3.12-1.54 1.2-3.48 1.92-5.58 1.92-.36 0-.72-.02-1.07-.06 2 1.28 4.38 2.03 6.94 2.03 8.32 0 12.88-6.9 12.88-12.88 0-.2 0-.4-.02-.6.9-.63 1.67-1.42 2.28-2.36z"></path></svg>
+</a>
+<a class="text-gray-500 dark:text-gray-400 hover:text-primary" href="#">
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 13.5H14v-4c0-.75-.6-1.35-1.35-1.35H11V8.5h1.65c1.52 0 2.75 1.23 2.75 2.75v5.25zM9 15.5H7.5V8.5H9v7z" fill-rule="evenodd"></path></svg>
+</a>
+<a class="text-gray-500 dark:text-gray-400 hover:text-primary" href="#">
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.1 7.4c-.1-.1-.3-.2-.5-.2h-1.4c-.4 0-.7.3-.7.7v1.1h2.1c-.1 1-.2 1.7-.3 2.1h-1.8v5.7h-2.3v-5.7H9.2v-2.1h1.1V9.4c0-1.1.7-2 2-2h1.4c.3 0 .5.1.7.3l.2.2v1.5z" fill-rule="evenodd"></path></svg>
+</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+
+<!-- Scripts Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts UGC Maroc -->
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard-admin.js"></script>
+
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body></html>

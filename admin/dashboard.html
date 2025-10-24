@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - UGC Maroc</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .metric-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .metric-card.green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .metric-card.orange {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 right-0 w-64 sidebar text-white transform transition-transform duration-300 ease-in-out" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-white/20">
+            <h1 class="text-xl font-bold">Admin Dashboard</h1>
+            <button class="text-white hover:text-gray-300" onclick="toggleSidebar()">
+                <span class="material-icons">menu</span>
+            </button>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="#dashboard" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">dashboard</span>
+                Dashboard
+            </a>
+            <a href="#users" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">people</span>
+                Users
+            </a>
+            <a href="#financial" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">account_balance</span>
+                Financial
+            </a>
+            <a href="#content" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">content_copy</span>
+                Content
+            </a>
+            <a href="#reviews" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">star</span>
+                Reviews
+            </a>
+            <a href="#alerts" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">notifications</span>
+                Alerts
+            </a>
+            <a href="#settings" class="flex items-center px-6 py-3 text-white hover:bg-white/10 transition-colors">
+                <span class="material-icons mr-3">settings</span>
+                Settings
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="mr-64 transition-all duration-300 ease-in-out" id="main-content">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-6">
+                <div class="flex items-center">
+                    <button class="text-gray-600 hover:text-gray-900 mr-4" onclick="toggleSidebar()">
+                        <span class="material-icons">menu</span>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-900">Dashboard Admin</h2>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Period Selector -->
+                    <select id="period-selector" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="7d">Last 7 days</option>
+                        <option value="30d" selected>Last 30 days</option>
+                        <option value="90d">Last 90 days</option>
+                        <option value="1y">Last year</option>
+                    </select>
+                    
+                    <!-- Refresh Button -->
+                    <button onclick="refreshDashboard()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        <span class="material-icons mr-2">refresh</span>
+                        Refresh
+                    </button>
+                    
+                    <!-- User Info -->
+                    <div class="flex items-center">
+                        <img src="https://via.placeholder.com/40" alt="Admin" class="w-10 h-10 rounded-full">
+                        <span class="mr-2 text-gray-700">Admin User</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-6">
+            <!-- Alerts Section -->
+            <div id="alerts-section" class="mb-6">
+                <!-- Alerts will be loaded here -->
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Revenue Card -->
+                <div class="metric-card blue rounded-xl p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white/80 text-sm">Total Revenue</p>
+                            <p class="text-3xl font-bold" id="total-revenue">0 MAD</p>
+                            <p class="text-white/80 text-sm" id="revenue-change">+0% from last period</p>
+                        </div>
+                        <span class="material-icons text-4xl text-white/60">account_balance</span>
+                    </div>
+                </div>
+
+                <!-- Users Card -->
+                <div class="metric-card green rounded-xl p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white/80 text-sm">Total Users</p>
+                            <p class="text-3xl font-bold" id="total-users">0</p>
+                            <p class="text-white/80 text-sm" id="users-change">+0 new this period</p>
+                        </div>
+                        <span class="material-icons text-4xl text-white/60">people</span>
+                    </div>
+                </div>
+
+                <!-- Orders Card -->
+                <div class="metric-card orange rounded-xl p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white/80 text-sm">Orders</p>
+                            <p class="text-3xl font-bold" id="total-orders">0</p>
+                            <p class="text-white/80 text-sm" id="orders-change">+0 this period</p>
+                        </div>
+                        <span class="material-icons text-4xl text-white/60">shopping_cart</span>
+                    </div>
+                </div>
+
+                <!-- Reviews Card -->
+                <div class="metric-card rounded-xl p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white/80 text-sm">Avg Rating</p>
+                            <p class="text-3xl font-bold" id="avg-rating">0.0</p>
+                            <p class="text-white/80 text-sm" id="rating-change">+0 new reviews</p>
+                        </div>
+                        <span class="material-icons text-4xl text-white/60">star</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Revenue Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="revenue-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Users Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">User Growth</h3>
+                    <div class="chart-container">
+                        <canvas id="users-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Top Creators -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Creators</h3>
+                    <div id="top-creators">
+                        <!-- Top creators will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Top Brands -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Brands</h3>
+                    <div id="top-brands">
+                        <!-- Top brands will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Top Gigs -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Gigs</h3>
+                    <div id="top-gigs">
+                        <!-- Top gigs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                <div id="recent-activity">
+                    <!-- Recent activity will be loaded here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Global variables
+        let revenueChart, usersChart;
+        let currentPeriod = '30d';
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadDashboard();
+            setupEventListeners();
+        });
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const user = await window.auth.getCurrentUser();
+                if (!user) {
+                    window.location.href = '/auth/admin-login.html';
+                    return;
+                }
+                
+                const userRole = localStorage.getItem('user_role');
+                if (userRole !== 'admin') {
+                    alert('Access denied. Admin privileges required.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = '/auth/admin-login.html';
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('period-selector').addEventListener('change', function() {
+                currentPeriod = this.value;
+                loadDashboard();
+            });
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                showLoading();
+                
+                // Load all dashboard data
+                const [dashboardData, alertsData, topPerformersData] = await Promise.all([
+                    fetchDashboardMetrics(),
+                    fetchAlerts(),
+                    fetchTopPerformers()
+                ]);
+
+                // Update UI
+                updateMetrics(dashboardData);
+                updateAlerts(alertsData);
+                updateTopPerformers(topPerformersData);
+                updateCharts(dashboardData);
+
+                hideLoading();
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                showError('Failed to load dashboard data');
+            }
+        }
+
+        // Fetch dashboard metrics
+        async function fetchDashboardMetrics() {
+            const response = await fetch(`/api/admin/dashboard?period=${currentPeriod}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch dashboard metrics');
+            }
+            
+            return await response.json();
+        }
+
+        // Fetch alerts
+        async function fetchAlerts() {
+            const response = await fetch('/api/admin/alerts', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch alerts');
+            }
+            
+            return await response.json();
+        }
+
+        // Fetch top performers
+        async function fetchTopPerformers() {
+            const response = await fetch('/api/admin/top-performers?limit=5', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch top performers');
+            }
+            
+            return await response.json();
+        }
+
+        // Update metrics cards
+        function updateMetrics(data) {
+            if (!data.success) return;
+
+            const { financial, users, content, performance } = data.dashboard;
+
+            // Revenue
+            document.getElementById('total-revenue').textContent = `${financial.totalRevenue.toLocaleString()} MAD`;
+            document.getElementById('revenue-change').textContent = `+${financial.profitMargin}% profit margin`;
+
+            // Users
+            document.getElementById('total-users').textContent = users.totalUsers.total.toLocaleString();
+            document.getElementById('users-change').textContent = `+${users.newUsers.total} new this period`;
+
+            // Orders
+            document.getElementById('total-orders').textContent = content.orders.new.toLocaleString();
+            document.getElementById('orders-change').textContent = `${content.orders.completionRate}% completion rate`;
+
+            // Reviews
+            document.getElementById('avg-rating').textContent = content.reviews.averageRating;
+            document.getElementById('rating-change').textContent = `+${content.reviews.new} new reviews`;
+        }
+
+        // Update alerts
+        function updateAlerts(data) {
+            if (!data.success || !data.alerts.length) {
+                document.getElementById('alerts-section').innerHTML = '';
+                return;
+            }
+
+            const alertsHtml = data.alerts.map(alert => `
+                <div class="alert-${alert.type} rounded-lg p-4 mb-4 border-l-4 border-${alert.type === 'danger' ? 'red' : alert.type === 'warning' ? 'yellow' : 'blue'}-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${alert.title}</h4>
+                            <p class="text-gray-700">${alert.message}</p>
+                        </div>
+                        <button onclick="handleAlert('${alert.action}')" class="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                            ${alert.type === 'danger' ? 'Review' : 'View'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('alerts-section').innerHTML = alertsHtml;
+        }
+
+        // Update top performers
+        function updateTopPerformers(data) {
+            if (!data.success) return;
+
+            const { topCreators, topBrands, topGigs } = data.performers;
+
+            // Top Creators
+            const creatorsHtml = topCreators.map((creator, index) => `
+                <div class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">${creator.full_name || 'Unknown'}</p>
+                            <p class="text-sm text-gray-500">Creator</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-semibold text-green-600">${creator.creator_earnings?.amount || 0} MAD</span>
+                </div>
+            `).join('');
+
+            document.getElementById('top-creators').innerHTML = creatorsHtml || '<p class="text-gray-500">No data available</p>';
+
+            // Top Brands
+            const brandsHtml = topBrands.map((brand, index) => `
+                <div class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">${brand.full_name || 'Unknown'}</p>
+                            <p class="text-sm text-gray-500">Brand</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-semibold text-blue-600">${brand.brand_spending?.amount || 0} MAD</span>
+                </div>
+            `).join('');
+
+            document.getElementById('top-brands').innerHTML = brandsHtml || '<p class="text-gray-500">No data available</p>';
+
+            // Top Gigs
+            const gigsHtml = topGigs.map((gig, index) => `
+                <div class="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">${gig.title || 'Unknown'}</p>
+                            <p class="text-sm text-gray-500">${gig.base_price} MAD</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-semibold text-purple-600">${gig.orders?.length || 0} orders</span>
+                </div>
+            `).join('');
+
+            document.getElementById('top-gigs').innerHTML = gigsHtml || '<p class="text-gray-500">No data available</p>';
+        }
+
+        // Update charts
+        function updateCharts(data) {
+            // Revenue Chart
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+            
+            const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+            revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: data.dashboard?.financial?.chartData?.map(item => item.date) || [],
+                    datasets: [{
+                        label: 'Revenue (MAD)',
+                        data: data.dashboard?.financial?.chartData?.map(item => item.revenue) || [],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Users Chart
+            if (usersChart) {
+                usersChart.destroy();
+            }
+            
+            const usersCtx = document.getElementById('users-chart').getContext('2d');
+            usersChart = new Chart(usersCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Creators', 'Brands', 'Total'],
+                    datasets: [{
+                        label: 'Users',
+                        data: [
+                            data.dashboard?.users?.totalUsers?.creators || 0,
+                            data.dashboard?.users?.totalUsers?.brands || 0,
+                            data.dashboard?.users?.totalUsers?.total || 0
+                        ],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            mainContent.classList.toggle('mr-64');
+        }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            loadDashboard();
+        }
+
+        // Handle alert actions
+        function handleAlert(action) {
+            console.log('Handling alert action:', action);
+            // TODO: Implement alert actions
+        }
+
+        // Show loading
+        function showLoading() {
+            // TODO: Implement loading state
+        }
+
+        // Hide loading
+        function hideLoading() {
+            // TODO: Hide loading state
+        }
+
+        // Show error
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+    </script>
+</body>
+</html>

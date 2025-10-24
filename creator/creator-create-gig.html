@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إنشاء خدمة جديدة - UGC Maroc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5b13ec',
+            secondary: '#7c3aed'
+          },
+          fontFamily: {
+            'cairo': ['Cairo', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    
+    .step-indicator {
+      background: linear-gradient(135deg, #5b13ec 0%, #7c3aed 100%);
+    }
+    
+    .drag-drop-zone {
+      border: 2px dashed #d1d5db;
+      transition: all 0.3s ease;
+    }
+    
+    .drag-drop-zone.drag-over {
+      border-color: #5b13ec;
+      background-color: #ede9fe;
+    }
+    
+    .gig-option {
+      background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+    }
+    
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      z-index: 50;
+    }
+    
+    .touch-button {
+      padding: 12px 16px;
+      font-size: 16px;
+      min-height: 48px;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .wizard-content {
+        padding: 1rem;
+      }
+      
+      .step-indicator {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+    
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-purple-600 via-violet-600 to-purple-700 p-6 text-white">
+        <h1 class="text-3xl font-bold">🎯 إنشاء خدمة جديدة</h1>
+        <p class="text-purple-100 mt-2">أنشئ خدمة احترافية وابدأ في جذب العملاء</p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="p-6 border-b">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 flex-1">
+            <div class="step-indicator active flex items-center justify-center w-12 h-12 rounded-full text-white font-bold">1</div>
+            <div class="h-1 bg-gray-300 flex-1 rounded"></div>
+          </div>
+          <div class="flex items-center gap-3 flex-1">
+            <div class="step-indicator flex items-center justify-center w-12 h-12 rounded-full bg-gray-300 text-white font-bold">2</div>
+            <div class="h-1 bg-gray-300 flex-1 rounded"></div>
+          </div>
+          <div class="flex items-center gap-3 flex-1">
+            <div class="step-indicator flex items-center justify-center w-12 h-12 rounded-full bg-gray-300 text-white font-bold">3</div>
+            <div class="h-1 bg-gray-300 flex-1 rounded"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="step-indicator flex items-center justify-center w-12 h-12 rounded-full bg-gray-300 text-white font-bold">4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wizard Content -->
+      <div id="wizard-container" class="wizard-content p-6">
+        <!-- Step 1: Basic Info -->
+        <div id="step-1" class="step-content">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 المعلومات الأساسية</h2>
+          
+          <div class="space-y-6">
+            <!-- Title -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">عنوان الخدمة *</label>
+              <input type="text" id="gigTitle" placeholder="مثال: سأنشئ فيديو UGC احترافي لعلامتك التجارية" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">وصف الخدمة *</label>
+              <textarea id="gigDescription" rows="4" placeholder="اشرح بالتفصيل ما ستحصل عليه من هذه الخدمة..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+            </div>
+
+            <!-- Category -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">الفئة *</label>
+              <select id="gigCategory" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <option value="">اختر الفئة</option>
+                <option value="beauty">الجمال والعناية</option>
+                <option value="fashion">الموضة والأزياء</option>
+                <option value="tech">التكنولوجيا</option>
+                <option value="food">الطعام والمشروبات</option>
+                <option value="lifestyle">نمط الحياة</option>
+                <option value="business">الأعمال</option>
+                <option value="education">التعليم</option>
+                <option value="entertainment">الترفيه</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Pricing & Delivery -->
+        <div id="step-2" class="step-content hidden">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">💰 التسعير والتسليم</h2>
+          
+          <div class="space-y-6">
+            <!-- Base Price -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">السعر الأساسي (MAD) *</label>
+              <div class="relative">
+                <input type="number" id="gigPrice" min="50" max="10000" placeholder="500" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <span class="absolute left-3 top-3 text-gray-500">MAD</span>
+              </div>
+              <p class="text-sm text-gray-500 mt-1">الحد الأدنى: 50 MAD - الحد الأقصى: 10,000 MAD</p>
+            </div>
+
+            <!-- Delivery Days -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">مدة التسليم *</label>
+              <select id="gigDeliveryDays" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <option value="">اختر المدة</option>
+                <option value="1">1 يوم</option>
+                <option value="2">2 أيام</option>
+                <option value="3">3 أيام</option>
+                <option value="5">5 أيام</option>
+                <option value="7">أسبوع</option>
+                <option value="14">أسبوعين</option>
+                <option value="30">شهر</option>
+              </select>
+            </div>
+
+            <!-- Languages -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">اللغات</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center">
+                  <input type="checkbox" value="arabic" class="gig-language mr-2">
+                  <span>العربية</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="french" class="gig-language mr-2">
+                  <span>الفرنسية</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="darija" class="gig-language mr-2">
+                  <span>الدارجة</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="english" class="gig-language mr-2">
+                  <span>الإنجليزية</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Platforms -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">المنصات</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center">
+                  <input type="checkbox" value="instagram" class="gig-platform mr-2">
+                  <span>Instagram</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="tiktok" class="gig-platform mr-2">
+                  <span>TikTok</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="youtube" class="gig-platform mr-2">
+                  <span>YouTube</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="facebook" class="gig-platform mr-2">
+                  <span>Facebook</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Content Types -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">نوع المحتوى</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center">
+                  <input type="checkbox" value="video" class="gig-content-type mr-2">
+                  <span>فيديو</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="photo" class="gig-content-type mr-2">
+                  <span>صورة</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="story" class="gig-content-type mr-2">
+                  <span>ستوري</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" value="reel" class="gig-content-type mr-2">
+                  <span>ريل</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Portfolio -->
+        <div id="step-3" class="step-content hidden">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">🎨 معرض الأعمال</h2>
+          
+          <div class="space-y-6">
+            <!-- Portfolio Upload -->
+            <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                          أمثلة من أعمالك (3-5 أمثلة) 
+                          <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">موصى به</span>
+                        </label>
+                        <p class="text-sm text-gray-600 mb-2">💡 إضافة أمثلة من أعمالك يزيد من فرص قبولك بنسبة 70%</p>
+              <div id="portfolio-upload" class="drag-drop-zone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <div class="space-y-4">
+                  <div class="text-4xl">📁</div>
+                  <div>
+                    <p class="text-lg font-medium text-gray-700">اسحب الملفات هنا أو انقر للرفع</p>
+                    <p class="text-sm text-gray-500">PNG, JPG, MP4 حتى 10MB</p>
+                  </div>
+                  <button type="button" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-purple-700 transition">
+                    اختيار الملفات
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Portfolio Preview -->
+              <div id="portfolio-preview" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 hidden">
+                <!-- Portfolio items will be added here -->
+              </div>
+            </div>
+
+            <!-- Gig Options -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">خيارات إضافية (اختياري)</label>
+              <div id="gig-options" class="space-y-4">
+                <!-- Options will be added dynamically -->
+              </div>
+              <button type="button" id="add-option" class="mt-4 px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition">
+                + إضافة خيار
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Review & Publish -->
+        <div id="step-4" class="step-content hidden">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">📋 مراجعة النشر</h2>
+          
+          <div class="space-y-6">
+            <!-- Gig Summary -->
+            <div class="bg-gray-50 rounded-lg p-6">
+              <h3 class="text-lg font-semibold mb-4">ملخص الخدمة</h3>
+              <div id="gig-summary" class="space-y-3">
+                <!-- Summary will be populated here -->
+              </div>
+            </div>
+
+            <!-- Terms -->
+            <div>
+              <label class="flex items-start">
+                <input type="checkbox" id="acceptTerms" class="mt-1 mr-3">
+                <span class="text-sm text-gray-700">
+                  أوافق على <a href="#" class="text-primary hover:underline">شروط الاستخدام</a> 
+                  و <a href="#" class="text-primary hover:underline">سياسة الخصوصية</a>
+                </span>
+              </label>
+            </div>
+
+            <!-- Publish Button -->
+            <div class="flex gap-4">
+              <button id="publishGig" class="flex-1 bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-violet-700 transition shadow-lg">
+                🚀 نشر الخدمة
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="flex justify-between items-center p-6 border-t">
+        <button id="prevBtn" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition hidden">
+          ← السابق
+        </button>
+        <button id="nextBtn" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-bold transition shadow-lg">
+          التالي →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav lg:hidden">
+    <div class="flex justify-around py-2">
+      <a href="/creator/ugc-creator-dashboard.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">🏠</span>
+        <span class="text-xs">الرئيسية</span>
+      </a>
+      <a href="/creator/creator-create-gig.html" class="flex flex-col items-center py-2 px-3 text-primary">
+        <span class="text-xl">➕</span>
+        <span class="text-xs">إنشاء خدمة</span>
+      </a>
+      <a href="/creator/creator-my-gigs.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">📋</span>
+        <span class="text-xs">خدماتي</span>
+      </a>
+      <a href="/creator/profile.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">👤</span>
+        <span class="text-xs">الملف الشخصي</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/api.js"></script>
+  
+  <script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    let gigData = {};
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      renderStep();
+      setupEventListeners();
+      loadSavedDraft();
+    });
+
+    function renderStep() {
+      // Hide all steps
+      document.querySelectorAll('.step-content').forEach(step => {
+        step.classList.add('hidden');
+      });
+
+      // Show current step
+      document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+
+      // Update progress indicators
+      document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+        if (index + 1 <= currentStep) {
+          indicator.classList.add('step-indicator', 'active');
+          indicator.classList.remove('bg-gray-300');
+        } else {
+          indicator.classList.remove('step-indicator', 'active');
+          indicator.classList.add('bg-gray-300');
+        }
+      });
+
+      // Update navigation buttons
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      prevBtn.classList.toggle('hidden', currentStep === 1);
+
+      if (currentStep === totalSteps) {
+        nextBtn.textContent = '🚀 نشر الخدمة';
+        nextBtn.id = 'publishGig';
+      } else {
+        nextBtn.textContent = 'التالي →';
+        nextBtn.id = 'nextBtn';
+      }
+    }
+
+    function setupEventListeners() {
+      // Navigation buttons
+      document.getElementById('nextBtn')?.addEventListener('click', nextStep);
+      document.getElementById('prevBtn')?.addEventListener('click', prevStep);
+      document.getElementById('publishGig')?.addEventListener('click', publishGig);
+
+      // Portfolio upload
+      setupPortfolioUpload();
+
+      // Add option button
+      document.getElementById('add-option')?.addEventListener('click', addGigOption);
+
+      // Auto-save every 30 seconds
+      setInterval(saveDraft, 30000);
+    }
+
+    function nextStep() {
+      if (validateCurrentStep()) {
+        collectStepData();
+        if (currentStep < totalSteps) {
+          currentStep++;
+          renderStep();
+        }
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        renderStep();
+      }
+    }
+
+    function validateCurrentStep() {
+      switch (currentStep) {
+        case 1:
+          const title = document.getElementById('gigTitle').value;
+          const description = document.getElementById('gigDescription').value;
+          const category = document.getElementById('gigCategory').value;
+          
+          if (!title || !description || !category) {
+            alert('الرجاء ملء جميع الحقول المطلوبة');
+            return false;
+          }
+          break;
+          
+        case 2:
+          const price = document.getElementById('gigPrice').value;
+          const deliveryDays = document.getElementById('gigDeliveryDays').value;
+          
+          if (!price || !deliveryDays) {
+            alert('الرجاء تحديد السعر ومدة التسليم');
+            return false;
+          }
+          break;
+          
+        case 3:
+          const portfolioItems = document.querySelectorAll('#portfolio-preview .portfolio-item');
+          if (portfolioItems.length === 0) {
+            const confirm = window.confirm('⚠️ لم تضف أمثلة من أعمالك. هذا يقلل من فرص قبولك.\n\nهل تريد المتابعة بدون أمثلة؟');
+            if (!confirm) return false;
+          }
+          break;
+      }
+      return true;
+    }
+
+    function collectStepData() {
+      switch (currentStep) {
+        case 1:
+          gigData.title = document.getElementById('gigTitle').value;
+          gigData.description = document.getElementById('gigDescription').value;
+          gigData.category = document.getElementById('gigCategory').value;
+          break;
+          
+        case 2:
+          gigData.base_price = parseFloat(document.getElementById('gigPrice').value);
+          gigData.delivery_days = parseInt(document.getElementById('gigDeliveryDays').value);
+          gigData.languages = Array.from(document.querySelectorAll('.gig-language:checked')).map(cb => cb.value);
+          gigData.platforms = Array.from(document.querySelectorAll('.gig-platform:checked')).map(cb => cb.value);
+          gigData.content_types = Array.from(document.querySelectorAll('.gig-content-type:checked')).map(cb => cb.value);
+          break;
+          
+        case 3:
+          gigData.portfolio_urls = Array.from(document.querySelectorAll('#portfolio-preview .portfolio-item')).map(item => item.dataset.url);
+          gigData.options = collectGigOptions();
+          break;
+      }
+    }
+
+    function setupPortfolioUpload() {
+      const uploadZone = document.getElementById('portfolio-upload');
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.multiple = true;
+      fileInput.accept = 'image/*,video/*';
+      fileInput.style.display = 'none';
+
+      uploadZone.addEventListener('click', () => fileInput.click());
+      uploadZone.addEventListener('dragover', handleDragOver);
+      uploadZone.addEventListener('dragleave', handleDragLeave);
+      uploadZone.addEventListener('drop', handleDrop);
+      fileInput.addEventListener('change', handleFileSelect);
+
+      document.body.appendChild(fileInput);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      handleFiles(files);
+    }
+
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files);
+      handleFiles(files);
+    }
+
+    function handleFiles(files) {
+      const preview = document.getElementById('portfolio-preview');
+      preview.classList.remove('hidden');
+
+      files.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`الملف ${file.name} كبير جداً. الحد الأقصى 10MB`);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const portfolioItem = document.createElement('div');
+          portfolioItem.className = 'portfolio-item relative';
+          portfolioItem.dataset.url = e.target.result;
+          
+          if (file.type.startsWith('video/')) {
+            portfolioItem.innerHTML = `
+              <video src="${e.target.result}" class="w-full h-32 object-cover rounded-lg"></video>
+              <button class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">×</button>
+            `;
+          } else {
+            portfolioItem.innerHTML = `
+              <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+              <button class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">×</button>
+            `;
+          }
+
+          // Remove button
+          portfolioItem.querySelector('button').addEventListener('click', () => {
+            portfolioItem.remove();
+          });
+
+          preview.appendChild(portfolioItem);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function addGigOption() {
+      const optionsContainer = document.getElementById('gig-options');
+      const optionDiv = document.createElement('div');
+      optionDiv.className = 'gig-option p-4 rounded-lg';
+      optionDiv.innerHTML = `
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <input type="text" placeholder="اسم الخيار" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+          </div>
+          <div class="w-24">
+            <input type="number" placeholder="السعر" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+          </div>
+          <button type="button" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">حذف</button>
+        </div>
+      `;
+
+      optionDiv.querySelector('button').addEventListener('click', () => {
+        optionDiv.remove();
+      });
+
+      optionsContainer.appendChild(optionDiv);
+    }
+
+    function collectGigOptions() {
+      const options = [];
+      document.querySelectorAll('#gig-options .gig-option').forEach(option => {
+        const inputs = option.querySelectorAll('input');
+        if (inputs[0].value && inputs[1].value) {
+          options.push({
+            name: inputs[0].value,
+            price: parseFloat(inputs[1].value),
+            description: ''
+          });
+        }
+      });
+      return options;
+    }
+
+    function saveDraft() {
+      if (gigData.title || gigData.description) {
+        localStorage.setItem('gigDraft', JSON.stringify(gigData));
+      }
+    }
+
+    function loadSavedDraft() {
+      const savedDraft = localStorage.getItem('gigDraft');
+      if (savedDraft) {
+        try {
+          const draft = JSON.parse(savedDraft);
+          Object.assign(gigData, draft);
+          
+          // Populate form fields
+          if (gigData.title) document.getElementById('gigTitle').value = gigData.title;
+          if (gigData.description) document.getElementById('gigDescription').value = gigData.description;
+          if (gigData.category) document.getElementById('gigCategory').value = gigData.category;
+          if (gigData.base_price) document.getElementById('gigPrice').value = gigData.base_price;
+          if (gigData.delivery_days) document.getElementById('gigDeliveryDays').value = gigData.delivery_days;
+          
+          console.log('تم تحميل المسودة المحفوظة');
+        } catch (error) {
+          console.error('خطأ في تحميل المسودة:', error);
+        }
+      }
+    }
+
+    async function publishGig() {
+      if (!document.getElementById('acceptTerms').checked) {
+        alert('الرجاء الموافقة على الشروط والأحكام');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${window.API_URL}/api/gigs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session?.access_token}`
+          },
+          body: JSON.stringify(gigData)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          localStorage.removeItem('gigDraft');
+          alert('تم نشر الخدمة بنجاح!');
+          window.location.href = '/creator/creator-my-gigs.html';
+        } else {
+          const error = await response.json();
+          alert(`خطأ: ${error.error}`);
+        }
+      } catch (error) {
+        console.error('Error publishing gig:', error);
+        alert('حدث خطأ أثناء نشر الخدمة');
+      }
+    }
+
+    // Save before leaving
+    window.addEventListener('beforeunload', saveDraft);
+  </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>

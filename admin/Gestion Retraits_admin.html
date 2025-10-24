@@ -1,989 +1,0 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>UGC Maroc Admin - إدارة التحويلات المتقدمة</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: '#7C3AED',
-            'background-dark': '#0D0D1A',
-            'card-dark': '#1A1A2E',
-          },
-        },
-      },
-    };
-  </script>
-<style>
-    body { font-family: 'Tajawal', sans-serif; }
-    .glow-card { box-shadow: 0 0 15px rgba(124, 58, 237, 0.2); transition: all 0.3s ease; }
-    .glow-card:hover { box-shadow: 0 0 25px rgba(124, 58, 237, 0.4); }
-    .modal-backdrop { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
-    .modal-content { animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .toast { animation: slideInRight 0.3s ease; }
-    @keyframes slideInRight { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
-    .status-pending { background: rgba(234, 179, 8, 0.2); color: #fbbf24; }
-    .status-validated { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-    .status-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-    .risk-low { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-    .risk-medium { background: rgba(234, 179, 8, 0.2); color: #fbbf24; }
-    .risk-high { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-    .priority-high { border-left: 4px solid #ef4444; }
-    .priority-medium { border-left: 4px solid #f59e0b; }
-    .priority-low { border-left: 4px solid #10b981; }
-    .pulse-animation { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-  </style>
-</head>
-<body class="bg-background-dark text-gray-200">
-<script>document.documentElement.classList.add('dark');</script>
-
-<div class="flex h-screen">
-<!-- SIDEBAR -->
-<aside class="w-64 bg-card-dark p-6 hidden lg:flex flex-col justify-between border-l border-primary/20">
-<div>
-<div class="flex items-center justify-between mb-10">
-<h1 class="text-2xl font-bold text-white">UGC Maroc</h1>
-<span class="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold">ADMIN</span>
-</div>
-<nav class="space-y-2">
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-700" href="#">
-<span class="material-icons">dashboard</span>
-<span class="mr-4">لوحة التحكم</span>
-</a>
-<a class="flex items-center p-3 rounded-lg bg-primary/20 text-primary font-bold" href="#">
-<span class="material-icons">account_balance</span>
-<span class="mr-4">التحويلات</span>
-<span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full mr-auto pulse-animation">24</span>
-</a>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-700" href="#">
-<span class="material-icons">campaign</span>
-<span class="mr-4">الحملات</span>
-</a>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-700" href="#">
-<span class="material-icons">people</span>
-<span class="mr-4">المستخدمون</span>
-</a>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-700" href="#">
-<span class="material-icons">analytics</span>
-<span class="mr-4">التقارير</span>
-</a>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-700" href="#">
-<span class="material-icons">security</span>
-<span class="mr-4">الأمن</span>
-</a>
-</nav>
-</div>
-<div>
-<div class="bg-yellow-500/20 border border-yellow-500/30 p-3 rounded-lg mb-3">
-<p class="text-xs text-yellow-400 font-semibold">⚠️ 5 معاملات عالية المخاطر</p>
-</div>
-<button onclick="toggleFreezeMode()" id="freezeBtn" class="w-full flex items-center justify-center p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition font-bold">
-<span class="material-icons ml-2">block</span>
-وضع التجميد
-</button>
-<a class="flex items-center p-3 rounded-lg hover:bg-gray-700 mt-2" href="#">
-<span class="material-icons">logout</span>
-<span class="mr-4">تسجيل الخروج</span>
-</a>
-</div>
-</aside>
-
-<!-- MAIN CONTENT -->
-<main class="flex-1 overflow-y-auto">
-<!-- TOP STATS DASHBOARD -->
-<div class="bg-gradient-to-r from-primary/20 to-blue-500/20 p-6 border-b border-primary/30">
-<div class="max-w-7xl mx-auto">
-<div class="flex items-center justify-between mb-6">
-<div>
-<h1 class="text-3xl font-bold text-white mb-1">إدارة التحويلات المتقدمة</h1>
-<p class="text-gray-300">لوحة تحكم شاملة لإدارة العمليات المالية</p>
-</div>
-<div class="flex items-center space-x-3 space-x-reverse">
-<button onclick="exportReport()" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition flex items-center">
-<span class="material-icons ml-2 text-sm">file_download</span>
-تصدير تقرير
-</button>
-<button onclick="openBulkAction()" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition flex items-center">
-<span class="material-icons ml-2 text-sm">done_all</span>
-معالجة جماعية
-</button>
-</div>
-</div>
-
-<!-- REAL-TIME STATS -->
-<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-<div class="bg-card-dark p-4 rounded-lg border border-yellow-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-yellow-400">pending</span>
-<span class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full font-bold">24</span>
-</div>
-<p class="text-2xl font-bold text-white">قيد الانتظار</p>
-<p class="text-xs text-gray-400">مجموع: 145,000 د.م</p>
-</div>
-<div class="bg-card-dark p-4 rounded-lg border border-green-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-green-400">check_circle</span>
-<span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-bold">18</span>
-</div>
-<p class="text-2xl font-bold text-white">اليوم</p>
-<p class="text-xs text-gray-400">معالج: 89,500 د.م</p>
-</div>
-<div class="bg-card-dark p-4 rounded-lg border border-red-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-red-400">warning</span>
-<span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full font-bold">5</span>
-</div>
-<p class="text-2xl font-bold text-white">عالي المخاطر</p>
-<p class="text-xs text-gray-400">يتطلب مراجعة</p>
-</div>
-<div class="bg-card-dark p-4 rounded-lg border border-blue-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-blue-400">schedule</span>
-</div>
-<p class="text-2xl font-bold text-white">4.2 دقيقة</p>
-<p class="text-xs text-gray-400">متوسط المعالجة</p>
-</div>
-<div class="bg-card-dark p-4 rounded-lg border border-purple-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-purple-400">percent</span>
-</div>
-<p class="text-2xl font-bold text-white">94.5%</p>
-<p class="text-xs text-gray-400">معدل القبول</p>
-</div>
-<div class="bg-card-dark p-4 rounded-lg border border-orange-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-orange-400">attach_money</span>
-</div>
-<p class="text-2xl font-bold text-white">12,450 د.م</p>
-<p class="text-xs text-gray-400">عمولات اليوم</p>
-</div>
-</div>
-</div>
-</div>
-
-<!-- AI ASSISTANT & ALERTS -->
-<div class="p-6 max-w-7xl mx-auto">
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-<div class="lg:col-span-2 bg-card-dark p-4 rounded-lg border border-primary/20 glow-card">
-<div class="flex items-start">
-<span class="material-icons text-3xl text-primary mr-3">psychology</span>
-<div class="flex-1">
-<h3 class="font-bold text-white mb-1">مساعد الذكاء الاصطناعي</h3>
-<p class="text-sm text-gray-300 mb-3">🤖 اكتشفت 3 معاملات مشبوهة بناءً على أنماط السلوك. المستخدم #2847 قام بـ 5 محاولات سحب في ساعة واحدة.</p>
-<div class="flex gap-2">
-<button class="bg-primary/20 text-primary px-3 py-1 rounded-lg hover:bg-primary/30 transition text-sm font-semibold">عرض التفاصيل</button>
-<button class="bg-gray-700 text-gray-300 px-3 py-1 rounded-lg hover:bg-gray-600 transition text-sm">تجاهل</button>
-</div>
-</div>
-</div>
-</div>
-<div class="bg-card-dark p-4 rounded-lg border border-green-500/30">
-<div class="flex items-center justify-between mb-2">
-<span class="material-icons text-green-400">account_balance</span>
-<span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">متاح</span>
-</div>
-<p class="text-sm text-gray-400 mb-1">رصيد الخزينة</p>
-<p class="text-2xl font-bold text-white">248,750 د.م</p>
-<p class="text-xs text-gray-400 mt-2">القدرة على معالجة 24 عملية</p>
-</div>
-</div>
-
-<!-- ADVANCED FILTERS -->
-<div class="bg-card-dark p-4 rounded-lg mb-6 glow-card">
-<div class="flex items-center justify-between mb-4">
-<h3 class="font-bold text-white flex items-center">
-<span class="material-icons text-primary ml-2">filter_list</span>
-فلاتر متقدمة
-</h3>
-<button onclick="resetFilters()" class="text-sm text-gray-400 hover:text-white transition">إعادة تعيين</button>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-<input type="text" id="searchInput" placeholder="🔍 بحث..." class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary" onkeyup="filterTable()"/>
-<select id="typeFilter" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary" onchange="filterTable()">
-<option value="">النوع: الكل</option>
-<option value="deposit">إيداع</option>
-<option value="withdrawal">سحب</option>
-</select>
-<select id="statusFilter" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary" onchange="filterTable()">
-<option value="">الحالة: الكل</option>
-<option value="pending">قيد الانتظار</option>
-<option value="validated">مصادق</option>
-<option value="rejected">مرفوض</option>
-</select>
-<select id="riskFilter" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary" onchange="filterTable()">
-<option value="">المخاطر: الكل</option>
-<option value="low">منخفض</option>
-<option value="medium">متوسط</option>
-<option value="high">عالي</option>
-</select>
-<select id="priorityFilter" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary" onchange="filterTable()">
-<option value="">الأولوية: الكل</option>
-<option value="high">عالية</option>
-<option value="medium">متوسطة</option>
-<option value="low">منخفضة</option>
-</select>
-</div>
-<div class="flex items-center gap-3 mt-3">
-<label class="flex items-center text-sm text-gray-300">
-<input type="checkbox" id="vipOnly" class="ml-2" onchange="filterTable()"/>
-VIP فقط
-</label>
-<label class="flex items-center text-sm text-gray-300">
-<input type="checkbox" id="newUsersOnly" class="ml-2" onchange="filterTable()"/>
-مستخدمون جدد
-</label>
-<label class="flex items-center text-sm text-gray-300">
-<input type="checkbox" id="highAmountOnly" class="ml-2" onchange="filterTable()"/>
-مبالغ كبيرة (> 5000)
-</label>
-</div>
-</div>
-
-<!-- TRANSACTIONS TABLE -->
-<div class="bg-card-dark rounded-lg glow-card overflow-hidden">
-<div class="p-4 bg-primary/10 border-b border-primary/30 flex items-center justify-between">
-<div class="flex items-center">
-<input type="checkbox" id="selectAll" class="ml-3" onchange="toggleSelectAll()"/>
-<span class="text-sm font-semibold text-white">تحديد الكل</span>
-<span class="text-xs text-gray-400 mr-3" id="selectedCount">(0 محدد)</span>
-</div>
-<div class="flex gap-2">
-<button onclick="bulkValidate()" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-green-600 transition">
-✅ مصادقة المحدد
-</button>
-<button onclick="bulkReject()" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-600 transition">
-❌ رفض المحدد
-</button>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full">
-<thead class="bg-gray-800">
-<tr>
-<th class="px-4 py-3 text-right"><input type="checkbox"/></th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">المعرف</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">المستخدم</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">المبلغ</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">النوع</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">التاريخ</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">درجة المخاطر</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">الأولوية</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">الحالة</th>
-<th class="px-4 py-3 text-right text-xs font-bold text-gray-300">الإجراء</th>
-</tr>
-</thead>
-<tbody id="transfersTable">
-<!-- HIGH RISK TRANSACTION -->
-<tr class="border-b border-gray-700 hover:bg-gray-800/50 transition priority-high" data-type="withdrawal" data-status="pending" data-risk="high" data-priority="high">
-<td class="px-4 py-4"><input type="checkbox" class="row-checkbox"/></td>
-<td class="px-4 py-4">
-<div class="flex items-center">
-<span class="material-icons text-red-400 text-sm ml-1">warning</span>
-<span class="text-sm font-mono text-gray-300">#TRX-1024</span>
-</div>
-</td>
-<td class="px-4 py-4">
-<div class="flex items-center">
-<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHi2r7jqzN8GpUovDFPNQnifnDASS3qhnybpZfGQ6TmlC4jHteBAXgKzZxN4HcufNYzNa1alX_cFIIxXGthnhFBLwJNfV0hhFGUknsy1Z1BHEGWAhsYmaxg1zDnT5wwE1y4q_iYxv2VSSn29-KOg73xF0_2yE8urfAdY4N1KGw6pYhgQ2vc5IjVZLbTucd5O-A8kPVkDp-Amt-_b3rz9g5fTr_bRtqo36UOJ7ijd-GQzIKrRDU5DSEgt_7kfwoasqsuXQuGg78FM" class="w-8 h-8 rounded-full ml-2"/>
-<div>
-<div class="flex items-center">
-<p class="text-sm font-semibold text-white">أحمد المالكي</p>
-<span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full mr-1">جديد</span>
-</div>
-<p class="text-xs text-gray-400">منشئ محتوى</p>
-</div>
-</div>
-</td>
-<td class="px-4 py-4 text-sm font-bold text-yellow-400">8,500 د.م</td>
-<td class="px-4 py-4">
-<span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-semibold">سحب</span>
-</td>
-<td class="px-4 py-4">
-<div class="text-sm text-gray-300">2024-10-16</div>
-<div class="text-xs text-gray-500">14:23</div>
-</td>
-<td class="px-4 py-4">
-<div class="risk-high px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center">
-<span class="material-icons text-xs ml-1">shield</span>
-عالي 85%
-</div>
-</td>
-<td class="px-4 py-4">
-<span class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-semibold">عالية</span>
-</td>
-<td class="px-4 py-4">
-<span class="status-pending px-3 py-1 rounded-full text-xs font-semibold pulse-animation">قيد الانتظار</span>
-</td>
-<td class="px-4 py-4">
-<div class="flex gap-2">
-<button onclick="viewDetails(1)" class="bg-primary/20 text-primary px-2 py-1 rounded-lg hover:bg-primary/30 transition text-xs">
-<span class="material-icons text-sm">visibility</span>
-</button>
-<button onclick="openValidateModal(1)" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-lg text-xs transition">✅</button>
-<button onclick="openRejectModal(1)" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs transition">❌</button>
-</div>
-</td>
-</tr>
-<!-- NORMAL TRANSACTION -->
-<tr class="border-b border-gray-700 hover:bg-gray-800/50 transition priority-medium" data-type="deposit" data-status="pending" data-risk="low" data-priority="medium">
-<td class="px-4 py-4"><input type="checkbox" class="row-checkbox"/></td>
-<td class="px-4 py-4 text-sm font-mono text-gray-300">#TRX-1023</td>
-<td class="px-4 py-4">
-<div class="flex items-center">
-<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHi2r7jqzN8GpUovDFPNQnifnDASS3qhnybpZfGQ6TmlC4jHteBAXgKzZxN4HcufNYzNa1alX_cFIIxXGthnhFBLwJNfV0hhFGUknsy1Z1BHEGWAhsYmaxg1zDnT5wwE1y4q_iYxv2VSSn29-KOg73xF0_2yE8urfAdY4N1KGw6pYhgQ2vc5IjVZLbTucd5O-A8kPVkDp-Amt-_b3rz9g5fTr_bRtqo36UOJ7ijd-GQzIKrRDU5DSEgt_7kfwoasqsuXQuGg78FM" class="w-8 h-8 rounded-full ml-2"/>
-<div>
-<div class="flex items-center">
-<p class="text-sm font-semibold text-white">Tech Brand MA</p>
-<span class="material-icons text-yellow-400 text-sm mr-1">verified</span>
-</div>
-<p class="text-xs text-gray-400">علامة تجارية VIP</p>
-</div>
-</div>
-</td>
-<td class="px-4 py-4 text-sm font-bold text-green-400">3,000 د.م</td>
-<td class="px-4 py-4">
-<span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-semibold">إيداع</span>
-</td>
-<td class="px-4 py-4">
-<div class="text-sm text-gray-300">2024-10-16</div>
-<div class="text-xs text-gray-500">12:45</div>
-</td>
-<td class="px-4 py-4">
-<div class="risk-low px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center">
-<span class="material-icons text-xs ml-1">shield</span>
-منخفض 15%
-</div>
-</td>
-<td class="px-4 py-4">
-<span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-semibold">متوسطة</span>
-</td>
-<td class="px-4 py-4">
-<span class="status-pending px-3 py-1 rounded-full text-xs font-semibold">قيد الانتظار</span>
-</td>
-<td class="px-4 py-4">
-<div class="flex gap-2">
-<button onclick="viewDetails(2)" class="bg-primary/20 text-primary px-2 py-1 rounded-lg hover:bg-primary/30 transition text-xs">
-<span class="material-icons text-sm">visibility</span>
-</button>
-<button onclick="openValidateModal(2)" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-lg text-xs transition">✅</button>
-<button onclick="openRejectModal(2)" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs transition">❌</button>
-</div>
-</td>
-</tr>
-<!-- VALIDATED TRANSACTION -->
-<tr class="border-b border-gray-700 hover:bg-gray-800/50 transition opacity-60" data-type="withdrawal" data-status="validated" data-risk="low" data-priority="low">
-<td class="px-4 py-4"><input type="checkbox" disabled/></td>
-<td class="px-4 py-4 text-sm font-mono text-gray-300">#TRX-1020</td>
-<td class="px-4 py-4">
-<div class="flex items-center">
-<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHi2r7jqzN8GpUovDFPNQnifnDASS3qhnybpZfGQ6TmlC4jHteBAXgKzZxN4HcufNYzNa1alX_cFIIxXGthnhFBLwJNfV0hhFGUknsy1Z1BHEGWAhsYmaxg1zDnT5wwE1y4q_iYxv2VSSn29-KOg73xF0_2yE8urfAdY4N1KGw6pYhgQ2vc5IjVZLbTucd5O-A8kPVkDp-Amt-_b3rz9g5fTr_bRtqo36UOJ7ijd-GQzIKrRDU5DSEgt_7kfwoasqsuXQuGg78FM" class="w-8 h-8 rounded-full ml-2"/>
-<div>
-<p class="text-sm font-semibold text-white">سلمى بنجلون</p>
-<p class="text-xs text-gray-400">منشئ محتوى</p>
-</div>
-</div>
-</td>
-<td class="px-4 py-4 text-sm font-bold text-green-400">1,200 د.م</td>
-<td class="px-4 py-4">
-<span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-semibold">سحب</span>
-</td>
-<td class="px-4 py-4">
-<div class="text-sm text-gray-300">2024-10-15</div>
-<div class="text-xs text-gray-500">10:15</div>
-</td>
-<td class="px-4 py-4">
-<div class="risk-low px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center">
-<span class="material-icons text-xs ml-1">shield</span>
-منخفض 10%
-</div>
-</td>
-<td class="px-4 py-4">
-<span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-semibold">منخفضة</span>
-</td>
-<td class="px-4 py-4">
-<span class="status-validated px-3 py-1 rounded-full text-xs font-semibold">تمت المصادقة</span>
-</td>
-<td class="px-4 py-4">
-<div class="text-xs text-gray-500">
-<div>✅ بواسطة: Admin_Sara</div>
-<div>🕐 منذ 3 ساعات</div>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</main>
-</div>
-
-<!-- DETAILED VIEW MODAL -->
-<div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
-<div class="modal-content bg-card-dark rounded-lg max-w-6xl w-full mx-4 border-2 border-primary/30 max-h-[90vh] overflow-y-auto">
-<div class="sticky top-0 bg-card-dark border-b border-primary/30 p-6 flex items-center justify-between z-10">
-<h3 class="text-2xl font-bold text-white flex items-center">
-<span class="material-icons text-primary ml-3">info</span>
-تفاصيل العملية الكاملة
-</h3>
-<button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-300">
-<span class="material-icons text-3xl">close</span>
-</button>
-</div>
-
-<div class="p-6">
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<!-- LEFT COLUMN: PROOF & DOCUMENTS -->
-<div class="lg:col-span-2 space-y-6">
-<div class="bg-gray-800 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3 flex items-center">
-<span class="material-icons text-primary ml-2">image</span>
-إثبات الدفع
-</h4>
-<div class="bg-black rounded-lg p-4 mb-3">
-<img src="https://via.placeholder.com/800x600/1A1A2E/7C3AED?text=Bank+Receipt" alt="Receipt" class="w-full rounded-lg"/>
-</div>
-<div class="grid grid-cols-3 gap-2">
-<button class="bg-primary/20 text-primary px-3 py-2 rounded-lg hover:bg-primary/30 transition text-sm font-semibold">
-<span class="material-icons text-sm">zoom_in</span>
-تكبير
-</button>
-<button class="bg-primary/20 text-primary px-3 py-2 rounded-lg hover:bg-primary/30 transition text-sm font-semibold">
-<span class="material-icons text-sm">download</span>
-تحميل
-</button>
-<button onclick="runOCR()" class="bg-green-500/20 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500/30 transition text-sm font-semibold">
-<span class="material-icons text-sm">text_fields</span>
-OCR
-</button>
-</div>
-</div>
-
-<!-- OCR RESULTS -->
-<div id="ocrResults" class="hidden bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3 flex items-center">
-<span class="material-icons text-green-400 ml-2">check_circle</span>
-نتائج المسح الضوئي (OCR)
-</h4>
-<div class="space-y-2 text-sm">
-<div class="flex justify-between">
-<span class="text-gray-400">المبلغ المكتشف:</span>
-<span class="text-white font-bold">8,500 د.م ✅</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">التاريخ:</span>
-<span class="text-white font-bold">2024-10-16 ✅</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">البنك:</span>
-<span class="text-white font-bold">Attijariwafa Bank ✅</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">الاسم:</span>
-<span class="text-yellow-400 font-bold">أحمد المالكي ⚠️ (تأكد)</span>
-</div>
-</div>
-</div>
-
-<!-- ADMIN NOTES -->
-<div class="bg-gray-800 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3 flex items-center">
-<span class="material-icons text-yellow-400 ml-2">note</span>
-ملاحظات المسؤول
-</h4>
-<textarea id="adminNotes" rows="4" placeholder="أضف ملاحظاتك الداخلية هنا..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary mb-3"></textarea>
-<div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-3">
-<p class="text-xs text-blue-300">💡 هذه الملاحظات داخلية ولن يراها المستخدم</p>
-</div>
-<button onclick="saveNotes()" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition w-full">
-حفظ الملاحظات
-</button>
-</div>
-
-<!-- AUDIT TRAIL -->
-<div class="bg-gray-800 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3 flex items-center">
-<span class="material-icons text-purple-400 ml-2">history</span>
-سجل النشاط (Audit Trail)
-</h4>
-<div class="space-y-3">
-<div class="flex items-start border-r-2 border-purple-500 pr-3">
-<div class="flex-1">
-<p class="text-sm text-white font-semibold">تم إنشاء الطلب</p>
-<p class="text-xs text-gray-400">2024-10-16 14:23:15</p>
-<p class="text-xs text-gray-500">IP: 196.217.xxx.xxx</p>
-</div>
-</div>
-<div class="flex items-start border-r-2 border-blue-500 pr-3">
-<div class="flex-1">
-<p class="text-sm text-white font-semibold">تم رفع المستندات</p>
-<p class="text-xs text-gray-400">2024-10-16 14:24:02</p>
-</div>
-</div>
-<div class="flex items-start border-r-2 border-yellow-500 pr-3">
-<div class="flex-1">
-<p class="text-sm text-white font-semibold">تم فتح الملف من قبل Admin_Sara</p>
-<p class="text-xs text-gray-400">2024-10-16 15:12:45</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- RIGHT COLUMN: INFO & AI ANALYSIS -->
-<div class="space-y-6">
-<!-- TRANSACTION INFO -->
-<div class="bg-gray-800 rounded-lg p-4">
-<h4 class="font-bold text-white mb-4">معلومات العملية</h4>
-<div class="space-y-3 text-sm">
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">المعرف:</span>
-<span class="text-white font-mono font-bold">#TRX-1024</span>
-</div>
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">المبلغ المطلوب:</span>
-<span class="text-yellow-400 font-bold">8,500 د.م</span>
-</div>
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">العمولة (15%):</span>
-<span class="text-orange-400 font-bold">1,275 د.م</span>
-</div>
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">الرسوم البنكية:</span>
-<span class="text-orange-400 font-bold">17 د.م</span>
-</div>
-<div class="flex justify-between py-3 bg-green-500/10 rounded-lg px-3">
-<span class="text-white font-bold">الصافي المحول:</span>
-<span class="text-green-400 font-bold text-lg">7,208 د.م</span>
-</div>
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">النوع:</span>
-<span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-semibold">سحب</span>
-</div>
-<div class="flex justify-between py-2">
-<span class="text-gray-400">التاريخ:</span>
-<span class="text-white">2024-10-16 14:23</span>
-</div>
-</div>
-</div>
-
-<!-- AI RISK ANALYSIS -->
-<div class="bg-red-500/10 border-2 border-red-500/30 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3 flex items-center">
-<span class="material-icons text-red-400 ml-2">warning</span>
-تحليل المخاطر (AI)
-</h4>
-<div class="mb-4">
-<div class="flex justify-between items-center mb-2">
-<span class="text-sm text-gray-300">درجة المخاطر</span>
-<span class="text-2xl font-bold text-red-400">85%</span>
-</div>
-<div class="w-full bg-gray-700 rounded-full h-3">
-<div class="bg-red-500 rounded-full h-3" style="width: 85%"></div>
-</div>
-</div>
-<div class="space-y-2 text-sm">
-<div class="flex items-start">
-<span class="material-icons text-red-400 text-sm ml-2 mt-0.5">error</span>
-<p class="text-gray-300">مستخدم جديد (< 7 أيام)</p>
-</div>
-<div class="flex items-start">
-<span class="material-icons text-red-400 text-sm ml-2 mt-0.5">error</span>
-<p class="text-gray-300">أول عملية سحب كبيرة</p>
-</div>
-<div class="flex items-start">
-<span class="material-icons text-yellow-400 text-sm ml-2 mt-0.5">warning</span>
-<p class="text-gray-300">5 محاولات سحب في ساعة واحدة</p>
-</div>
-<div class="flex items-start">
-<span class="material-icons text-yellow-400 text-sm ml-2 mt-0.5">warning</span>
-<p class="text-gray-300">RIB مختلف عن السابق</p>
-</div>
-</div>
-<div class="mt-4 p-3 bg-red-500/20 rounded-lg">
-<p class="text-xs text-red-300 font-semibold">⚠️ توصية الذكاء الاصطناعي: يتطلب مراجعة دقيقة + تحقق من الهوية</p>
-</div>
-</div>
-
-<!-- USER INFO -->
-<div class="bg-gray-800 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3">معلومات المستخدم</h4>
-<div class="flex items-center mb-3">
-<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmHi2r7jqzN8GpUovDFPNQnifnDASS3qhnybpZfGQ6TmlC4jHteBAXgKzZxN4HcufNYzNa1alX_cFIIxXGthnhFBLwJNfV0hhFGUknsy1Z1BHEGWAhsYmaxg1zDnT5wwE1y4q_iYxv2VSSn29-KOg73xF0_2yE8urfAdY4N1KGw6pYhgQ2vc5IjVZLbTucd5O-A8kPVkDp-Amt-_b3rz9g5fTr_bRtqo36UOJ7ijd-GQzIKrRDU5DSEgt_7kfwoasqsuXQuGg78FM" class="w-12 h-12 rounded-full ml-3 border-2 border-primary"/>
-<div>
-<p class="text-white font-bold">أحمد المالكي</p>
-<p class="text-xs text-gray-400">منشئ محتوى</p>
-<span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">جديد</span>
-</div>
-</div>
-<div class="space-y-2 text-sm">
-<div class="flex justify-between">
-<span class="text-gray-400">ID:</span>
-<span class="text-white font-mono">#USER-2847</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">تاريخ التسجيل:</span>
-<span class="text-white">2024-10-10</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">عدد الحملات:</span>
-<span class="text-white">2</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">التقييم:</span>
-<span class="text-yellow-400">⭐ 4.2</span>
-</div>
-<div class="flex justify-between">
-<span class="text-gray-400">إجمالي الأرباح:</span>
-<span class="text-green-400 font-bold">9,200 د.م</span>
-</div>
-</div>
-<button onclick="viewUserProfile()" class="mt-3 w-full bg-primary/20 text-primary px-3 py-2 rounded-lg hover:bg-primary/30 transition text-sm font-semibold">
-عرض الملف الكامل
-</button>
-</div>
-
-<!-- BANK INFO -->
-<div class="bg-gray-800 rounded-lg p-4">
-<h4 class="font-bold text-white mb-3 flex items-center">
-<span class="material-icons text-blue-400 ml-2">account_balance</span>
-المعلومات البنكية
-</h4>
-<div class="space-y-2 text-sm">
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">البنك:</span>
-<span class="text-white">Attijariwafa Bank</span>
-</div>
-<div class="flex justify-between py-2 border-b border-gray-700">
-<span class="text-gray-400">RIB:</span>
-<span class="text-white font-mono">123 456 7890 1234</span>
-</div>
-<div class="flex justify-between py-2">
-<span class="text-gray-400">المستفيد:</span>
-<span class="text-white">أحمد المالكي</span>
-</div>
-</div>
-<button onclick="verifyRIB()" class="mt-3 w-full bg-green-500/20 text-green-400 px-3 py-2 rounded-lg hover:bg-green-500/30 transition text-sm font-semibold">
-<span class="material-icons text-sm">verified</span>
-تحقق من RIB
-</button>
-</div>
-
-<!-- QUICK ACTIONS -->
-<div class="space-y-2">
-<button onclick="requestMoreDocuments()" class="w-full bg-blue-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-600 transition flex items-center justify-center">
-<span class="material-icons ml-2">add_circle</span>
-طلب مستندات إضافية
-</button>
-<button onclick="contactUser()" class="w-full bg-purple-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-600 transition flex items-center justify-center">
-<span class="material-icons ml-2">chat</span>
-التواصل مع المستخدم
-</button>
-<button onclick="escalate()" class="w-full bg-orange-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center">
-<span class="material-icons ml-2">arrow_upward</span>
-تصعيد للمشرف
-</button>
-</div>
-</div>
-</div>
-
-<!-- ACTIONS -->
-<div class="sticky bottom-0 bg-card-dark border-t border-primary/30 p-6 flex gap-3">
-<button onclick="openValidateModal(1)" class="flex-1 bg-green-500 text-white px-6 py-4 rounded-lg text-lg font-bold hover:bg-green-600 transition flex items-center justify-center">
-<span class="material-icons ml-2">check_circle</span>
-✅ مصادقة
-</button>
-<button onclick="openRejectModal(1)" class="flex-1 bg-red-500 text-white px-6 py-4 rounded-lg text-lg font-bold hover:bg-red-600 transition flex items-center justify-center">
-<span class="material-icons ml-2">cancel</span>
-❌ رفض
-</button>
-<button onclick="closeDetailsModal()" class="bg-gray-700 text-gray-200 px-6 py-4 rounded-lg text-lg font-bold hover:bg-gray-600 transition">
-إغلاق
-</button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- VALIDATE MODAL -->
-<div id="validateModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
-<div class="modal-content bg-card-dark rounded-lg p-6 max-w-md w-full mx-4 border-2 border-green-500/30">
-<h3 class="text-xl font-bold text-white mb-4">✅ تأكيد المصادقة</h3>
-<div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
-<p class="text-sm text-green-300">هل أنت متأكد من المصادقة على هذه العملية؟ سيتم تحويل المبلغ فوراً.</p>
-</div>
-<textarea id="validateNote" rows="3" placeholder="ملاحظة (اختياري)" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary mb-4"></textarea>
-<div class="flex gap-3">
-<button onclick="confirmValidate()" class="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-600 transition">
-تأكيد
-</button>
-<button onclick="closeValidateModal()" class="flex-1 bg-gray-700 text-gray-200 px-4 py-3 rounded-lg font-bold hover:bg-gray-600 transition">
-إلغاء
-</button>
-</div>
-</div>
-</div>
-
-<!-- REJECT MODAL -->
-<div id="rejectModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
-<div class="modal-content bg-card-dark rounded-lg p-6 max-w-md w-full mx-4 border-2 border-red-500/30">
-<h3 class="text-xl font-bold text-white mb-4">❌ رفض العملية</h3>
-<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
-<p class="text-sm text-red-300">⚠️ يرجى تحديد سبب الرفض بوضوح. سيتم إشعار المستخدم.</p>
-</div>
-<textarea id="rejectReason" rows="4" placeholder="سبب الرفض (إلزامي)" class="w-full bg-gray-800 border border-red-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"></textarea>
-<div class="flex gap-3">
-<button onclick="confirmReject()" class="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 transition">
-تأكيد الرفض
-</button>
-<button onclick="closeRejectModal()" class="flex-1 bg-gray-700 text-gray-200 px-4 py-3 rounded-lg font-bold hover:bg-gray-600 transition">
-إلغاء
-</button>
-</div>
-</div>
-</div>
-
-<!-- TOAST NOTIFICATION -->
-<div id="toast" class="fixed top-6 left-6 hidden toast z-50"></div>
-
-<script>
-let currentTransferId = null;
-let selectedRows = [];
-
-// FILTER FUNCTIONS
-function filterTable() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const typeFilter = document.getElementById('typeFilter').value;
-    const statusFilter = document.getElementById('statusFilter').value;
-    const riskFilter = document.getElementById('riskFilter').value;
-    const priorityFilter = document.getElementById('priorityFilter').value;
-    const vipOnly = document.getElementById('vipOnly').checked;
-    const newUsersOnly = document.getElementById('newUsersOnly').checked;
-    const highAmountOnly = document.getElementById('highAmountOnly').checked;
-    
-    const rows = document.querySelectorAll('#transfersTable tr');
-    
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        const type = row.dataset.type;
-        const status = row.dataset.status;
-        const risk = row.dataset.risk;
-        const priority = row.dataset.priority;
-        
-        const matchesSearch = text.includes(search);
-        const matchesType = !typeFilter || type === typeFilter;
-        const matchesStatus = !statusFilter || status === statusFilter;
-        const matchesRisk = !riskFilter || risk === riskFilter;
-        const matchesPriority = !priorityFilter || priority === priorityFilter;
-        
-        if (matchesSearch && matchesType && matchesStatus && matchesRisk && matchesPriority) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-}
-
-function resetFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('typeFilter').value = '';
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('riskFilter').value = '';
-    document.getElementById('priorityFilter').value = '';
-    document.getElementById('vipOnly').checked = false;
-    document.getElementById('newUsersOnly').checked = false;
-    document.getElementById('highAmountOnly').checked = false;
-    filterTable();
-}
-
-// MODAL FUNCTIONS
-function viewDetails(id) {
-    currentTransferId = id;
-    document.getElementById('detailsModal').classList.remove('hidden');
-    document.getElementById('detailsModal').classList.add('flex');
-}
-
-function closeDetailsModal() {
-    document.getElementById('detailsModal').classList.add('hidden');
-    document.getElementById('detailsModal').classList.remove('flex');
-}
-
-function openValidateModal(id) {
-    currentTransferId = id;
-    document.getElementById('validateModal').classList.remove('hidden');
-    document.getElementById('validateModal').classList.add('flex');
-}
-
-function closeValidateModal() {
-    document.getElementById('validateModal').classList.add('hidden');
-    document.getElementById('validateModal').classList.remove('flex');
-}
-
-function openRejectModal(id) {
-    currentTransferId = id;
-    document.getElementById('rejectModal').classList.remove('hidden');
-    document.getElementById('rejectModal').classList.add('flex');
-}
-
-function closeRejectModal() {
-    document.getElementById('rejectModal').classList.add('hidden');
-    document.getElementById('rejectModal').classList.remove('flex');
-}
-
-function confirmValidate() {
-    const note = document.getElementById('validateNote').value;
-    // API call to validate transaction
-    showToast('✅ تم تأكيد العملية بنجاح وإشعار المستخدم', 'success');
-    closeValidateModal();
-    closeDetailsModal();
-}
-
-function confirmReject() {
-    const reason = document.getElementById('rejectReason').value;
-    if (!reason.trim()) {
-        showToast('⚠️ يرجى تحديد سبب الرفض', 'warning');
-        return;
-    }
-    // API call to reject transaction
-    showToast('❌ تم رفض العملية وإشعار المستخدم', 'error');
-    closeRejectModal();
-    closeDetailsModal();
-}
-
-// BULK ACTIONS
-function toggleSelectAll() {
-    const selectAll = document.getElementById('selectAll').checked;
-    document.querySelectorAll('.row-checkbox').forEach(cb => {
-        if (!cb.disabled) cb.checked = selectAll;
-    });
-    updateSelectedCount();
-}
-
-function updateSelectedCount() {
-    const count = document.querySelectorAll('.row-checkbox:checked').length;
-    document.getElementById('selectedCount').textContent = `(${count} محدد)`;
-}
-
-function bulkValidate() {
-    const count = document.querySelectorAll('.row-checkbox:checked').length;
-    if (count === 0) {
-        showToast('⚠️ يرجى تحديد عمليات للمصادقة', 'warning');
-        return;
-    }
-    if (confirm(`هل تريد المصادقة على ${count} عملية؟`)) {
-        showToast(`✅ تمت المصادقة على ${count} عملية`, 'success');
-    }
-}
-
-function bulkReject() {
-    const count = document.querySelectorAll('.row-checkbox:checked').length;
-    if (count === 0) {
-        showToast('⚠️ يرجى تحديد عمليات للرفض', 'warning');
-        return;
-    }
-    const reason = prompt('سبب الرفض:');
-    if (reason) {
-        showToast(`❌ تم رفض ${count} عملية`, 'error');
-    }
-}
-
-// UTILITY FUNCTIONS
-function showToast(message, type) {
-    const toast = document.getElementById('toast');
-    const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        warning: 'bg-yellow-500',
-        info: 'bg-blue-500'
-    };
-    toast.className = `fixed top-6 left-6 toast px-6 py-4 rounded-lg font-semibold shadow-lg ${colors[type] || colors.info} text-white z-50`;
-    toast.textContent = message;
-    toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 3000);
-}
-
-function saveNotes() {
-    showToast('✅ تم حفظ الملاحظات', 'success');
-}
-
-function runOCR() {
-    showToast('🔄 جاري معالجة OCR...', 'info');
-    setTimeout(() => {
-        document.getElementById('ocrResults').classList.remove('hidden');
-        showToast('✅ اكتمل المسح الضوئي', 'success');
-    }, 2000);
-}
-
-function verifyRIB() {
-    showToast('🔄 جاري التحقق من RIB...', 'info');
-    setTimeout(() => {
-        showToast('✅ RIB صحيح ومطابق', 'success');
-    }, 2000);
-}
-
-function viewUserProfile() {
-    showToast('📂 فتح الملف الكامل...', 'info');
-}
-
-function requestMoreDocuments() {
-    showToast('📧 تم إرسال طلب مستندات إضافية', 'success');
-}
-
-function contactUser() {
-    showToast('💬 فتح نافذة الدردشة...', 'info');
-}
-
-function escalate() {
-    if (confirm('هل تريد تصعيد هذه العملية للمشرف؟')) {
-        showToast('⬆️ تم التصعيد بنجاح', 'success');
-    }
-}
-
-function exportReport() {
-    showToast('📊 جاري تصدير التقرير...', 'info');
-    setTimeout(() => {
-        showToast('✅ تم تصدير التقرير بنجاح', 'success');
-    }, 1500);
-}
-
-function openBulkAction() {
-    showToast('ℹ️ حدد العمليات من الجدول', 'info');
-}
-
-function toggleFreezeMode() {
-    const btn = document.getElementById('freezeBtn');
-    if (btn.classList.contains('bg-red-500/20')) {
-        if (confirm('⚠️ هل تريد تفعيل وضع التجميد؟ سيتم إيقاف جميع العمليات المالية!')) {
-            btn.classList.remove('bg-red-500/20', 'text-red-400');
-            btn.classList.add('bg-red-500', 'text-white');
-            btn.innerHTML = '<span class="material-icons ml-2">lock</span>تم التجميد';
-            showToast('🛑 تم تفعيل وضع التجميد', 'error');
-        }
-    } else {
-        btn.classList.remove('bg-red-500', 'text-white');
-        btn.classList.add('bg-red-500/20', 'text-red-400');
-        btn.innerHTML = '<span class="material-icons ml-2">block</span>وضع التجميد';
-        showToast('✅ تم إلغاء وضع التجميد', 'success');
-    }
-}
-
-// Event listeners
-document.querySelectorAll('.row-checkbox').forEach(cb => {
-    cb.addEventListener('change', updateSelectedCount);
-});
-
-// Initialize
-updateSelectedCount();
-</script>
-</body>
-</html>

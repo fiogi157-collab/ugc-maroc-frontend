@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل الخدمة - UGC Maroc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5b13ec',
+            secondary: '#7c3aed'
+          },
+          fontFamily: {
+            'cairo': ['Cairo', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    
+    .portfolio-item {
+      transition: all 0.3s ease;
+    }
+    
+    .portfolio-item:hover {
+      transform: scale(1.05);
+    }
+    
+    .option-card {
+      background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .option-card:hover {
+      background: linear-gradient(135deg, #e0e7ff 0%, #d1d5f9 100%);
+    }
+    
+    .option-card.selected {
+      background: linear-gradient(135deg, #5b13ec 0%, #7c3aed 100%);
+      color: white;
+    }
+    
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      z-index: 50;
+    }
+    
+    .touch-button {
+      padding: 12px 16px;
+      font-size: 16px;
+      min-height: 48px;
+    }
+    
+    .sticky-actions {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      z-index: 40;
+    }
+    
+    @media (max-width: 768px) {
+      .sticky-actions {
+        position: fixed;
+        bottom: 60px;
+        left: 0;
+        right: 0;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="/brand/brand-marketplace-gigs.html" class="text-gray-600 hover:text-primary transition">
+            ← العودة للسوق
+          </a>
+          <h1 class="text-xl font-bold text-gray-800">تفاصيل الخدمة</h1>
+        </div>
+        <div class="hidden md:flex items-center gap-4">
+          <a href="/brand/brand_dashboard_premium.html" class="px-4 py-2 text-gray-600 hover:text-primary transition">
+            🏠 الرئيسية
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Main Content -->
+      <div class="lg:col-span-2">
+        
+        <!-- Gig Info -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <!-- Creator Info -->
+          <div class="flex items-center gap-4 mb-6">
+            <img id="creatorAvatar" src="/assets/default-avatar.png" 
+                 alt="Creator" class="w-16 h-16 rounded-full object-cover">
+            <div>
+              <h2 id="creatorName" class="text-xl font-semibold text-gray-800">جاري التحميل...</h2>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-yellow-500">⭐</span>
+                <span id="creatorRating" class="text-gray-600">جاري التحميل...</span>
+                <span class="text-gray-400">•</span>
+                <span id="ordersCount" class="text-gray-600">جاري التحميل...</span>
+              </div>
+              <div class="flex items-center gap-4 text-sm text-gray-600">
+                <span>📍 المغرب</span>
+                <span>⏱️ متاح الآن</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gig Title -->
+          <h1 id="gigTitle" class="text-2xl font-bold text-gray-800 mb-4">جاري التحميل...</h1>
+
+          <!-- Gig Description -->
+          <div id="gigDescription" class="text-gray-700 mb-6">
+            <p>جاري التحميل...</p>
+          </div>
+
+          <!-- Gig Details -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="text-center p-4 bg-gray-50 rounded-lg">
+              <div class="text-2xl mb-2">💰</div>
+              <div class="font-semibold text-gray-800" id="gigPrice">جاري التحميل...</div>
+              <div class="text-sm text-gray-600">السعر الأساسي</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 rounded-lg">
+              <div class="text-2xl mb-2">⏱️</div>
+              <div class="font-semibold text-gray-800" id="gigDelivery">جاري التحميل...</div>
+              <div class="text-sm text-gray-600">مدة التسليم</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 rounded-lg">
+              <div class="text-2xl mb-2">👁️</div>
+              <div class="font-semibold text-gray-800" id="gigViews">جاري التحميل...</div>
+              <div class="text-sm text-gray-600">المشاهدات</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 rounded-lg">
+              <div class="text-2xl mb-2">📦</div>
+              <div class="font-semibold text-gray-800" id="gigOrders">جاري التحميل...</div>
+              <div class="text-sm text-gray-600">الطلبات</div>
+            </div>
+          </div>
+
+          <!-- Languages & Platforms -->
+          <div class="mb-6">
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="text-sm font-medium text-gray-700">اللغات:</span>
+              <div id="gigLanguages" class="flex flex-wrap gap-2">
+                <!-- Languages will be added here -->
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-sm font-medium text-gray-700">المنصات:</span>
+              <div id="gigPlatforms" class="flex flex-wrap gap-2">
+                <!-- Platforms will be added here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">🎨 معرض الأعمال</h3>
+          <div id="portfolioGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Portfolio items will be added here -->
+          </div>
+        </div>
+
+        <!-- Reviews (if any) -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">⭐ التقييمات</h3>
+          <div class="text-center py-8 text-gray-500">
+            <div class="text-4xl mb-2">⭐</div>
+            <p>لا توجد تقييمات بعد</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-1">
+        
+        <!-- Pricing Card -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6 sticky top-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">💰 التسعير</h3>
+          
+          <!-- Base Price -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-gray-700">السعر الأساسي</span>
+              <span id="basePrice" class="font-semibold text-gray-800">جاري التحميل...</span>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div id="gigOptions" class="mb-6">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">خيارات إضافية</h4>
+            <div id="optionsList" class="space-y-3">
+              <!-- Options will be added here -->
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="border-t pt-4 mb-6">
+            <div class="flex justify-between items-center text-lg font-semibold">
+              <span>المجموع</span>
+              <span id="totalPrice" class="text-primary">جاري التحميل...</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="space-y-3">
+            <button id="negotiateBtn" class="w-full px-6 py-3 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition touch-button">
+              💬 تفاوض على السعر
+            </button>
+            <button id="buyNowBtn" class="w-full px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:from-purple-700 hover:to-violet-700 transition touch-button">
+              🛒 اشتر الآن
+            </button>
+          </div>
+
+          <!-- Contact Creator -->
+          <div class="mt-6 pt-6 border-t">
+            <button id="contactCreatorBtn" class="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+              📞 تواصل مع المبدع
+            </button>
+          </div>
+        </div>
+
+        <!-- Creator Info Card -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">👤 معلومات المبدع</h3>
+          
+          <div class="text-center mb-4">
+            <img id="creatorAvatarCard" src="/assets/default-avatar.png" 
+                 alt="Creator" class="w-20 h-20 rounded-full object-cover mx-auto mb-3">
+            <h4 id="creatorNameCard" class="font-semibold text-gray-800">جاري التحميل...</h4>
+            <p id="creatorBio" class="text-sm text-gray-600">جاري التحميل...</p>
+          </div>
+
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">التقييم</span>
+              <span id="creatorRatingCard" class="font-medium">جاري التحميل...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">الطلبات المكتملة</span>
+              <span id="completedOrders" class="font-medium">جاري التحميل...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">معدل الاستجابة</span>
+              <span class="font-medium text-green-600">سريع</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav lg:hidden">
+    <div class="flex justify-around py-2">
+      <a href="/brand/brand_dashboard_premium.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">🏠</span>
+        <span class="text-xs">الرئيسية</span>
+      </a>
+      <a href="/brand/brand-marketplace-gigs.html" class="flex flex-col items-center py-2 px-3 text-primary">
+        <span class="text-xl">🎯</span>
+        <span class="text-xs">السوق</span>
+      </a>
+      <a href="/brand/orders-history.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">📦</span>
+        <span class="text-xs">طلباتي</span>
+      </a>
+      <a href="/brand/notifications.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">🔔</span>
+        <span class="text-xs">الإشعارات</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/api.js"></script>
+  
+  <script>
+    let gigData = {};
+    let selectedOptions = [];
+    let totalPrice = 0;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const gigId = urlParams.get('id');
+      const action = urlParams.get('action');
+      
+      if (gigId) {
+        loadGigDetails(gigId);
+        if (action === 'buy') {
+          // Scroll to pricing card
+          setTimeout(() => {
+            document.querySelector('.lg\\:col-span-1').scrollIntoView({ behavior: 'smooth' });
+          }, 1000);
+        }
+      } else {
+        showError('معرف الخدمة غير صحيح');
+      }
+      
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // Action buttons
+      document.getElementById('negotiateBtn')?.addEventListener('click', negotiateGig);
+      document.getElementById('buyNowBtn')?.addEventListener('click', buyNow);
+      document.getElementById('contactCreatorBtn')?.addEventListener('click', contactCreator);
+    }
+
+    async function loadGigDetails(gigId) {
+      try {
+        const response = await fetch(`${window.API_URL}/api/gigs/${gigId}`);
+        if (response.ok) {
+          const data = await response.json();
+          gigData = data.gig;
+          renderGigDetails();
+        } else {
+          const error = await response.json();
+          showError(error.error || 'خطأ في تحميل تفاصيل الخدمة');
+        }
+      } catch (error) {
+        console.error('Error loading gig details:', error);
+        showError('خطأ في تحميل تفاصيل الخدمة');
+      }
+    }
+
+    function renderGigDetails() {
+      // Basic info
+      document.getElementById('gigTitle').textContent = gigData.title;
+      document.getElementById('gigDescription').innerHTML = `<p>${gigData.description}</p>`;
+      document.getElementById('gigPrice').textContent = `${gigData.base_price} MAD`;
+      document.getElementById('gigDelivery').textContent = `${gigData.delivery_days} أيام`;
+      document.getElementById('gigViews').textContent = gigData.views || 0;
+      document.getElementById('gigOrders').textContent = gigData.orders_count || 0;
+
+      // Creator info
+      document.getElementById('creatorName').textContent = gigData.creator_name;
+      document.getElementById('creatorNameCard').textContent = gigData.creator_name;
+      document.getElementById('creatorRating').textContent = gigData.rating || 'جديد';
+      document.getElementById('creatorRatingCard').textContent = gigData.rating || 'جديد';
+      document.getElementById('ordersCount').textContent = `${gigData.orders_count || 0} طلب`;
+      document.getElementById('completedOrders').textContent = gigData.orders_count || 0;
+      
+      if (gigData.creator_avatar) {
+        document.getElementById('creatorAvatar').src = gigData.creator_avatar;
+        document.getElementById('creatorAvatarCard').src = gigData.creator_avatar;
+      }
+
+      // Languages
+      const languagesContainer = document.getElementById('gigLanguages');
+      if (gigData.languages && gigData.languages.length > 0) {
+        languagesContainer.innerHTML = gigData.languages.map(lang => 
+          `<span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">${getLanguageName(lang)}</span>`
+        ).join('');
+      } else {
+        languagesContainer.innerHTML = '<span class="text-gray-500 text-sm">غير محدد</span>';
+      }
+
+      // Platforms
+      const platformsContainer = document.getElementById('gigPlatforms');
+      if (gigData.platforms && gigData.platforms.length > 0) {
+        platformsContainer.innerHTML = gigData.platforms.map(platform => 
+          `<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">${getPlatformName(platform)}</span>`
+        ).join('');
+      } else {
+        platformsContainer.innerHTML = '<span class="text-gray-500 text-sm">غير محدد</span>';
+      }
+
+      // Portfolio
+      renderPortfolio();
+
+      // Options
+      renderOptions();
+
+      // Update total price
+      updateTotalPrice();
+    }
+
+    function renderPortfolio() {
+      const portfolioGrid = document.getElementById('portfolioGrid');
+      
+      if (gigData.portfolio_urls && gigData.portfolio_urls.length > 0) {
+        portfolioGrid.innerHTML = gigData.portfolio_urls.map(url => `
+          <div class="portfolio-item cursor-pointer" onclick="openPortfolioModal('${url}')">
+            <img src="${url}" alt="Portfolio" class="w-full h-32 object-cover rounded-lg">
+          </div>
+        `).join('');
+      } else {
+        portfolioGrid.innerHTML = `
+          <div class="col-span-full text-center py-8 text-gray-500">
+            <div class="text-4xl mb-2">🎨</div>
+            <p>لا توجد أمثلة متاحة</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderOptions() {
+      const optionsList = document.getElementById('optionsList');
+      
+      if (gigData.options && gigData.options.length > 0) {
+        optionsList.innerHTML = gigData.options.map(option => `
+          <div class="option-card p-3 rounded-lg cursor-pointer" onclick="toggleOption('${option.id}', ${option.price})">
+            <div class="flex justify-between items-center">
+              <div>
+                <h5 class="font-medium">${option.name}</h5>
+                <p class="text-sm text-gray-600">${option.description || ''}</p>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold">+${option.price} MAD</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('gigOptions').style.display = 'none';
+      }
+    }
+
+    function toggleOption(optionId, price) {
+      const optionCard = event.currentTarget;
+      const isSelected = optionCard.classList.contains('selected');
+      
+      if (isSelected) {
+        optionCard.classList.remove('selected');
+        selectedOptions = selectedOptions.filter(id => id !== optionId);
+      } else {
+        optionCard.classList.add('selected');
+        selectedOptions.push(optionId);
+      }
+      
+      updateTotalPrice();
+    }
+
+    function updateTotalPrice() {
+      totalPrice = gigData.base_price;
+      
+      // Add selected options
+      if (gigData.options) {
+        gigData.options.forEach(option => {
+          if (selectedOptions.includes(option.id)) {
+            totalPrice += option.price;
+          }
+        });
+      }
+      
+      document.getElementById('basePrice').textContent = `${gigData.base_price} MAD`;
+      document.getElementById('totalPrice').textContent = `${totalPrice} MAD`;
+    }
+
+    function negotiateGig() {
+      window.location.href = `/brand/brand-chat-negotiation.html?gigId=${gigData.id}`;
+    }
+
+    function buyNow() {
+      // Create contract directly
+      window.location.href = `/brand/agreement-contract.html?gigId=${gigData.id}&action=buy&price=${totalPrice}`;
+    }
+
+    function contactCreator() {
+      window.location.href = `/brand/brand-chat-negotiation.html?gigId=${gigData.id}&action=contact`;
+    }
+
+    function openPortfolioModal(url) {
+      // Simple modal for portfolio viewing
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg p-4 max-w-4xl max-h-4xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">معرض الأعمال</h3>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+              ✕
+            </button>
+          </div>
+          <img src="${url}" alt="Portfolio" class="max-w-full max-h-96 object-contain">
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function showError(message) {
+      const container = document.querySelector('.container');
+      container.innerHTML = `
+        <div class="text-center py-12">
+          <div class="text-6xl mb-4">❌</div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">خطأ</h3>
+          <p class="text-gray-600">${message}</p>
+          <a href="/brand/brand-marketplace-gigs.html" class="mt-4 inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-purple-700 transition">
+            العودة للسوق
+          </a>
+        </div>
+      `;
+    }
+
+    function getLanguageName(lang) {
+      const languages = {
+        'arabic': 'العربية',
+        'french': 'الفرنسية',
+        'darija': 'الدارجة',
+        'english': 'الإنجليزية'
+      };
+      return languages[lang] || lang;
+    }
+
+    function getPlatformName(platform) {
+      const platforms = {
+        'instagram': 'Instagram',
+        'tiktok': 'TikTok',
+        'youtube': 'YouTube',
+        'facebook': 'Facebook'
+      };
+      return platforms[platform] || platform;
+    }
+  </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>
+

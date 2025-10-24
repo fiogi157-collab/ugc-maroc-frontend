@@ -92,7 +92,7 @@ async function loadMyCampaigns() {
                 <span class="font-medium">${utils.formatMAD(campaign.budget_per_video)}</span>
               </div>
               <div class="flex gap-2">
-                <a href="/brand/تفاصيل_الحملة_(للعلامات_التجارية).html?id=${campaign.id}" 
+                <a href="/brand/brand-campaign-details-ar.html?id=${campaign.id}" 
                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
                   عرض التفاصيل
                 </a>
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBrandDashboard();
   } else if (path.includes('campaigns') || path.includes('المشاريع')) {
     loadMyCampaigns();
-  } else if (path.includes('تفاصيل_الحملة') || path.includes('submissions')) {
+  } else if (path.includes('brand-campaign-details-ar') || path.includes('submissions')) {
     loadCampaignSubmissions();
   }
 });

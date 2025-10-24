@@ -1,166 +1,214 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import multer from 'multer';
+import path from 'path';
 
-// Cloudflare R2 configuration
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
-
-// Validate configuration
-if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
-  console.error("❌ Missing R2 configuration. Please check environment variables:");
-  console.error("R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME");
-}
-
-// R2 endpoint (S3-compatible)
-const R2_ENDPOINT = `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
-
-// Initialize S3 client for R2
-const r2Client = new S3Client({
-  region: "auto",
-  endpoint: R2_ENDPOINT,
+// Configuration Cloudflare R2
+const r2 = new S3Client({
+  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  region: 'auto',
   credentials: {
-    accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
   },
+  forcePathStyle: true
 });
 
-/**
- * Upload a file to Cloudflare R2 from a file path (streams from disk, no memory load)
- * @param {string} filePath - Path to file on disk
- * @param {string} fileName - Unique file name in R2 (e.g., "videos/campaign-123/video-uuid.mp4")
- * @param {string} contentType - MIME type (e.g., "video/mp4")
- * @returns {Promise<{success: boolean, publicUrl: string, key: string, size: number}>}
- */
-export async function uploadFileToR2(filePath, fileName, contentType = "video/mp4") {
-  const fs = await import("fs");
-  const fsPromises = await import("fs/promises");
+const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET || 'ugc-maroc-assets';
+const PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://assets.ugcmaroc.com';
+
+class R2Service {
   
-  try {
-    // Get file size
-    const stats = await fsPromises.stat(filePath);
-    const fileSize = stats.size;
+  /**
+   * Upload un fichier vers Cloudflare R2
+   * @param {Object} file - Fichier multer
+   * @param {string} folder - Dossier de destination (ex: 'gigs', 'campaigns', 'profiles')
+   * @param {string} filename - Nom du fichier (optionnel)
+   * @returns {Promise<Object>} - URL publique et métadonnées
+   */
+  async uploadFile(file, folder = 'uploads', filename = null) {
+    try {
+      const fileExtension = path.extname(file.originalname);
+      const finalFilename = filename || `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExtension}`;
+      const key = `${folder}/${finalFilename}`;
 
-    // Create read stream (avoids loading entire file into memory)
-    const fileStream = fs.createReadStream(filePath);
+      const command = new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: 'public-read'
+      });
 
-    const command = new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: fileName,
-      Body: fileStream,
-      ContentType: contentType,
-      ContentLength: fileSize,
-    });
+      const result = await r2.send(command);
+      
+      return {
+        success: true,
+        url: `${PUBLIC_URL}/${key}`,
+        key: key,
+        bucket: BUCKET_NAME,
+        size: file.size,
+        type: file.mimetype,
+        originalName: file.originalname,
+        etag: result.ETag
+      };
+    } catch (error) {
+      console.error('❌ R2 Upload Error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 
-    await r2Client.send(command);
+  /**
+   * Upload multiple files
+   * @param {Array} files - Array de fichiers multer
+   * @param {string} folder - Dossier de destination
+   * @returns {Promise<Array>} - Array des résultats
+   */
+  static async uploadMultipleFiles(files, folder = 'uploads') {
+    const uploadPromises = files.map(file => this.uploadFile(file, folder));
+    return Promise.all(uploadPromises);
+  }
 
-    // Generate public URL (R2 custom domain or default)
-    const publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${fileName}`;
+  /**
+   * Supprimer un fichier de R2
+   * @param {string} key - Clé du fichier à supprimer
+   * @returns {Promise<boolean>} - Succès de la suppression
+   */
+  static async deleteFile(key) {
+    try {
+      await r2.deleteObject({
+        Bucket: BUCKET_NAME,
+        Key: key
+      }).promise();
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ R2 Delete Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
 
-    console.log(`✅ File uploaded to R2: ${fileName} (${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
+  /**
+   * Lister les fichiers d'un dossier
+   * @param {string} prefix - Préfixe du dossier
+   * @returns {Promise<Array>} - Liste des fichiers
+   */
+  static async listFiles(prefix = '') {
+    try {
+      const result = await r2.listObjectsV2({
+        Bucket: BUCKET_NAME,
+        Prefix: prefix
+      }).promise();
+      
+      return {
+        success: true,
+        files: result.Contents.map(file => ({
+          key: file.Key,
+          url: `${PUBLIC_URL}/${file.Key}`,
+          size: file.Size,
+          lastModified: file.LastModified
+        }))
+      };
+    } catch (error) {
+      console.error('❌ R2 List Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
 
-    return {
-      success: true,
-      publicUrl,
-      key: fileName,
-      size: fileSize,
-    };
-  } catch (error) {
-    console.error("❌ Error uploading to R2:", error);
-    throw new Error(`R2 upload failed: ${error.message}`);
+  /**
+   * Générer une URL signée pour upload direct
+   * @param {string} key - Clé du fichier
+   * @param {string} contentType - Type MIME
+   * @param {number} expiresIn - Durée en secondes (défaut: 3600)
+   * @returns {Promise<string>} - URL signée
+   */
+  static async getSignedUploadUrl(key, contentType, expiresIn = 3600) {
+    try {
+      const url = await r2.getSignedUrl('putObject', {
+        Bucket: BUCKET_NAME,
+        Key: key,
+        ContentType: contentType,
+        Expires: expiresIn
+      });
+      
+      return { success: true, url };
+    } catch (error) {
+      console.error('❌ R2 Signed URL Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Générer une URL signée pour téléchargement privé
+   * @param {string} key - Clé du fichier
+   * @param {number} expiresIn - Durée en secondes (défaut: 3600)
+   * @returns {Promise<string>} - URL signée
+   */
+  static async getSignedDownloadUrl(key, expiresIn = 3600) {
+    try {
+      const url = await r2.getSignedUrl('getObject', {
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Expires: expiresIn
+      });
+      
+      return { success: true, url };
+    } catch (error) {
+      console.error('❌ R2 Signed Download URL Error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Vérifier si un fichier existe
+   * @param {string} key - Clé du fichier
+   * @returns {Promise<boolean>} - Existence du fichier
+   */
+  static async fileExists(key) {
+    try {
+      await r2.headObject({
+        Bucket: BUCKET_NAME,
+        Key: key
+      }).promise();
+      
+      return { success: true, exists: true };
+    } catch (error) {
+      if (error.statusCode === 404) {
+        return { success: true, exists: false };
+      }
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Obtenir les métadonnées d'un fichier
+   * @param {string} key - Clé du fichier
+   * @returns {Promise<Object>} - Métadonnées du fichier
+   */
+  static async getFileMetadata(key) {
+    try {
+      const result = await r2.headObject({
+        Bucket: BUCKET_NAME,
+        Key: key
+      }).promise();
+      
+      return {
+        success: true,
+        metadata: {
+          size: result.ContentLength,
+          type: result.ContentType,
+          lastModified: result.LastModified,
+          etag: result.ETag
+        }
+      };
+    } catch (error) {
+      console.error('❌ R2 Metadata Error:', error);
+      return { success: false, error: error.message };
+    }
   }
 }
 
-/**
- * Upload a file to Cloudflare R2 (legacy buffer-based method)
- * @param {Buffer} fileBuffer - File content as buffer
- * @param {string} fileName - Unique file name (e.g., "videos/campaign-123/video-uuid.mp4")
- * @param {string} contentType - MIME type (e.g., "video/mp4")
- * @returns {Promise<{success: boolean, publicUrl: string, key: string}>}
- */
-export async function uploadToR2(fileBuffer, fileName, contentType = "video/mp4") {
-  try {
-    const command = new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: fileName,
-      Body: fileBuffer,
-      ContentType: contentType,
-    });
-
-    await r2Client.send(command);
-
-    // Generate public URL (R2 custom domain or default)
-    const publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${fileName}`;
-
-    console.log(`✅ File uploaded to R2: ${fileName}`);
-
-    return {
-      success: true,
-      publicUrl,
-      key: fileName,
-    };
-  } catch (error) {
-    console.error("❌ Error uploading to R2:", error);
-    throw new Error(`R2 upload failed: ${error.message}`);
-  }
-}
-
-/**
- * Generate a signed URL for private access (valid for 1 hour)
- * @param {string} key - File key in R2
- * @returns {Promise<string>} Signed URL
- */
-export async function getSignedUrlFromR2(key) {
-  try {
-    const command = new GetObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
-    });
-
-    const signedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
-    return signedUrl;
-  } catch (error) {
-    console.error("❌ Error generating signed URL:", error);
-    throw new Error(`Failed to generate signed URL: ${error.message}`);
-  }
-}
-
-/**
- * Delete a file from R2
- * @param {string} key - File key to delete
- * @returns {Promise<{success: boolean}>}
- */
-export async function deleteFromR2(key) {
-  try {
-    const command = new DeleteObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
-    });
-
-    await r2Client.send(command);
-    console.log(`✅ File deleted from R2: ${key}`);
-
-    return { success: true };
-  } catch (error) {
-    console.error("❌ Error deleting from R2:", error);
-    throw new Error(`R2 deletion failed: ${error.message}`);
-  }
-}
-
-/**
- * Generate public URL for a file in R2
- * @param {string} key - File key
- * @returns {string} Public URL
- */
-export function getPublicUrl(key) {
-  return `https://pub-${R2_ACCOUNT_ID}.r2.dev/${key}`;
-}
-
-export default {
-  uploadToR2,
-  uploadFileToR2,
-  getSignedUrlFromR2,
-  deleteFromR2,
-  getPublicUrl,
-};
+export default new R2Service();

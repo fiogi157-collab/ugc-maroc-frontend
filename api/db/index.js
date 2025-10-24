@@ -7,13 +7,17 @@ dotenv.config();
 
 // Supabase connection string format:
 // postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
-const connectionString = process.env.DATABASE_URL;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!connectionString) {
-  console.error("❌ DATABASE_URL not found in environment variables");
-  console.error("Please add DATABASE_URL to your Replit Secrets");
+if (!supabaseUrl || !supabaseKey) {
+  console.error("❌ Supabase credentials not found in environment variables");
+  console.error("Please add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to your .env file");
   process.exit(1);
 }
+
+// Construct connection string from Supabase credentials
+const connectionString = `postgresql://postgres:${supabaseKey}@db.arfmvtfkibjadxwnbqjl.supabase.co:5432/postgres`;
 
 // Create PostgreSQL client
 const client = postgres(connectionString, { 

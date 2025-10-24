@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope%3Awght%40400%3B500%3B700%3B800" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1d4dc9",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "content-light": "#0e121b",
+                        "content-dark": "#ffffff",
+                        "subtle-light": "#506495",
+                        "subtle-dark": "#a0b3d7",
+                        "border-light": "#d1d7e6",
+                        "border-dark": "#343e51",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2233"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea,
+        .form-checkbox {
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-content-light dark:text-content-dark" dir="rtl">
+<div class="flex flex-col min-h-screen">
+<header class="bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark sticky top-0 z-10">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="text-primary font-bold text-2xl">UGC</span>
+<span class="text-content-light dark:text-content-dark font-bold text-2xl">Maroc</span>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-sm font-medium text-subtle-light dark:text-subtle-dark hover:text-primary transition-colors" href="#">لوحة القيادة</a>
+<a class="text-sm font-medium text-subtle-light dark:text-subtle-dark hover:text-primary transition-colors" href="#">حملاتي</a>
+<a class="text-sm font-medium text-subtle-light dark:text-subtle-dark hover:text-primary transition-colors" href="#">المبدعون</a>
+<a class="text-sm font-medium text-primary dark:text-primary font-bold transition-colors" href="#">الإعدادات</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden sm:inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">
+                            إنشاء حملة جديدة
+                        </button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">notifications</span>
+</button>
+<div class="relative">
+<button class="w-10 h-10 rounded-full">
+<img alt="User profile picture" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArETegJlgtShC0dYwg0ycvKF9ijo5aiohDGNJ14z9V59MHcFc3-qAtMKLuTDhqGtXU74D9OiZSbTKY_Jrv7U2ggYyLyHRH7PPmw4F41Zzo3sULH8-DXJQ4S6QpI8IAt59ZDJ0eWImeFXM3KhvAyHOx8hh9eUnPCPDmEByPJUNPjU3ssRaExg7w9ktDbmujdL8lb4rscDGTt1Au8ZGPmq0a9hFnH09ovjeC2VT3p0gr3BvzJCmtmX50Bm-eIxbypdCvEmkua4uLNHI"/>
+</button>
+</div>
+<div class="relative">
+<button class="flex items-center gap-1 text-sm font-medium text-subtle-light dark:text-subtle-dark hover:text-primary transition-colors">
+<span>AR</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div class="flex flex-1">
+<aside class="w-72 bg-surface-light dark:bg-surface-dark p-6 shrink-0 hidden md:block">
+<nav class="flex flex-col gap-4">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>معلومات الاتصال</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">store</span>
+<span>تفاصيل العلامة التجارية</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold" href="#">
+<span class="material-symbols-outlined">security</span>
+<span>إعدادات الحساب</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">payment</span>
+<span>معلومات الدفع</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span>تفضيلات الإشعارات</span>
+</a>
+</nav>
+</aside>
+<main class="flex-1 p-8">
+<div class="max-w-4xl mx-auto">
+<header class="mb-8">
+<h1 class="text-3xl font-bold text-content-light dark:text-content-dark">إعدادات ملف العلامة التجارية</h1>
+</header>
+<div class="space-y-12">
+<section>
+<h2 class="text-xl font-bold mb-6 border-b border-border-light dark:border-border-dark pb-3">معلومات الاتصال</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2" for="contactName">اسم جهة الاتصال</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="contactName" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2" for="email">البريد الإلكتروني</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="email" type="email"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2" for="phone">رقم الهاتف</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="phone" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2" for="city">المدينة</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="city" type="text"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium mb-2" for="address">العنوان</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="address" type="text"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium mb-2" for="industry">مجال الصناعة</label>
+<select class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition appearance-none bg-no-repeat bg-left-4" id="industry" style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%23506495%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e');">
+<option>اختر مجالا</option>
+<option>التكنولوجيا</option>
+<option>الأزياء</option>
+<option>الطعام</option>
+</select>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-xl font-bold mb-6 border-b border-border-light dark:border-border-dark pb-3">تفاصيل العلامة التجارية</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2" for="brandName">اسم العلامة التجارية</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="brandName" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2" for="website">رابط الموقع الإلكتروني</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="website" type="url"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium mb-2">شعار العلامة التجارية</label>
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-lg bg-background-light dark:bg-background-dark border-2 border-dashed border-border-light dark:border-border-dark flex items-center justify-center">
+<span class="material-symbols-outlined text-subtle-light dark:text-subtle-dark">image</span>
+</div>
+<button class="h-10 px-4 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-colors" type="button">
+                                            تحميل صورة
+                                        </button>
+</div>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium mb-2" for="brandDescription">وصف العلامة التجارية</label>
+<textarea class="w-full p-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="brandDescription" rows="4"></textarea>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-xl font-bold mb-6 border-b border-border-light dark:border-border-dark pb-3">إعدادات الحساب</h2>
+<div class="space-y-8">
+<div class="space-y-6">
+<h3 class="text-lg font-semibold text-content-light dark:text-content-dark">تغيير كلمة المرور</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2" for="currentPassword">كلمة المرور الحالية</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="currentPassword" type="password"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2" for="newPassword">كلمة المرور الجديدة</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="newPassword" type="password"/>
+<div class="mt-2 flex items-center gap-2">
+<div class="w-1/4 h-1.5 bg-gray-200 rounded-full">
+<div class="h-full bg-red-500 rounded-full w-1/3"></div>
+</div>
+<span class="text-xs text-subtle-light dark:text-subtle-dark">ضعيفة</span>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2" for="confirmPassword">تأكيد كلمة المرور الجديدة</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="confirmPassword" type="password"/>
+</div>
+</div>
+<div class="flex justify-end">
+<button class="h-10 px-6 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors">تغيير كلمة المرور</button>
+</div>
+</div>
+<div class="md:col-span-2 flex items-center justify-between p-4 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark">
+<div>
+<h3 class="font-semibold">إلغاء تفعيل الحساب</h3>
+<p class="text-sm text-subtle-light dark:text-subtle-dark">سيؤدي هذا إلى إلغاء تفعيل حسابك بشكل دائم.</p>
+</div>
+<button class="h-10 px-4 rounded-lg bg-red-500/10 text-red-500 text-sm font-bold hover:bg-red-500/20 transition-colors">إلغاء التفعيل</button>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-xl font-bold mb-6 border-b border-border-light dark:border-border-dark pb-3">معلومات الدفع</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2" for="accountNumber">رقم الحساب البنكي</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="accountNumber" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2" for="bankName">اسم البنك</label>
+<input class="w-full h-12 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary focus:border-primary transition" id="bankName" type="text"/>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-xl font-bold mb-6 border-b border-border-light dark:border-border-dark pb-3">تفضيلات الإشعارات</h2>
+<div class="space-y-4">
+<label class="flex items-center justify-between p-4 rounded-lg bg-surface-light dark:bg-surface-dark">
+<span class="font-medium">إشعارات عبر البريد الإلكتروني</span>
+<input class="h-5 w-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary bg-background-light dark:bg-background-dark" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-4 rounded-lg bg-surface-light dark:bg-surface-dark">
+<span class="font-medium">إشعارات داخل التطبيق</span>
+<input class="h-5 w-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary bg-background-light dark:bg-background-dark" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-4 rounded-lg bg-surface-light dark:bg-surface-dark">
+<span class="font-medium">إشعارات الرسائل القصيرة</span>
+<input class="h-5 w-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary bg-background-light dark:bg-background-dark" type="checkbox"/>
+</label>
+</div>
+</section>
+</div>
+<footer class="mt-12 pt-6 border-t border-border-light dark:border-border-dark flex justify-end gap-4">
+<button class="h-12 px-6 rounded-lg bg-background-light dark:bg-surface-dark text-content-light dark:text-content-dark font-bold hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">إلغاء</button>
+<button class="h-12 px-6 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 transition-colors">حفظ التغييرات</button>
+</footer>
+</div>
+</main>
+</div>
+<footer class="bg-surface-light dark:bg-surface-dark border-t border-border-light dark:border-border-dark mt-auto">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<div>
+<div class="flex items-center gap-2 mb-4">
+<span class="text-primary font-bold text-2xl">UGC</span>
+<span class="text-content-light dark:text-content-dark font-bold text-2xl">Maroc</span>
+</div>
+<p class="text-sm text-subtle-light dark:text-subtle-dark">منصة رائدة للمحتوى الذي ينشئه المستخدمون في المغرب.</p>
+</div>
+<div>
+<h3 class="text-base font-bold mb-4">روابط سريعة</h3>
+<ul class="space-y-2 text-sm">
+<li><a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#">الشروط والأحكام</a></li>
+<li><a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#">سياسة الخصوصية</a></li>
+<li><a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#">سياسة ملفات الارتباط</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-base font-bold mb-4">المساعدة والدعم</h3>
+<ul class="space-y-2 text-sm">
+<li><a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#">مركز المساعدة</a></li>
+<li><a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#">اتصل بنا</a></li>
+<li><a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#">الأسئلة الشائعة</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-base font-bold mb-4">تابعنا</h3>
+<div class="flex gap-4">
+<a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#"><svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill-rule="evenodd"></path></svg></a>
+<a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#"><svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg></a>
+<a class="text-subtle-light dark:text-subtle-dark hover:text-primary" href="#"><svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.024.06 1.378.06 3.808s-.012 2.784-.06 3.808c-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.024.048-1.378.06-3.808.06s-2.784-.013-3.808-.06c-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.048-1.024-.06-1.378-.06-3.808s.012-2.784.06-3.808c.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 016.08 2.525c.636-.247 1.363-.416 2.427-.465C9.53 2.013 9.884 2 12.315 2zM8.453 6.002a.945.945 0 100 1.89.945.945 0 000-1.89zm-2.025 3.013a3.526 3.526 0 117.052 0 3.526 3.526 0 01-7.052 0zm3.526 1.89a1.637 1.637 0 100-3.273 1.637 1.637 0 000 3.273z" fill-rule="evenodd"></path></svg></a>
+</div>
+</div>
+</div>
+<div class="mt-8 border-t border-border-light dark:border-border-dark pt-8 text-center text-sm text-subtle-light dark:text-subtle-dark">
+<p>© 2024 UGC Maroc. جميع الحقوق محفوظة.</p>
+</div>
+</div>
+</footer>
+</div>
+
+
+<!-- Scripts Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts UGC Maroc -->
+<script src="/js/config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard-brand.js"></script>
+
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body></html>

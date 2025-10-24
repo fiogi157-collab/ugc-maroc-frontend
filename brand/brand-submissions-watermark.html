@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة التقديمات - UGC Maroc</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .watermark-preview { position: relative; }
+        .watermark-preview::after {
+            content: "PREVIEW";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">إدارة التقديمات</h1>
+                </div>
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span class="text-sm text-gray-500">مرحباً، العلامة التجارية</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">تقديمات الحملة: منتجات التجميل</h2>
+            <p class="text-gray-600">إدارة وتقييم التقديمات مع نظام الحماية المزدوج</p>
+        </div>
+
+        <!-- Submissions Grid -->
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <!-- Submission 1 - Pending with Preview Watermark -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="watermark-preview">
+                    <video class="w-full h-48 object-cover" controls>
+                        <source src="/api/submissions/1/video" type="video/mp4">
+                        متصفحك لا يدعم تشغيل الفيديو
+                    </video>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-900">فيديو تجميل - آمنة</h3>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">معاينة</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">مبدع: آمنة أحمد</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">تم التقديم: 2 ساعات</span>
+                        <div class="flex space-x-2 space-x-reverse">
+                            <button onclick="approveSubmission(1)" 
+                                    class="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                موافقة
+                            </button>
+                            <button onclick="rejectSubmission(1)" 
+                                    class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+                                رفض
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-red-600">
+                        ⚠️ يجب تأكيد الدفع قبل الموافقة
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission 2 - Payment Confirmed, Can Approve -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="watermark-preview">
+                    <video class="w-full h-48 object-cover" controls>
+                        <source src="/api/submissions/2/video" type="video/mp4">
+                        متصفحك لا يدعم تشغيل الفيديو
+                    </video>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-900">فيديو تجميل - فاطمة</h3>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">معاينة</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">مبدع: فاطمة الزهراء</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">تم التقديم: 1 يوم</span>
+                        <div class="flex space-x-2 space-x-reverse">
+                            <button onclick="approveSubmission(2)" 
+                                    class="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+                                موافقة
+                            </button>
+                            <button onclick="rejectSubmission(2)" 
+                                    class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+                                رفض
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-green-600">
+                        ✅ الدفع مؤكد - يمكن الموافقة
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission 3 - Already Approved, Original Video -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <video class="w-full h-48 object-cover" controls>
+                    <source src="/api/submissions/3/video" type="video/mp4">
+                    متصفحك لا يدعم تشغيل الفيديو
+                </video>
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-900">فيديو تجميل - خديجة</h3>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">موافق</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">مبدع: خديجة محمد</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500">تمت الموافقة: 3 ساعات</span>
+                        <div class="flex space-x-2 space-x-reverse">
+                            <button onclick="downloadOriginal(3)" 
+                                    class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+                                تحميل أصلي
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-green-600">
+                        ✅ العلامة المائية تم إزالتها - فيديو أصلي متاح
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-semibold text-blue-900 mb-2">💡 نظام الحماية المزدوج</h3>
+            <ul class="text-sm text-blue-800 space-y-1">
+                <li>• <strong>العلامة المائية للمعاينة:</strong> تظهر على جميع الفيديوهات حتى تأكيد الدفع</li>
+                <li>• <strong>العلامة المائية للعلامة التجارية:</strong> تبقى على الفيديو النهائي للترويج</li>
+                <li>• <strong>بعد الموافقة:</strong> يمكنك تحميل الفيديو الأصلي بدون علامة المعاينة</li>
+                <li>• <strong>الحماية:</strong> يمنع سرقة المحتوى قبل الدفع</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Load video URLs with access control
+        async function loadVideoAccess(submissionId) {
+            try {
+                const response = await fetch(`/api/submissions/${submissionId}/video`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    return {
+                        videoUrl: data.data.videoUrl,
+                        isPreview: data.data.isPreview,
+                        canDownloadOriginal: data.data.canDownloadOriginal,
+                        watermarkStatus: data.data.watermarkStatus
+                    };
+                }
+                throw new Error(data.message);
+            } catch (error) {
+                console.error('Error loading video access:', error);
+                return null;
+            }
+        }
+
+        // Approve submission
+        async function approveSubmission(submissionId) {
+            try {
+                const response = await fetch(`/api/submissions/${submissionId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        brandId: localStorage.getItem('user_id')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('تمت الموافقة على التقديم وإزالة العلامة المائية!');
+                    location.reload();
+                } else {
+                    if (data.requiresPayment) {
+                        alert('يجب تأكيد الدفع قبل الموافقة على التقديم');
+                    } else {
+                        alert('خطأ: ' + data.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error approving submission:', error);
+                alert('خطأ في الموافقة على التقديم');
+            }
+        }
+
+        // Reject submission
+        async function rejectSubmission(submissionId) {
+            if (confirm('هل أنت متأكد من رفض هذا التقديم؟')) {
+                // Implement rejection logic
+                alert('تم رفض التقديم');
+            }
+        }
+
+        // Download original video
+        async function downloadOriginal(submissionId) {
+            try {
+                const videoAccess = await loadVideoAccess(submissionId);
+                if (videoAccess && videoAccess.canDownloadOriginal) {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.href = videoAccess.videoUrl;
+                    link.download = `submission-${submissionId}-original.mp4`;
+                    link.click();
+                } else {
+                    alert('لا يمكن تحميل الفيديو الأصلي بعد');
+                }
+            } catch (error) {
+                console.error('Error downloading original:', error);
+                alert('خطأ في تحميل الفيديو الأصلي');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Brand Submissions Dashboard loaded with watermark system');
+        });
+    </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>

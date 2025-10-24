@@ -38,7 +38,7 @@ async function getUserProfile() {
 }
 
 // Connexion
-async function loginUser(email, password) {
+async function loginUser(email, password, rememberMe = false) {
   try {
     console.log('🔐 Tentative de connexion:', email);
     
@@ -72,7 +72,26 @@ async function loginUser(email, password) {
     localStorage.setItem('user_name', profile.full_name || email);
     localStorage.setItem('user_id', profile.user_id);
 
-    // 4. Redirection selon rôle
+    // 4. Gérer Remember Me avec cookies
+    if (rememberMe && window.cookieManager) {
+      try {
+        // Créer cookie d'authentification persistant (30 jours)
+        const authData = {
+          userId: profile.user_id,
+          email: data.user.email,
+          role: profile.role,
+          name: profile.full_name || email,
+          loginTime: Date.now()
+        };
+        
+        window.cookieManager.createAuthCookie(profile.user_id, true);
+        console.log('🍪 Cookie Remember Me créé');
+      } catch (cookieError) {
+        console.warn('⚠️ Erreur création cookie Remember Me:', cookieError);
+      }
+    }
+
+    // 5. Redirection selon rôle
     const dashboards = {
       'creator': '/creator/creator_dashboard.html',
       'brand': '/brand/brand_dashboard_premium.html',
@@ -225,6 +244,17 @@ async function logoutUser() {
     const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
 
+    // Supprimer les cookies Remember Me
+    if (window.cookieManager) {
+      try {
+        window.cookieManager.deleteCookie('ugc_auth_token');
+        window.cookieManager.deleteCookie('ugc_remember_me');
+        console.log('🍪 Cookies Remember Me supprimés');
+      } catch (cookieError) {
+        console.warn('⚠️ Erreur suppression cookies:', cookieError);
+      }
+    }
+
     localStorage.clear();
     window.location.href = '/index.html';
   } catch (err) {
@@ -263,11 +293,58 @@ async function updatePassword(newPassword) {
   }
 }
 
+// Vérifier les cookies Remember Me
+async function checkRememberMe() {
+  if (!window.cookieManager) return false;
+  
+  try {
+    const authToken = window.cookieManager.getCookie('ugc_auth_token');
+    const rememberMe = window.cookieManager.getCookie('ugc_remember_me');
+    
+    if (authToken && rememberMe === 'true') {
+      console.log('🍪 Cookie Remember Me trouvé, tentative de reconnexion automatique');
+      
+      // Vérifier la validité du token avec l'API
+      const response = await fetch(`${window.API_BASE_URL}/api/cookies/validate-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ authToken })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success && result.user) {
+        console.log('✅ Reconnexion automatique réussie via Remember Me');
+        
+        // Restaurer les données utilisateur
+        localStorage.setItem('user_role', result.user.role);
+        localStorage.setItem('user_name', result.user.name);
+        localStorage.setItem('user_id', result.user.userId);
+        
+        return true;
+      } else {
+        console.log('❌ Token Remember Me invalide, suppression des cookies');
+        window.cookieManager.deleteCookie('ugc_auth_token');
+        window.cookieManager.deleteCookie('ugc_remember_me');
+      }
+    }
+  } catch (error) {
+    console.error('❌ Erreur vérification Remember Me:', error);
+  }
+  
+  return false;
+}
+
 // Vérifier si utilisateur est connecté
 async function checkAuth(requiredRole = null) {
+  // D'abord vérifier les cookies Remember Me
+  const rememberMeSuccess = await checkRememberMe();
+  
   const user = await getCurrentUser();
   
-  if (!user) {
+  if (!user && !rememberMeSuccess) {
     // Redirection intelligente selon le rôle requis ou la page actuelle
     let loginPage = '/auth/creator-login.html'; // Par défaut
     
@@ -321,5 +398,6 @@ window.auth = {
   getUserProfile,
   getAuthToken,
   checkAuth,
+  checkRememberMe,
   createCompleteProfile
 };

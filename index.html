@@ -1893,7 +1893,7 @@ AI Match 98%
             
             if (userRole === 'brand') {
               // Brand connecté -> rediriger vers marketplace créateurs
-              window.location.href = '/creator/سوق_المبدعين_(للعلامات_التجارية).html';
+              window.location.href = '/creator/creator-browse-campaigns.html';
             } else {
               // Autre rôle (creator ou admin) -> message puis inscription marque
               alert('هذه الصفحة مخصصة للعلامات التجارية فقط. سننقلك لإنشاء حساب علامة تجارية.');
@@ -1912,6 +1912,11 @@ AI Match 98%
   <script src="./js/main.js"></script>
   <script src="/js/nav-links.js"></script>
   <script src="/js/dark-mode-toggle.js"></script>
+  
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
 </body></html>
 <!-- ✅ Test de connexion avec le backend UGC Maroc -->
 <p id="api-status" style="

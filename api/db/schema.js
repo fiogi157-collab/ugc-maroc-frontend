@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, integer, boolean, decimal } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, timestamp, integer, boolean, decimal, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 /**
@@ -120,6 +120,8 @@ export const campaignAgreements = pgTable("campaign_agreements", {
   additional_notes: text("additional_notes"), // Additional notes from creator
   portfolio_files: text("portfolio_files"), // JSON array of uploaded portfolio file URLs
   submission_id: integer("submission_id").references(() => submissions.id, { onDelete: "set null" }),
+  order_id: integer("order_id").references(() => orders.id, { onDelete: "set null" }), // NEW: Link to order
+  payment_status: varchar("payment_status").default("PENDING").notNull(), // NEW: 'PENDING', 'PAID', 'FAILED'
   revision_count: integer("revision_count").default(0),
   max_revisions: integer("max_revisions").default(2),
   created_at: timestamp("created_at").defaultNow().notNull(),
@@ -369,4 +371,274 @@ export const messages = pgTable("messages", {
   metadata: text("metadata"), // JSON for offers, file URLs, etc.
   is_read: boolean("is_read").default(false).notNull(), // Mark as read when viewed
   created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ===== ORDERS TABLE (NEW STRIPE SYSTEM) =====
+// Commandes entre brand et creator (remplace wallet system)
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  campaign_id: integer("campaign_id").references(() => campaigns.id, { onDelete: "cascade" }),
+  agreement_id: integer("agreement_id").references(() => campaignAgreements.id, { onDelete: "cascade" }),
+  amount_mad: decimal("amount_mad", { precision: 10, scale: 2 }).notNull(), // Montant créateur
+  stripe_fee_mad: decimal("stripe_fee_mad", { precision: 10, scale: 2 }).notNull(), // Frais Stripe (5%)
+  total_paid_mad: decimal("total_paid_mad", { precision: 10, scale: 2 }).notNull(), // Total payé par brand
+  currency: varchar("currency").default("MAD").notNull(),
+  status: varchar("status").default("PENDING_PAYMENT").notNull(), // 'PENDING_PAYMENT', 'PAID', 'FAILED', 'CANCELLED', 'REFUNDED'
+  description: text("description"),
+  metadata: text("metadata"), // JSON pour données supplémentaires
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== PAYMENTS TABLE (NEW STRIPE SYSTEM) =====
+// Paiements Stripe (PaymentIntent)
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  order_id: integer("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  provider: varchar("provider").notNull(), // 'stripe' | 'payzone' (future)
+  payment_intent_id: varchar("payment_intent_id").notNull().unique(),
+  status: varchar("status").default("PENDING").notNull(), // 'PENDING', 'CAPTURED', 'FAILED', 'REFUNDED'
+  amount_mad: decimal("amount_mad", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").default("MAD").notNull(),
+  fee_mad: decimal("fee_mad", { precision: 10, scale: 2 }).default("0.00").notNull(),
+  payload: text("payload"), // JSON response Stripe
+  webhook_events: text("webhook_events").default("[]"), // JSON array des événements reçus
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== CREATOR BALANCES TABLE (NEW STRIPE SYSTEM) =====
+// Soldes virtuels des créateurs (remplace wallets pour creators)
+export const creatorBalances = pgTable("creator_balances", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().unique().references(() => profiles.id, { onDelete: "cascade" }),
+  available_balance: decimal("available_balance", { precision: 10, scale: 2 }).default("0.00").notNull(), // Disponible pour retrait
+  pending_withdrawal: decimal("pending_withdrawal", { precision: 10, scale: 2 }).default("0.00").notNull(), // En attente de retrait
+  total_earned: decimal("total_earned", { precision: 10, scale: 2 }).default("0.00").notNull(), // Total gagné
+  total_withdrawn: decimal("total_withdrawn", { precision: 10, scale: 2 }).default("0.00").notNull(), // Total retiré
+  currency: varchar("currency").default("MAD").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== PAYOUT REQUESTS TABLE (NEW STRIPE SYSTEM) =====
+// Demandes de retrait des créateurs
+export const payoutRequests = pgTable("payout_requests", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  requested_amount: decimal("requested_amount", { precision: 10, scale: 2 }).notNull(),
+  bank_fee: decimal("bank_fee", { precision: 10, scale: 2 }).default("17.00").notNull(), // Frais bancaires fixes
+  net_amount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(), // Montant final reçu
+  bank_details: text("bank_details"), // JSON avec RIB
+  status: varchar("status").default("PENDING").notNull(), // 'PENDING', 'APPROVED', 'PROCESSING', 'COMPLETED', 'REJECTED', 'CANCELLED'
+  processed_by: varchar("processed_by").references(() => profiles.id, { onDelete: "set null" }), // Admin qui a traité
+  processed_at: timestamp("processed_at"),
+  receipt_url: text("receipt_url"), // URL du reçu de virement
+  notes: text("notes"), // Notes admin
+  rejection_reason: text("rejection_reason"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== WEBHOOK EVENTS TABLE (NEW STRIPE SYSTEM) =====
+// Journal des événements webhook (idempotence)
+export const webhookEvents = pgTable("webhook_events", {
+  id: serial("id").primaryKey(),
+  provider: varchar("provider").notNull(), // 'stripe' | 'payzone'
+  event_id: varchar("event_id").notNull(), // ID unique de l'événement
+  event_type: varchar("event_type").notNull(), // Type d'événement
+  status: varchar("status").default("PENDING").notNull(), // 'PENDING', 'PROCESSED', 'FAILED'
+  payload: text("payload").notNull(), // JSON payload complet
+  processed_at: timestamp("processed_at"),
+  error_message: text("error_message"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueProviderEvent: uniqueIndex("webhook_events_provider_event_idx").on(table.provider, table.event_id),
+}));
+
+// ===== GIGS TABLE (NEW MARKETPLACE SYSTEM) =====
+// Services offerts par les créateurs (système Fiverr-like)
+export const gigs = pgTable("gigs", {
+  id: serial("id").primaryKey(),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category").notNull(), // 'video', 'photo', 'design', 'writing', 'marketing'
+  subcategory: varchar("subcategory"), // 'instagram_reel', 'tiktok_video', 'product_photo', etc.
+  base_price: decimal("base_price", { precision: 10, scale: 2 }).notNull(), // Prix de base en MAD
+  delivery_days: integer("delivery_days").notNull(), // Délai de livraison en jours
+  is_active: boolean("is_active").default(true).notNull(),
+  portfolio_files: text("portfolio_files"), // JSON array des URLs des fichiers portfolio
+  tags: text("tags"), // JSON array des tags
+  requirements: text("requirements"), // Exigences spécifiques
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== GIG OPTIONS TABLE (NEW MARKETPLACE SYSTEM) =====
+// Options supplémentaires pour les gigs (comme Fiverr)
+export const gigOptions = pgTable("gig_options", {
+  id: serial("id").primaryKey(),
+  gig_id: integer("gig_id").notNull().references(() => gigs.id, { onDelete: "cascade" }),
+  name: varchar("name").notNull(), // 'Révision rapide', 'Fichiers source', etc.
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Prix supplémentaire
+  delivery_days: integer("delivery_days").default(0), // Délai supplémentaire
+  is_required: boolean("is_required").default(false).notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ===== NEGOTIATIONS TABLE (NEW MARKETPLACE SYSTEM) =====
+// Négociations entre brand et creator pour un gig
+export const negotiations = pgTable("negotiations", {
+  id: serial("id").primaryKey(),
+  gig_id: integer("gig_id").notNull().references(() => gigs.id, { onDelete: "cascade" }),
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  proposed_price: decimal("proposed_price", { precision: 10, scale: 2 }).notNull(),
+  proposed_delivery_days: integer("proposed_delivery_days").notNull(),
+  message: text("message"), // Message de négociation
+  status: varchar("status").default("PENDING").notNull(), // 'PENDING', 'ACCEPTED', 'REJECTED', 'COUNTERED', 'CANCELLED'
+  initiated_by: varchar("initiated_by").notNull().references(() => profiles.id, { onDelete: "cascade" }), // Qui a initié
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== CONTRACTS TABLE (NEW MARKETPLACE SYSTEM) =====
+// Contrats signés entre brand et creator
+export const contracts = pgTable("contracts", {
+  id: serial("id").primaryKey(),
+  gig_id: integer("gig_id").notNull().references(() => gigs.id, { onDelete: "cascade" }),
+  negotiation_id: integer("negotiation_id").notNull().references(() => negotiations.id, { onDelete: "cascade" }),
+  brand_id: varchar("brand_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  creator_id: varchar("creator_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  final_price: decimal("final_price", { precision: 10, scale: 2 }).notNull(),
+  delivery_days: integer("delivery_days").notNull(),
+  requirements: text("requirements"), // Exigences spécifiques du contrat
+  brand_signed_at: timestamp("brand_signed_at"),
+  creator_signed_at: timestamp("creator_signed_at"),
+  status: varchar("status").default("PENDING_SIGNATURES").notNull(), // 'PENDING_SIGNATURES', 'SIGNED', 'ACTIVE', 'COMPLETED', 'CANCELLED'
+  pdf_url: text("pdf_url"), // URL du contrat PDF généré
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ===== REVIEWS TABLE (NEW REVIEW SYSTEM) =====
+// Système de notation 5 étoiles
+export const reviews = pgTable("reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reviewer_id: varchar("reviewer_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  reviewee_id: varchar("reviewee_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  order_id: varchar("order_id").references(() => orders.id, { onDelete: "set null" }),
+  campaign_id: integer("campaign_id").references(() => campaigns.id, { onDelete: "set null" }),
+  gig_id: integer("gig_id").references(() => gigs.id, { onDelete: "set null" }),
+  
+  // Notation (1-5 étoiles)
+  rating: integer("rating").notNull(), // 1-5 étoiles
+  
+  // Commentaires
+  title: varchar("title", { length: 200 }),
+  comment: text("comment"),
+  
+  // Catégories de notation
+  quality_rating: integer("quality_rating"), // 1-5
+  communication_rating: integer("communication_rating"), // 1-5
+  delivery_rating: integer("delivery_rating"), // 1-5
+  value_rating: integer("value_rating"), // 1-5
+  
+  // Métadonnées
+  is_verified: boolean("is_verified").default(false),
+  is_public: boolean("is_public").default(true),
+  is_featured: boolean("is_featured").default(false),
+  
+  // Statut
+  status: varchar("status", { length: 20 }).default("active"), // 'active', 'hidden', 'reported', 'deleted'
+  
+  // Timestamps
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  reviewed_at: timestamp("reviewed_at").defaultNow().notNull(),
+});
+
+// ===== VERIFICATION BADGES TABLE (NEW REVIEW SYSTEM) =====
+// Badges de vérification et confiance
+export const verificationBadges = pgTable("verification_badges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user_id: varchar("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  
+  // Types de badges
+  badge_type: varchar("badge_type", { length: 50 }).notNull(), // 'verified', 'top_rated', 'fast_delivery', etc.
+  
+  // Métadonnées du badge
+  title: varchar("title", { length: 100 }).notNull(),
+  description: text("description"),
+  icon: varchar("icon", { length: 50 }),
+  color: varchar("color", { length: 20 }).default("#5B13EC"),
+  
+  // Critères d'attribution
+  criteria: text("criteria"), // JSON
+  
+  // Statut
+  is_active: boolean("is_active").default(true),
+  is_featured: boolean("is_featured").default(false),
+  
+  // Timestamps
+  awarded_at: timestamp("awarded_at").defaultNow().notNull(),
+  expires_at: timestamp("expires_at"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ===== REVIEW STATS TABLE (NEW REVIEW SYSTEM) =====
+// Statistiques de reviews par utilisateur
+export const reviewStats = pgTable("review_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user_id: varchar("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  
+  // Statistiques globales
+  total_reviews: integer("total_reviews").default(0),
+  average_rating: decimal("average_rating", { precision: 3, scale: 2 }).default("0.00"),
+  
+  // Répartition des notes
+  five_star_count: integer("five_star_count").default(0),
+  four_star_count: integer("four_star_count").default(0),
+  three_star_count: integer("three_star_count").default(0),
+  two_star_count: integer("two_star_count").default(0),
+  one_star_count: integer("one_star_count").default(0),
+  
+  // Statistiques par catégorie
+  avg_quality_rating: decimal("avg_quality_rating", { precision: 3, scale: 2 }).default("0.00"),
+  avg_communication_rating: decimal("avg_communication_rating", { precision: 3, scale: 2 }).default("0.00"),
+  avg_delivery_rating: decimal("avg_delivery_rating", { precision: 3, scale: 2 }).default("0.00"),
+  avg_value_rating: decimal("avg_value_rating", { precision: 3, scale: 2 }).default("0.00"),
+  
+  // Métriques de confiance
+  response_rate: decimal("response_rate", { precision: 5, scale: 2 }).default("0.00"),
+  completion_rate: decimal("completion_rate", { precision: 5, scale: 2 }).default("0.00"),
+  repeat_client_rate: decimal("repeat_client_rate", { precision: 5, scale: 2 }).default("0.00"),
+  
+  // Timestamps
+  last_updated: timestamp("last_updated").defaultNow().notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ===== REVIEW REPORTS TABLE (NEW REVIEW SYSTEM) =====
+// Reports de reviews inappropriées
+export const reviewReports = pgTable("review_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  review_id: varchar("review_id").notNull().references(() => reviews.id, { onDelete: "cascade" }),
+  reporter_id: varchar("reporter_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  
+  // Raison du report
+  reason: varchar("reason", { length: 50 }).notNull(), // 'inappropriate', 'spam', 'fake', 'harassment', 'other'
+  description: text("description"),
+  
+  // Statut du report
+  status: varchar("status", { length: 20 }).default("pending"), // 'pending', 'reviewed', 'resolved', 'dismissed'
+  admin_notes: text("admin_notes"),
+  
+  // Timestamps
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  resolved_at: timestamp("resolved_at"),
 });

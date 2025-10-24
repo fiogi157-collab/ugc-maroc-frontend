@@ -9,11 +9,11 @@ const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 class DeepSeekService {
   constructor() {
     // Remove ALL whitespace and line breaks from API key
-    const rawKey = process.env.DEEPSEEK_API_KEY || '';
+    const rawKey = process.env.OPENROUTER_API_KEY || '';
     this.apiKey = rawKey.replace(/\s+/g, '');
     
     if (!this.apiKey) {
-      console.error("⚠️ DEEPSEEK_API_KEY manquante dans les variables d'environnement");
+      console.error("⚠️ OPENROUTER_API_KEY manquante dans les variables d'environnement");
     } else {
       console.log("✅ OpenRouter API Key configurée");
     }

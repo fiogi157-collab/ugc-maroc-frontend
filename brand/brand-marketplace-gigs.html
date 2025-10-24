@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سوق المبدعين - UGC Maroc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5b13ec',
+            secondary: '#7c3aed'
+          },
+          fontFamily: {
+            'cairo': ['Cairo', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    
+    .gig-card {
+      transition: all 0.3s ease;
+    }
+    
+    .gig-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .filter-chip {
+      transition: all 0.2s ease;
+    }
+    
+    .filter-chip.active {
+      background: linear-gradient(135deg, #5b13ec 0%, #7c3aed 100%);
+      color: white;
+    }
+    
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      z-index: 50;
+    }
+    
+    .touch-button {
+      padding: 12px 16px;
+      font-size: 16px;
+      min-height: 48px;
+    }
+    
+    .search-input {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    @media (max-width: 768px) {
+      .gig-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .filters-sidebar {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">🎯 سوق المبدعين</h1>
+          <p class="text-gray-600">اكتشف أفضل المبدعين لعلامتك التجارية</p>
+        </div>
+        <div class="hidden md:flex items-center gap-4">
+          <a href="/brand/brand_dashboard_premium.html" class="px-4 py-2 text-gray-600 hover:text-primary transition">
+            🏠 الرئيسية
+          </a>
+          <a href="/brand/orders-history.html" class="px-4 py-2 text-gray-600 hover:text-primary transition">
+            📦 طلباتي
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex gap-6">
+      
+      <!-- Filters Sidebar -->
+      <div class="filters-sidebar w-80 hidden lg:block">
+        <div class="bg-white rounded-xl shadow-sm p-6 sticky top-6">
+          <h3 class="text-lg font-semibold mb-4">🔍 الفلاتر</h3>
+          
+          <!-- Search -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">البحث</label>
+            <input type="text" id="searchInput" placeholder="ابحث عن خدمة..." 
+                   class="w-full px-4 py-3 search-input border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+
+          <!-- Category -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">الفئة</label>
+            <select id="categoryFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">جميع الفئات</option>
+              <option value="beauty">الجمال والعناية</option>
+              <option value="fashion">الموضة والأزياء</option>
+              <option value="tech">التكنولوجيا</option>
+              <option value="food">الطعام والمشروبات</option>
+              <option value="lifestyle">نمط الحياة</option>
+              <option value="business">الأعمال</option>
+              <option value="education">التعليم</option>
+              <option value="entertainment">الترفيه</option>
+            </select>
+          </div>
+
+          <!-- Price Range -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">نطاق السعر (MAD)</label>
+            <div class="space-y-3">
+              <div class="flex gap-2">
+                <input type="number" id="minPrice" placeholder="الحد الأدنى" 
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <input type="number" id="maxPrice" placeholder="الحد الأقصى" 
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              <div class="flex gap-2">
+                <button class="filter-chip px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50" data-min="0" data-max="200">أقل من 200</button>
+                <button class="filter-chip px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50" data-min="200" data-max="500">200-500</button>
+                <button class="filter-chip px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50" data-min="500" data-max="1000">500-1000</button>
+                <button class="filter-chip px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50" data-min="1000" data-max="9999">أكثر من 1000</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Time -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">مدة التسليم</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="checkbox" value="1" class="delivery-filter mr-2">
+                <span class="text-sm">1 يوم</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="3" class="delivery-filter mr-2">
+                <span class="text-sm">3 أيام</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="7" class="delivery-filter mr-2">
+                <span class="text-sm">أسبوع</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="14" class="delivery-filter mr-2">
+                <span class="text-sm">أسبوعين</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Languages -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">اللغة</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="checkbox" value="arabic" class="language-filter mr-2">
+                <span class="text-sm">العربية</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="french" class="language-filter mr-2">
+                <span class="text-sm">الفرنسية</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="darija" class="language-filter mr-2">
+                <span class="text-sm">الدارجة</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Platforms -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">المنصة</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="checkbox" value="instagram" class="platform-filter mr-2">
+                <span class="text-sm">Instagram</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="tiktok" class="platform-filter mr-2">
+                <span class="text-sm">TikTok</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" value="youtube" class="platform-filter mr-2">
+                <span class="text-sm">YouTube</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Clear Filters -->
+          <button id="clearFilters" class="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+            مسح الفلاتر
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1">
+        
+        <!-- Mobile Filters -->
+        <div class="lg:hidden mb-6">
+          <div class="bg-white rounded-lg p-4 shadow-sm">
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="mobileSearchInput" placeholder="ابحث..." 
+                     class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+              <button id="mobileFiltersBtn" class="px-4 py-2 bg-primary text-white rounded-lg">
+                🔍 فلاتر
+              </button>
+            </div>
+            
+            <!-- Mobile Filter Chips -->
+            <div id="mobileFilterChips" class="flex flex-wrap gap-2">
+              <!-- Filter chips will be added here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort & Results -->
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-4">
+            <span id="resultsCount" class="text-gray-600">جاري التحميل...</span>
+            <select id="sortSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="rating">الأكثر تقييماً</option>
+              <option value="price_low">الأقل سعراً</option>
+              <option value="price_high">الأعلى سعراً</option>
+              <option value="newest">الأحدث</option>
+              <option value="popular">الأكثر شعبية</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gigs Grid -->
+        <div id="gigsGrid" class="gig-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <!-- Loading skeleton -->
+          <div class="col-span-full text-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p class="text-gray-600">جاري تحميل الخدمات...</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="flex justify-center mt-8 hidden">
+          <!-- Pagination will be added here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav lg:hidden">
+    <div class="flex justify-around py-2">
+      <a href="/brand/brand_dashboard_premium.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">🏠</span>
+        <span class="text-xs">الرئيسية</span>
+      </a>
+      <a href="/brand/brand-marketplace-gigs.html" class="flex flex-col items-center py-2 px-3 text-primary">
+        <span class="text-xl">🎯</span>
+        <span class="text-xs">السوق</span>
+      </a>
+      <a href="/brand/orders-history.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">📦</span>
+        <span class="text-xs">طلباتي</span>
+      </a>
+      <a href="/brand/notifications.html" class="flex flex-col items-center py-2 px-3 text-gray-600">
+        <span class="text-xl">🔔</span>
+        <span class="text-xs">الإشعارات</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/api.js"></script>
+  
+  <script>
+    let currentPage = 1;
+    let currentFilters = {};
+    let allGigs = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadGigs();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // Search
+      document.getElementById('searchInput')?.addEventListener('input', debounce(handleSearch, 500));
+      document.getElementById('mobileSearchInput')?.addEventListener('input', debounce(handleSearch, 500));
+
+      // Filters
+      document.getElementById('categoryFilter')?.addEventListener('change', handleFilterChange);
+      document.getElementById('minPrice')?.addEventListener('input', debounce(handleFilterChange, 500));
+      document.getElementById('maxPrice')?.addEventListener('input', debounce(handleFilterChange, 500));
+      document.getElementById('sortSelect')?.addEventListener('change', handleSortChange);
+
+      // Filter checkboxes
+      document.querySelectorAll('.delivery-filter, .language-filter, .platform-filter').forEach(checkbox => {
+        checkbox.addEventListener('change', handleFilterChange);
+      });
+
+      // Price range chips
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+          const min = this.dataset.min;
+          const max = this.dataset.max;
+          document.getElementById('minPrice').value = min;
+          document.getElementById('maxPrice').value = max;
+          handleFilterChange();
+        });
+      });
+
+      // Clear filters
+      document.getElementById('clearFilters')?.addEventListener('click', clearFilters);
+    }
+
+    async function loadGigs() {
+      try {
+        const response = await fetch(`${window.API_URL}/api/gigs`);
+        if (response.ok) {
+          const data = await response.json();
+          allGigs = data.gigs;
+          renderGigs(allGigs);
+          updateResultsCount(allGigs.length);
+        } else {
+          console.error('Error loading gigs');
+          showError('خطأ في تحميل الخدمات');
+        }
+      } catch (error) {
+        console.error('Error loading gigs:', error);
+        showError('خطأ في تحميل الخدمات');
+      }
+    }
+
+    function renderGigs(gigs) {
+      const grid = document.getElementById('gigsGrid');
+      
+      if (gigs.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">لا توجد خدمات</h3>
+            <p class="text-gray-600">جرب تغيير الفلاتر أو البحث بكلمات مختلفة</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = gigs.map(gig => `
+        <div class="gig-card bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer" onclick="viewGigDetails('${gig.id}')">
+          <div class="p-6">
+            <!-- Creator Info -->
+            <div class="flex items-center gap-3 mb-4">
+              <img src="${gig.creator_avatar || '/assets/default-avatar.png'}" 
+                   alt="${gig.creator_name}" 
+                   class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <h4 class="font-semibold text-gray-800">${gig.creator_name}</h4>
+                <div class="flex items-center gap-1">
+                  <span class="text-yellow-500">⭐</span>
+                  <span class="text-sm text-gray-600">${gig.rating || 'جديد'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gig Title -->
+            <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">${gig.title}</h3>
+
+            <!-- Gig Description -->
+            <p class="text-gray-600 text-sm mb-4 line-clamp-3">${gig.description}</p>
+
+            <!-- Gig Details -->
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>💰</span>
+                <span>من ${gig.base_price} MAD</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>⏱️</span>
+                <span>${gig.delivery_days} أيام</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>👁️</span>
+                <span>${gig.views || 0} مشاهدة</span>
+              </div>
+            </div>
+
+            <!-- Category & Platforms -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">${getCategoryName(gig.category)}</span>
+              ${gig.platforms?.slice(0, 2).map(platform => `
+                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">${getPlatformName(platform)}</span>
+              `).join('') || ''}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+              <button onclick="event.stopPropagation(); negotiateGig('${gig.id}')" 
+                      class="flex-1 px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition">
+                💬 تفاوض
+              </button>
+              <button onclick="event.stopPropagation(); buyNow('${gig.id}')" 
+                      class="flex-1 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:from-purple-700 hover:to-violet-700 transition">
+                🛒 اشتر الآن
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleSearch(e) {
+      const query = e.target.value;
+      currentFilters.search = query;
+      applyFilters();
+    }
+
+    function handleFilterChange() {
+      // Collect all filter values
+      currentFilters.category = document.getElementById('categoryFilter')?.value || '';
+      currentFilters.minPrice = document.getElementById('minPrice')?.value || '';
+      currentFilters.maxPrice = document.getElementById('maxPrice')?.value || '';
+      
+      // Collect checkbox filters
+      currentFilters.delivery = Array.from(document.querySelectorAll('.delivery-filter:checked')).map(cb => cb.value);
+      currentFilters.languages = Array.from(document.querySelectorAll('.language-filter:checked')).map(cb => cb.value);
+      currentFilters.platforms = Array.from(document.querySelectorAll('.platform-filter:checked')).map(cb => cb.value);
+      
+      applyFilters();
+    }
+
+    function handleSortChange() {
+      const sortBy = document.getElementById('sortSelect').value;
+      currentFilters.sort = sortBy;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      let filteredGigs = [...allGigs];
+
+      // Search filter
+      if (currentFilters.search) {
+        const query = currentFilters.search.toLowerCase();
+        filteredGigs = filteredGigs.filter(gig => 
+          gig.title.toLowerCase().includes(query) ||
+          gig.description.toLowerCase().includes(query) ||
+          gig.creator_name.toLowerCase().includes(query)
+        );
+      }
+
+      // Category filter
+      if (currentFilters.category) {
+        filteredGigs = filteredGigs.filter(gig => gig.category === currentFilters.category);
+      }
+
+      // Price filter
+      if (currentFilters.minPrice) {
+        filteredGigs = filteredGigs.filter(gig => gig.base_price >= parseFloat(currentFilters.minPrice));
+      }
+      if (currentFilters.maxPrice) {
+        filteredGigs = filteredGigs.filter(gig => gig.base_price <= parseFloat(currentFilters.maxPrice));
+      }
+
+      // Delivery filter
+      if (currentFilters.delivery.length > 0) {
+        filteredGigs = filteredGigs.filter(gig => 
+          currentFilters.delivery.includes(gig.delivery_days.toString())
+        );
+      }
+
+      // Language filter
+      if (currentFilters.languages.length > 0) {
+        filteredGigs = filteredGigs.filter(gig => 
+          currentFilters.languages.some(lang => gig.languages?.includes(lang))
+        );
+      }
+
+      // Platform filter
+      if (currentFilters.platforms.length > 0) {
+        filteredGigs = filteredGigs.filter(gig => 
+          currentFilters.platforms.some(platform => gig.platforms?.includes(platform))
+        );
+      }
+
+      // Sort
+      if (currentFilters.sort) {
+        switch (currentFilters.sort) {
+          case 'price_low':
+            filteredGigs.sort((a, b) => a.base_price - b.base_price);
+            break;
+          case 'price_high':
+            filteredGigs.sort((a, b) => b.base_price - a.base_price);
+            break;
+          case 'newest':
+            filteredGigs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            break;
+          case 'popular':
+            filteredGigs.sort((a, b) => (b.views || 0) - (a.views || 0));
+            break;
+          case 'rating':
+          default:
+            filteredGigs.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            break;
+        }
+      }
+
+      renderGigs(filteredGigs);
+      updateResultsCount(filteredGigs.length);
+    }
+
+    function clearFilters() {
+      // Reset all filter inputs
+      document.getElementById('searchInput').value = '';
+      document.getElementById('mobileSearchInput').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('sortSelect').value = 'rating';
+
+      // Uncheck all checkboxes
+      document.querySelectorAll('.delivery-filter, .language-filter, .platform-filter').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+
+      // Clear current filters
+      currentFilters = {};
+      
+      // Reload all gigs
+      renderGigs(allGigs);
+      updateResultsCount(allGigs.length);
+    }
+
+    function updateResultsCount(count) {
+      document.getElementById('resultsCount').textContent = `${count} خدمة متاحة`;
+    }
+
+    function showError(message) {
+      const grid = document.getElementById('gigsGrid');
+      grid.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <div class="text-6xl mb-4">❌</div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">خطأ</h3>
+          <p class="text-gray-600">${message}</p>
+        </div>
+      `;
+    }
+
+    function viewGigDetails(gigId) {
+      window.location.href = `/brand/brand-gig-details.html?id=${gigId}`;
+    }
+
+    function negotiateGig(gigId) {
+      window.location.href = `/brand/brand-chat-negotiation.html?gigId=${gigId}`;
+    }
+
+    function buyNow(gigId) {
+      window.location.href = `/brand/brand-gig-details.html?id=${gigId}&action=buy`;
+    }
+
+    function getCategoryName(category) {
+      const categories = {
+        'beauty': 'الجمال',
+        'fashion': 'الموضة',
+        'tech': 'التكنولوجيا',
+        'food': 'الطعام',
+        'lifestyle': 'نمط الحياة',
+        'business': 'الأعمال',
+        'education': 'التعليم',
+        'entertainment': 'الترفيه'
+      };
+      return categories[category] || category;
+    }
+
+    function getPlatformName(platform) {
+      const platforms = {
+        'instagram': 'Instagram',
+        'tiktok': 'TikTok',
+        'youtube': 'YouTube',
+        'facebook': 'Facebook'
+      };
+      return platforms[platform] || platform;
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+  </script>
+
+  <!-- Cookie System Integration -->
+  <script src="/js/cookie-manager.js"></script>
+  <script src="/js/cookie-banner.js"></script>
+  <script src="/js/cookie-integration.js"></script>
+</body>
+</html>
+

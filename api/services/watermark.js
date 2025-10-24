@@ -6,6 +6,9 @@ import fs from "fs/promises";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Configure FFmpeg path for macOS
+ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg');
+
 // Path to watermark logo
 const WATERMARK_LOGO = path.join(__dirname, "../assets/watermark-logo.png");
 
@@ -116,6 +119,70 @@ export async function applyWatermark(inputPath, outputPath, options = {}) {
   });
 }
 
+/**
+ * Add preview watermark to video (diagonal "UGC MAROC - PREVIEW")
+ * This watermark is temporary and will be removed after payment confirmation
+ * @param {string} inputPath - Path to input video file (already has branding watermark)
+ * @param {string} outputPath - Path to save preview watermarked video
+ * @returns {Promise<{success: boolean, outputPath: string}>}
+ */
+export async function addPreviewWatermark(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("🔒 Adding preview watermark...");
+      
+      // Build FFmpeg command for diagonal preview watermark
+      const command = ffmpeg(inputPath);
+      
+      // Create diagonal watermark with repeated text
+      command.complexFilter([
+        // First diagonal line (top-left to center)
+        `[0:v]drawtext=text='UGC MAROC - PREVIEW':fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:fontsize=64:fontcolor=white@0.3:x=50:y=50:shadowcolor=black@0.5:shadowx=3:shadowy=3[v1]`,
+        // Second diagonal line (center)
+        `[v1]drawtext=text='UGC MAROC - PREVIEW':fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:fontsize=64:fontcolor=white@0.3:x=W/2-tw/2:y=H/2-th/2:shadowcolor=black@0.5:shadowx=3:shadowy=3[v2]`,
+        // Third diagonal line (center to bottom-right)
+        `[v2]drawtext=text='UGC MAROC - PREVIEW':fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:fontsize=64:fontcolor=white@0.3:x=W-tw-50:y=H-th-50:shadowcolor=black@0.5:shadowx=3:shadowy=3[out]`
+      ], "out");
+
+      // Output configuration (same as branding watermark)
+      command
+        .outputOptions([
+          "-c:v libx264",     // H.264 codec
+          "-preset fast",     // Fast encoding
+          "-crf 23",          // Quality (lower = better)
+          "-c:a copy",        // Copy audio without re-encoding
+        ])
+        .output(outputPath)
+        .on("start", (commandLine) => {
+          console.log(`🔒 Preview watermark FFmpeg started: ${commandLine}`);
+        })
+        .on("progress", (progress) => {
+          if (progress.percent) {
+            console.log(`⏳ Preview watermark processing: ${Math.round(progress.percent)}%`);
+          }
+        })
+        .on("end", () => {
+          console.log(`✅ Preview watermark applied successfully: ${outputPath}`);
+          resolve({
+            success: true,
+            outputPath,
+          });
+        })
+        .on("error", (err, stdout, stderr) => {
+          console.error("❌ Preview watermark FFmpeg error:", err.message);
+          console.error("stderr:", stderr);
+          reject(new Error(`Preview watermarking failed: ${err.message}`));
+        })
+        .run();
+
+    } catch (error) {
+      console.error("❌ Error in addPreviewWatermark:", error);
+      reject(error);
+    }
+  });
+}
+
 export default {
   applyWatermark,
+  addPreviewWatermark,
 };
