@@ -8,6 +8,20 @@
       "when": 1761317935228,
       "tag": "0000_sloppy_skrulls",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1761319340940,
+      "tag": "0001_daffy_sage",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1761320021367,
+      "tag": "0002_youthful_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

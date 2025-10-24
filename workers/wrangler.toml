@@ -8,6 +8,11 @@ binding = "DB"
 database_name = "ugc-maroc-db"
 database_id = "b9359a0f-9b90-40b4-842b-ecc8269fd09b"
 
+# [[durable_objects.bindings]]
+# name = "CHAT_ROOM"
+# class_name = "ChatRoom"
+# script_name = "ugc-maroc-api"
+
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "ugc-maroc-assets"

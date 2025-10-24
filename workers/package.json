@@ -11,10 +11,11 @@
     "db:migrate:local": "wrangler d1 execute ugc-maroc-db --local --file=migrations/0000_initial.sql"
   },
   "dependencies": {
-    "hono": "^4.0.0",
-    "drizzle-orm": "^0.44.6",
     "@auth/core": "^0.30.0",
+    "@auth/d1-adapter": "^1.11.0",
     "bcryptjs": "^2.4.3",
+    "drizzle-orm": "^0.44.6",
+    "hono": "^4.0.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
@@ -23,7 +24,13 @@
     "typescript": "^5.0.0",
     "wrangler": "^4.45.0"
   },
-  "keywords": ["cloudflare", "workers", "ugc", "maroc", "api"],
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "ugc",
+    "maroc",
+    "api"
+  ],
   "author": "UGC Maroc Team",
   "license": "ISC"
 }

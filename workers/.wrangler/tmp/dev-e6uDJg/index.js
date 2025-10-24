@@ -8369,6 +8369,8 @@ var profiles = sqliteTable("profiles", {
   avatar_url: text("avatar_url"),
   phone: text("phone"),
   bio: text("bio"),
+  password_hash: text("password_hash").notNull(),
+  // For Auth.js
   created_at: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   updated_at: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull()
 });
@@ -8559,6 +8561,19 @@ var contracts = sqliteTable("contracts", {
   signed_at: integer("signed_at", { mode: "timestamp" }),
   created_at: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull()
 });
+var conversationParticipants = sqliteTable("conversation_participants", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  conversation_id: text("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  user_id: text("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  joined_at: integer("joined_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  left_at: integer("left_at", { mode: "timestamp" })
+});
+var messageReads = sqliteTable("message_reads", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  message_id: text("message_id").notNull().references(() => messages.id, { onDelete: "cascade" }),
+  user_id: text("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }),
+  read_at: integer("read_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull()
+});
 var schema = {
   profiles,
   creators,
@@ -8573,8 +8588,522 @@ var schema = {
   messages,
   gigs,
   negotiations,
-  contracts
+  contracts,
+  conversationParticipants,
+  messageReads
 };
+
+// src/auth/routes.ts
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+__name(hashPassword, "hashPassword");
+async function comparePassword(password, hash) {
+  const hashedPassword = await hashPassword(password);
+  return hashedPassword === hash;
+}
+__name(comparePassword, "comparePassword");
+function createJWT(payload, secret) {
+  const header = { alg: "HS256", typ: "JWT" };
+  const encodedHeader = btoa(JSON.stringify(header));
+  const encodedPayload = btoa(JSON.stringify(payload));
+  const signature = btoa(secret + encodedHeader + encodedPayload);
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+__name(createJWT, "createJWT");
+function verifyJWT(token, secret) {
+  const parts = token.split(".");
+  if (parts.length !== 3) throw new Error("Invalid token");
+  const [header, payload, signature] = parts;
+  const expectedSignature = btoa(secret + header + payload);
+  if (signature !== expectedSignature) {
+    throw new Error("Invalid signature");
+  }
+  return JSON.parse(atob(payload));
+}
+__name(verifyJWT, "verifyJWT");
+function createAuthRoutes(app2) {
+  app2.post("/api/auth/login", async (c) => {
+    try {
+      const { email, password } = await c.req.json();
+      if (!email || !password) {
+        return c.json({
+          success: false,
+          error: "Email et mot de passe requis"
+        }, 400);
+      }
+      const user = await c.env.DB.prepare(
+        "SELECT * FROM profiles WHERE email = ?"
+      ).bind(email).first();
+      if (!user) {
+        return c.json({
+          success: false,
+          error: "Utilisateur non trouv\xE9"
+        }, 404);
+      }
+      const isValid = await comparePassword(password, user.password_hash);
+      if (!isValid) {
+        return c.json({
+          success: false,
+          error: "Mot de passe incorrect"
+        }, 401);
+      }
+      const token = createJWT({
+        sub: user.id,
+        email: user.email,
+        role: user.role
+      }, c.env.JWT_SECRET);
+      return c.json({
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role,
+          avatar_url: user.avatar_url
+        },
+        token
+      });
+    } catch (error3) {
+      console.error("Login error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur serveur"
+      }, 500);
+    }
+  });
+  app2.post("/api/auth/register", async (c) => {
+    try {
+      const { email, password, full_name, role, phone } = await c.req.json();
+      if (!email || !password || !full_name || !role) {
+        return c.json({
+          success: false,
+          error: "Tous les champs sont requis"
+        }, 400);
+      }
+      const existingUser = await c.env.DB.prepare(
+        "SELECT id FROM profiles WHERE email = ?"
+      ).bind(email).first();
+      if (existingUser) {
+        return c.json({
+          success: false,
+          error: "Cet email est d\xE9j\xE0 utilis\xE9"
+        }, 409);
+      }
+      const hashedPassword = await hashPassword(password);
+      const userId = crypto.randomUUID();
+      const result = await c.env.DB.prepare(`
+        INSERT INTO profiles (id, email, full_name, role, phone, password_hash, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        userId,
+        email,
+        full_name,
+        role,
+        phone || null,
+        hashedPassword,
+        Date.now(),
+        Date.now()
+      ).run();
+      if (!result.success) {
+        return c.json({
+          success: false,
+          error: "Erreur lors de la cr\xE9ation du compte"
+        }, 500);
+      }
+      await c.env.DB.prepare(`
+        INSERT INTO wallets (user_id, balance, pending_balance, currency, created_at, updated_at)
+        VALUES (?, 0.0, 0.0, 'MAD', ?, ?)
+      `).bind(userId, Date.now(), Date.now()).run();
+      if (role === "creator") {
+        await c.env.DB.prepare(`
+          INSERT INTO creators (user_id, specialization, created_at, updated_at)
+          VALUES (?, 'lifestyle', ?, ?)
+        `).bind(userId, Date.now(), Date.now()).run();
+      } else if (role === "brand") {
+        await c.env.DB.prepare(`
+          INSERT INTO brands (user_id, company_name, created_at, updated_at)
+          VALUES (?, ?, ?, ?)
+        `).bind(userId, full_name, Date.now(), Date.now()).run();
+      }
+      const token = createJWT({
+        sub: userId,
+        email,
+        role
+      }, c.env.JWT_SECRET);
+      return c.json({
+        success: true,
+        message: "Compte cr\xE9\xE9 avec succ\xE8s",
+        user: {
+          id: userId,
+          email,
+          full_name,
+          role
+        },
+        token
+      });
+    } catch (error3) {
+      console.error("Register error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur serveur"
+      }, 500);
+    }
+  });
+  app2.post("/api/auth/logout", async (c) => {
+    return c.json({
+      success: true,
+      message: "D\xE9connexion r\xE9ussie"
+    });
+  });
+  app2.get("/api/auth/me", async (c) => {
+    try {
+      const authHeader = c.req.header("Authorization");
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return c.json({
+          success: false,
+          error: "Token manquant"
+        }, 401);
+      }
+      const token = authHeader.substring(7);
+      const decoded = verifyJWT(token, c.env.JWT_SECRET);
+      const user = await c.env.DB.prepare(
+        "SELECT id, email, full_name, role, avatar_url FROM profiles WHERE id = ?"
+      ).bind(decoded.sub).first();
+      if (!user) {
+        return c.json({
+          success: false,
+          error: "Utilisateur non trouv\xE9"
+        }, 404);
+      }
+      return c.json({
+        success: true,
+        user
+      });
+    } catch (error3) {
+      console.error("Auth me error:", error3);
+      return c.json({
+        success: false,
+        error: "Token invalide"
+      }, 401);
+    }
+  });
+}
+__name(createAuthRoutes, "createAuthRoutes");
+
+// src/services/stripe.ts
+var StripeService = class {
+  static {
+    __name(this, "StripeService");
+  }
+  apiKey;
+  baseUrl = "https://api.stripe.com/v1";
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+  }
+  async makeRequest(endpoint, method = "GET", data) {
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers = {
+      "Authorization": `Bearer ${this.apiKey}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    };
+    let body;
+    if (data && method !== "GET") {
+      body = new URLSearchParams(data).toString();
+    }
+    const response = await fetch(url, {
+      method,
+      headers,
+      body
+    });
+    if (!response.ok) {
+      const error3 = await response.text();
+      throw new Error(`Stripe API error: ${response.status} - ${error3}`);
+    }
+    return await response.json();
+  }
+  // Create a payment intent
+  async createPaymentIntent(amount, currency = "MAD", metadata) {
+    const data = {
+      amount: amount * 100,
+      // Convert to cents
+      currency: currency.toLowerCase(),
+      metadata: JSON.stringify(metadata || {})
+    };
+    return await this.makeRequest("/payment_intents", "POST", data);
+  }
+  // Confirm a payment intent
+  async confirmPaymentIntent(paymentIntentId, paymentMethodId) {
+    const data = {
+      payment_method: paymentMethodId
+    };
+    return await this.makeRequest(`/payment_intents/${paymentIntentId}/confirm`, "POST", data);
+  }
+  // Create a customer
+  async createCustomer(email, name, metadata) {
+    const data = {
+      email,
+      metadata: JSON.stringify(metadata || {})
+    };
+    if (name) {
+      data.name = name;
+    }
+    return await this.makeRequest("/customers", "POST", data);
+  }
+  // Create a payment method
+  async createPaymentMethod(type, card) {
+    const data = {
+      type,
+      "card[number]": card.number,
+      "card[exp_month]": card.exp_month,
+      "card[exp_year]": card.exp_year,
+      "card[cvc]": card.cvc
+    };
+    return await this.makeRequest("/payment_methods", "POST", data);
+  }
+  // Get payment intent
+  async getPaymentIntent(paymentIntentId) {
+    return await this.makeRequest(`/payment_intents/${paymentIntentId}`);
+  }
+  // Create a refund
+  async createRefund(paymentIntentId, amount, reason) {
+    const data = {
+      payment_intent: paymentIntentId
+    };
+    if (amount) {
+      data.amount = amount * 100;
+    }
+    if (reason) {
+      data.reason = reason;
+    }
+    return await this.makeRequest("/refunds", "POST", data);
+  }
+  // Create a transfer (for payouts to creators)
+  async createTransfer(amount, destination, currency = "MAD", metadata) {
+    const data = {
+      amount: amount * 100,
+      // Convert to cents
+      currency: currency.toLowerCase(),
+      destination,
+      metadata: JSON.stringify(metadata || {})
+    };
+    return await this.makeRequest("/transfers", "POST", data);
+  }
+  // Create a connected account for creators
+  async createConnectedAccount(type = "express", country = "MA") {
+    const data = {
+      type,
+      country
+    };
+    return await this.makeRequest("/accounts", "POST", data);
+  }
+  // Create account link for onboarding
+  async createAccountLink(accountId, refreshUrl, returnUrl) {
+    const data = {
+      account: accountId,
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
+      type: "account_onboarding"
+    };
+    return await this.makeRequest("/account_links", "POST", data);
+  }
+};
+function createStripeService(apiKey) {
+  return new StripeService(apiKey);
+}
+__name(createStripeService, "createStripeService");
+
+// src/routes/payments.ts
+function createPaymentRoutes(app2) {
+  app2.post("/api/payments/create-intent", async (c) => {
+    try {
+      const { amount, currency = "MAD", campaign_id, order_id } = await c.req.json();
+      if (!amount || amount <= 0) {
+        return c.json({
+          success: false,
+          error: "Montant invalide"
+        }, 400);
+      }
+      const stripe = createStripeService(c.env.STRIPE_SECRET_KEY);
+      const paymentIntent = await stripe.createPaymentIntent(
+        amount,
+        currency,
+        {
+          campaign_id,
+          order_id,
+          platform: "ugc-maroc"
+        }
+      );
+      return c.json({
+        success: true,
+        payment_intent: {
+          id: paymentIntent.id,
+          client_secret: paymentIntent.client_secret,
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+          status: paymentIntent.status
+        }
+      });
+    } catch (error3) {
+      console.error("Payment intent error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur lors de la cr\xE9ation du paiement"
+      }, 500);
+    }
+  });
+  app2.post("/api/payments/confirm", async (c) => {
+    try {
+      const { payment_intent_id, payment_method_id } = await c.req.json();
+      if (!payment_intent_id || !payment_method_id) {
+        return c.json({
+          success: false,
+          error: "Param\xE8tres manquants"
+        }, 400);
+      }
+      const stripe = createStripeService(c.env.STRIPE_SECRET_KEY);
+      const confirmedPayment = await stripe.confirmPaymentIntent(
+        payment_intent_id,
+        payment_method_id
+      );
+      if (confirmedPayment.status === "succeeded") {
+        console.log("Payment succeeded:", confirmedPayment.id);
+      }
+      return c.json({
+        success: true,
+        payment: {
+          id: confirmedPayment.id,
+          status: confirmedPayment.status,
+          amount: confirmedPayment.amount,
+          currency: confirmedPayment.currency
+        }
+      });
+    } catch (error3) {
+      console.error("Payment confirmation error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur lors de la confirmation du paiement"
+      }, 500);
+    }
+  });
+  app2.post("/api/payments/customers", async (c) => {
+    try {
+      const { email, name, user_id } = await c.req.json();
+      if (!email) {
+        return c.json({
+          success: false,
+          error: "Email requis"
+        }, 400);
+      }
+      const stripe = createStripeService(c.env.STRIPE_SECRET_KEY);
+      const customer = await stripe.createCustomer(
+        email,
+        name,
+        { user_id, platform: "ugc-maroc" }
+      );
+      return c.json({
+        success: true,
+        customer: {
+          id: customer.id,
+          email: customer.email,
+          name: customer.name
+        }
+      });
+    } catch (error3) {
+      console.error("Customer creation error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur lors de la cr\xE9ation du client"
+      }, 500);
+    }
+  });
+  app2.post("/api/payments/refund", async (c) => {
+    try {
+      const { payment_intent_id, amount, reason } = await c.req.json();
+      if (!payment_intent_id) {
+        return c.json({
+          success: false,
+          error: "ID de paiement requis"
+        }, 400);
+      }
+      const stripe = createStripeService(c.env.STRIPE_SECRET_KEY);
+      const refund = await stripe.createRefund(
+        payment_intent_id,
+        amount,
+        reason
+      );
+      return c.json({
+        success: true,
+        refund: {
+          id: refund.id,
+          amount: refund.amount,
+          status: refund.status,
+          reason: refund.reason
+        }
+      });
+    } catch (error3) {
+      console.error("Refund error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur lors du remboursement"
+      }, 500);
+    }
+  });
+  app2.get("/api/payments/:payment_intent_id", async (c) => {
+    try {
+      const payment_intent_id = c.req.param("payment_intent_id");
+      const stripe = createStripeService(c.env.STRIPE_SECRET_KEY);
+      const paymentIntent = await stripe.getPaymentIntent(payment_intent_id);
+      return c.json({
+        success: true,
+        payment: {
+          id: paymentIntent.id,
+          status: paymentIntent.status,
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+          created: paymentIntent.created
+        }
+      });
+    } catch (error3) {
+      console.error("Payment status error:", error3);
+      return c.json({
+        success: false,
+        error: "Erreur lors de la r\xE9cup\xE9ration du statut"
+      }, 500);
+    }
+  });
+  app2.post("/api/payments/webhook", async (c) => {
+    try {
+      const body = await c.req.text();
+      const signature = c.req.header("stripe-signature");
+      if (!signature) {
+        return c.json({ error: "Missing signature" }, 400);
+      }
+      const event = JSON.parse(body);
+      console.log("Stripe webhook event:", event.type);
+      switch (event.type) {
+        case "payment_intent.succeeded":
+          console.log("Payment succeeded:", event.data.object.id);
+          break;
+        case "payment_intent.payment_failed":
+          console.log("Payment failed:", event.data.object.id);
+          break;
+        case "charge.dispute.created":
+          console.log("Dispute created:", event.data.object.id);
+          break;
+      }
+      return c.json({ received: true });
+    } catch (error3) {
+      console.error("Webhook error:", error3);
+      return c.json({ error: "Webhook processing failed" }, 500);
+    }
+  });
+}
+__name(createPaymentRoutes, "createPaymentRoutes");
 
 // src/index.ts
 var app = new Hono2();
@@ -8612,15 +9141,8 @@ app.get("/api/health", (c) => {
   });
 });
 var getDb = /* @__PURE__ */ __name((c) => drizzle(c.env.DB, { schema }), "getDb");
-app.get("/api/auth/me", async (c) => {
-  return c.json({ message: "Auth endpoint - to be implemented" });
-});
-app.post("/api/auth/login", async (c) => {
-  return c.json({ message: "Login endpoint - to be implemented" });
-});
-app.post("/api/auth/register", async (c) => {
-  return c.json({ message: "Register endpoint - to be implemented" });
-});
+createAuthRoutes(app);
+createPaymentRoutes(app);
 app.get("/api/profiles/:id", async (c) => {
   const db = getDb(c);
   const profileId = c.req.param("id");
@@ -8852,6 +9374,145 @@ app.notFound((c) => {
   return c.json({ error: "Not found" }, 404);
 });
 var src_default = app;
+var ChatRoom = class {
+  static {
+    __name(this, "ChatRoom");
+  }
+  state;
+  sessions = /* @__PURE__ */ new Set();
+  messages = [];
+  constructor(state) {
+    this.state = state;
+  }
+  async fetch(request) {
+    const url = new URL(request.url);
+    if (url.pathname === "/websocket") {
+      return this.handleWebSocket(request);
+    }
+    if (url.pathname === "/messages") {
+      return this.handleMessages(request);
+    }
+    if (url.pathname === "/send") {
+      return this.handleSendMessage(request);
+    }
+    return new Response("Not found", { status: 404 });
+  }
+  async handleWebSocket(request) {
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair);
+    server.accept();
+    this.sessions.add(server);
+    const recentMessages = this.messages.slice(-50);
+    server.send(JSON.stringify({
+      type: "history",
+      messages: recentMessages
+    }));
+    server.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.handleMessage(data, server);
+      } catch (error3) {
+        console.error("WebSocket message error:", error3);
+      }
+    });
+    server.addEventListener("close", () => {
+      this.sessions.delete(server);
+    });
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async handleMessage(data, sender) {
+    switch (data.type) {
+      case "join":
+        console.log(`User ${data.user_id} joined conversation ${data.conversation_id}`);
+        break;
+      case "message":
+        const message = {
+          id: crypto.randomUUID(),
+          user_id: data.user_id,
+          conversation_id: data.conversation_id,
+          content: data.content,
+          timestamp: Date.now(),
+          type: data.message_type || "text"
+        };
+        this.messages.push(message);
+        this.broadcast({
+          type: "new_message",
+          message
+        });
+        break;
+      case "typing":
+        this.broadcast({
+          type: "typing",
+          user_id: data.user_id,
+          conversation_id: data.conversation_id,
+          is_typing: data.is_typing
+        });
+        break;
+    }
+  }
+  broadcast(data) {
+    const message = JSON.stringify(data);
+    this.sessions.forEach((ws) => {
+      try {
+        ws.send(message);
+      } catch (error3) {
+        console.error("Broadcast error:", error3);
+        this.sessions.delete(ws);
+      }
+    });
+  }
+  async handleMessages(request) {
+    const url = new URL(request.url);
+    const conversationId = url.searchParams.get("conversation_id");
+    const limit = parseInt(url.searchParams.get("limit") || "50");
+    const offset = parseInt(url.searchParams.get("offset") || "0");
+    let filteredMessages = this.messages;
+    if (conversationId) {
+      filteredMessages = this.messages.filter((m) => m.conversation_id === conversationId);
+    }
+    const paginatedMessages = filteredMessages.slice(offset, offset + limit).sort((a, b) => b.timestamp - a.timestamp);
+    return new Response(JSON.stringify({
+      success: true,
+      messages: paginatedMessages,
+      total: filteredMessages.length,
+      has_more: offset + limit < filteredMessages.length
+    }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+  async handleSendMessage(request) {
+    try {
+      const data = await request.json();
+      const message = {
+        id: crypto.randomUUID(),
+        user_id: data.user_id,
+        conversation_id: data.conversation_id,
+        content: data.content,
+        timestamp: Date.now(),
+        type: data.type || "text"
+      };
+      this.messages.push(message);
+      this.broadcast({
+        type: "new_message",
+        message
+      });
+      return new Response(JSON.stringify({
+        success: true,
+        message
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    } catch (error3) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Failed to send message"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+  }
+};
 
 // node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
 var drainBody = /* @__PURE__ */ __name(async (request, env2, _ctx, middlewareCtx) => {
@@ -8894,7 +9555,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env2, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-73ShZi/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-nJwk9X/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8926,7 +9587,7 @@ function __facade_invoke__(request, env2, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-73ShZi/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-nJwk9X/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -9023,6 +9684,7 @@ if (typeof middleware_insertion_facade_default === "object") {
 }
 var middleware_loader_entry_default = WRAPPED_ENTRY;
 export {
+  ChatRoom,
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };

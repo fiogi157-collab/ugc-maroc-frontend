@@ -15,6 +15,7 @@ export const profiles = sqliteTable('profiles', {
   avatar_url: text('avatar_url'),
   phone: text('phone'),
   bio: text('bio'),
+  password_hash: text('password_hash').notNull(), // For Auth.js
   created_at: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
   updated_at: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
 })
@@ -222,6 +223,23 @@ export const contracts = sqliteTable('contracts', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
 })
 
+// ===== CONVERSATION PARTICIPANTS TABLE =====
+export const conversationParticipants = sqliteTable('conversation_participants', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  conversation_id: text('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
+  user_id: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
+  joined_at: integer('joined_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
+  left_at: integer('left_at', { mode: 'timestamp' }),
+})
+
+// ===== MESSAGE READS TABLE =====
+export const messageReads = sqliteTable('message_reads', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  message_id: text('message_id').notNull().references(() => messages.id, { onDelete: 'cascade' }),
+  user_id: text('user_id').notNull().references(() => profiles.id, { onDelete: 'cascade' }),
+  read_at: integer('read_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
+})
+
 // Export all tables for Drizzle
 export const schema = {
   profiles,
@@ -238,4 +256,6 @@ export const schema = {
   gigs,
   negotiations,
   contracts,
+  conversationParticipants,
+  messageReads,
 }
