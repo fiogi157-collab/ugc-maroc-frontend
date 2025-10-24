@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { KVCacheService } from '../services/kv-cache.js'
 
 // Hash functions compatible with Cloudflare Workers
 async function hashPassword(password: string): Promise<string> {
@@ -80,15 +81,20 @@ export function createAuthRoutes(app: Hono) {
         role: user.role
       }, c.env.JWT_SECRET)
 
+      // Cache user session
+      const cache = new KVCacheService(c.env.UGC_MAROC_CACHE)
+      const userData = {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        avatar_url: user.avatar_url
+      }
+      await cache.cacheUserSession(user.id, userData)
+
       return c.json({
         success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          avatar_url: user.avatar_url
-        },
+        user: userData,
         token
       })
 
@@ -179,15 +185,20 @@ export function createAuthRoutes(app: Hono) {
         role
       }, c.env.JWT_SECRET)
 
+      // Cache user session
+      const cache = new KVCacheService(c.env.UGC_MAROC_CACHE)
+      const userData = {
+        id: userId,
+        email,
+        full_name,
+        role
+      }
+      await cache.cacheUserSession(userId, userData)
+
       return c.json({
         success: true,
         message: 'Compte créé avec succès',
-        user: {
-          id: userId,
-          email,
-          full_name,
-          role
-        },
+        user: userData,
         token
       })
 
@@ -202,10 +213,28 @@ export function createAuthRoutes(app: Hono) {
 
   // Route de déconnexion
   app.post('/api/auth/logout', async (c) => {
-    return c.json({
-      success: true,
-      message: 'Déconnexion réussie'
-    })
+    try {
+      const authHeader = c.req.header('Authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7)
+        const decoded = verifyJWT(token, c.env.JWT_SECRET)
+        
+        // Invalider le cache de session
+        const cache = new KVCacheService(c.env.UGC_MAROC_CACHE)
+        await cache.invalidateUserSession(decoded.sub)
+      }
+      
+      return c.json({
+        success: true,
+        message: 'Déconnexion réussie'
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+      return c.json({
+        success: true,
+        message: 'Déconnexion réussie'
+      })
+    }
   })
 
   // Route pour vérifier le token

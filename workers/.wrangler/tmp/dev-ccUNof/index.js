@@ -8593,6 +8593,171 @@ var schema = {
   messageReads
 };
 
+// src/services/kv-cache.ts
+var KVCacheService = class {
+  static {
+    __name(this, "KVCacheService");
+  }
+  kv;
+  constructor(kv) {
+    this.kv = kv;
+  }
+  // ===== SESSION CACHE =====
+  async cacheUserSession(userId, userData, ttl = 3600) {
+    const key = `session:${userId}`;
+    await this.kv.put(key, JSON.stringify(userData), { expirationTtl: ttl });
+  }
+  async getUserSession(userId) {
+    const key = `session:${userId}`;
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  async invalidateUserSession(userId) {
+    const key = `session:${userId}`;
+    await this.kv.delete(key);
+  }
+  // ===== CAMPAIGNS CACHE =====
+  async cacheCampaigns(campaigns2, ttl = 300) {
+    const key = "campaigns:active";
+    await this.kv.put(key, JSON.stringify(campaigns2), { expirationTtl: ttl });
+  }
+  async getCachedCampaigns() {
+    const key = "campaigns:active";
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  async cacheCampaign(campaignId, campaign, ttl = 3600) {
+    const key = `campaign:${campaignId}`;
+    await this.kv.put(key, JSON.stringify(campaign), { expirationTtl: ttl });
+  }
+  async getCachedCampaign(campaignId) {
+    const key = `campaign:${campaignId}`;
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  async invalidateCampaign(campaignId) {
+    const key = `campaign:${campaignId}`;
+    await this.kv.delete(key);
+  }
+  // ===== GIGS CACHE =====
+  async cacheGigs(gigs2, ttl = 300) {
+    const key = "gigs:active";
+    await this.kv.put(key, JSON.stringify(gigs2), { expirationTtl: ttl });
+  }
+  async getCachedGigs() {
+    const key = "gigs:active";
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  async cacheGig(gigId, gig, ttl = 3600) {
+    const key = `gig:${gigId}`;
+    await this.kv.put(key, JSON.stringify(gig), { expirationTtl: ttl });
+  }
+  async getCachedGig(gigId) {
+    const key = `gig:${gigId}`;
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  // ===== CREATORS CACHE =====
+  async cacheCreator(creatorId, creator, ttl = 3600) {
+    const key = `creator:${creatorId}`;
+    await this.kv.put(key, JSON.stringify(creator), { expirationTtl: ttl });
+  }
+  async getCachedCreator(creatorId) {
+    const key = `creator:${creatorId}`;
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  async cacheTopCreators(creators2, ttl = 1800) {
+    const key = "creators:top";
+    await this.kv.put(key, JSON.stringify(creators2), { expirationTtl: ttl });
+  }
+  async getCachedTopCreators() {
+    const key = "creators:top";
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  // ===== RATE LIMITING =====
+  async checkRateLimit(clientId, endpoint, limit = 100, window = 60) {
+    const key = `ratelimit:${clientId}:${endpoint}`;
+    const current = await this.kv.get(key);
+    const count3 = current ? parseInt(current) : 0;
+    if (count3 >= limit) {
+      return { allowed: false, remaining: 0, resetTime: Date.now() + window * 1e3 };
+    }
+    await this.kv.put(key, String(count3 + 1), { expirationTtl: window });
+    return { allowed: true, remaining: limit - count3 - 1, resetTime: Date.now() + window * 1e3 };
+  }
+  // ===== SEARCH CACHE =====
+  async cacheSearchResults(queryHash, results, ttl = 300) {
+    const key = `search:${queryHash}`;
+    await this.kv.put(key, JSON.stringify(results), { expirationTtl: ttl });
+  }
+  async getCachedSearchResults(queryHash) {
+    const key = `search:${queryHash}`;
+    const cached = await this.kv.get(key, "json");
+    return cached;
+  }
+  // ===== ANALYTICS =====
+  async incrementCounter(counterName, value = 1) {
+    const key = `analytics:${counterName}`;
+    const current = await this.kv.get(key);
+    const count3 = current ? parseInt(current) : 0;
+    await this.kv.put(key, String(count3 + value));
+  }
+  async getCounter(counterName) {
+    const key = `analytics:${counterName}`;
+    const value = await this.kv.get(key);
+    return value ? parseInt(value) : 0;
+  }
+  // ===== FEATURE FLAGS =====
+  async setFeatureFlag(flagName, enabled) {
+    const key = `feature:${flagName}`;
+    await this.kv.put(key, JSON.stringify({ enabled, updated_at: Date.now() }));
+  }
+  async getFeatureFlag(flagName) {
+    const key = `feature:${flagName}`;
+    const cached = await this.kv.get(key, "json");
+    return cached?.enabled || false;
+  }
+  async getAllFeatureFlags() {
+    const key = "features:all";
+    const cached = await this.kv.get(key, "json");
+    return cached || {};
+  }
+  async setAllFeatureFlags(flags) {
+    const key = "features:all";
+    await this.kv.put(key, JSON.stringify(flags));
+  }
+  // ===== CACHE INVALIDATION =====
+  async invalidatePattern(pattern) {
+    console.log(`Would invalidate pattern: ${pattern}`);
+  }
+  async clearAllCache() {
+    console.log("Would clear all cache");
+  }
+  // ===== CACHE STATS =====
+  async getCacheStats() {
+    return {
+      total_keys: "N/A - KV doesn't provide key listing",
+      memory_usage: "N/A - KV doesn't provide usage stats"
+    };
+  }
+};
+async function createSearchHash(params) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(params));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+__name(createSearchHash, "createSearchHash");
+function getClientId(request) {
+  const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || request.headers.get("X-Real-IP") || "unknown";
+  return ip;
+}
+__name(getClientId, "getClientId");
+
 // src/auth/routes.ts
 async function hashPassword(password) {
   const encoder = new TextEncoder();
@@ -8657,15 +8822,18 @@ function createAuthRoutes(app2) {
         email: user.email,
         role: user.role
       }, c.env.JWT_SECRET);
+      const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+      const userData = {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        avatar_url: user.avatar_url
+      };
+      await cache.cacheUserSession(user.id, userData);
       return c.json({
         success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          avatar_url: user.avatar_url
-        },
+        user: userData,
         token
       });
     } catch (error3) {
@@ -8735,15 +8903,18 @@ function createAuthRoutes(app2) {
         email,
         role
       }, c.env.JWT_SECRET);
+      const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+      const userData = {
+        id: userId,
+        email,
+        full_name,
+        role
+      };
+      await cache.cacheUserSession(userId, userData);
       return c.json({
         success: true,
         message: "Compte cr\xE9\xE9 avec succ\xE8s",
-        user: {
-          id: userId,
-          email,
-          full_name,
-          role
-        },
+        user: userData,
         token
       });
     } catch (error3) {
@@ -8755,10 +8926,25 @@ function createAuthRoutes(app2) {
     }
   });
   app2.post("/api/auth/logout", async (c) => {
-    return c.json({
-      success: true,
-      message: "D\xE9connexion r\xE9ussie"
-    });
+    try {
+      const authHeader = c.req.header("Authorization");
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.substring(7);
+        const decoded = verifyJWT(token, c.env.JWT_SECRET);
+        const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+        await cache.invalidateUserSession(decoded.sub);
+      }
+      return c.json({
+        success: true,
+        message: "D\xE9connexion r\xE9ussie"
+      });
+    } catch (error3) {
+      console.error("Logout error:", error3);
+      return c.json({
+        success: true,
+        message: "D\xE9connexion r\xE9ussie"
+      });
+    }
   });
   app2.get("/api/auth/me", async (c) => {
     try {
@@ -9105,6 +9291,377 @@ function createPaymentRoutes(app2) {
 }
 __name(createPaymentRoutes, "createPaymentRoutes");
 
+// src/routes/cached-routes.ts
+function createCachedRoutes(app2) {
+  const getCache = /* @__PURE__ */ __name((c) => new KVCacheService(c.env.UGC_MAROC_CACHE), "getCache");
+  const getDb2 = /* @__PURE__ */ __name((c) => drizzle(c.env.DB, { schema }), "getDb");
+  app2.get("/api/campaigns/cached", async (c) => {
+    const cache = getCache(c);
+    const db = getDb2(c);
+    try {
+      const cached = await cache.getCachedCampaigns();
+      if (cached) {
+        console.log("\u2705 Campaigns from cache");
+        return c.json({
+          success: true,
+          campaigns: cached,
+          count: cached.length,
+          source: "cache"
+        });
+      }
+      console.log("\u274C Campaigns cache miss - querying DB");
+      const campaigns2 = await db.select().from(schema.campaigns).all();
+      await cache.cacheCampaigns(campaigns2);
+      return c.json({
+        success: true,
+        campaigns: campaigns2,
+        count: campaigns2.length,
+        source: "database"
+      });
+    } catch (error3) {
+      console.error("Campaigns error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to fetch campaigns"
+      }, 500);
+    }
+  });
+  app2.get("/api/gigs/cached", async (c) => {
+    const cache = getCache(c);
+    const db = getDb2(c);
+    try {
+      const cached = await cache.getCachedGigs();
+      if (cached) {
+        console.log("\u2705 Gigs from cache");
+        return c.json({
+          success: true,
+          gigs: cached,
+          count: cached.length,
+          source: "cache"
+        });
+      }
+      console.log("\u274C Gigs cache miss - querying DB");
+      const gigs2 = await db.select().from(schema.gigs).all();
+      await cache.cacheGigs(gigs2);
+      return c.json({
+        success: true,
+        gigs: gigs2,
+        count: gigs2.length,
+        source: "database"
+      });
+    } catch (error3) {
+      console.error("Gigs error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to fetch gigs"
+      }, 500);
+    }
+  });
+  app2.get("/api/creators/top", async (c) => {
+    const cache = getCache(c);
+    const db = getDb2(c);
+    try {
+      const cached = await cache.getCachedTopCreators();
+      if (cached) {
+        console.log("\u2705 Top creators from cache");
+        return c.json({
+          success: true,
+          creators: cached,
+          count: cached.length,
+          source: "cache"
+        });
+      }
+      console.log("\u274C Top creators cache miss - querying DB");
+      const creators2 = await db.select().from(schema.creators).orderBy(desc(schema.creators.rating)).limit(10).all();
+      await cache.cacheTopCreators(creators2);
+      return c.json({
+        success: true,
+        creators: creators2,
+        count: creators2.length,
+        source: "database"
+      });
+    } catch (error3) {
+      console.error("Top creators error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to fetch top creators"
+      }, 500);
+    }
+  });
+  app2.get("/api/search", async (c) => {
+    const cache = getCache(c);
+    const db = getDb2(c);
+    const query = c.req.query("q");
+    const type = c.req.query("type") || "all";
+    if (!query) {
+      return c.json({
+        success: false,
+        error: "Search query required"
+      }, 400);
+    }
+    try {
+      const searchParams = { query, type };
+      const searchHash = await createSearchHash(searchParams);
+      const cached = await cache.getCachedSearchResults(searchHash);
+      if (cached) {
+        console.log("\u2705 Search results from cache");
+        return c.json({
+          success: true,
+          results: cached,
+          query,
+          source: "cache"
+        });
+      }
+      console.log("\u274C Search cache miss - querying DB");
+      let results = [];
+      if (type === "all" || type === "campaigns") {
+        const campaigns2 = await db.select().from(schema.campaigns).where(sql`title LIKE ${"%" + query + "%"}`).all();
+        results.push(...campaigns2.map((c2) => ({ ...c2, type: "campaign" })));
+      }
+      if (type === "all" || type === "gigs") {
+        const gigs2 = await db.select().from(schema.gigs).where(sql`title LIKE ${"%" + query + "%"}`).all();
+        results.push(...gigs2.map((g) => ({ ...g, type: "gig" })));
+      }
+      if (type === "all" || type === "creators") {
+        const creators2 = await db.select().from(schema.creators).where(sql`specialization LIKE ${"%" + query + "%"}`).all();
+        results.push(...creators2.map((c2) => ({ ...c2, type: "creator" })));
+      }
+      await cache.cacheSearchResults(searchHash, results);
+      return c.json({
+        success: true,
+        results,
+        query,
+        count: results.length,
+        source: "database"
+      });
+    } catch (error3) {
+      console.error("Search error:", error3);
+      return c.json({
+        success: false,
+        error: "Search failed"
+      }, 500);
+    }
+  });
+  app2.get("/api/analytics/stats", async (c) => {
+    const cache = getCache(c);
+    try {
+      const stats = {
+        total_requests: await cache.getCounter("requests:total"),
+        total_visitors_today: await cache.getCounter(`visitors:${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}`),
+        campaigns_views: await cache.getCounter("analytics:campaigns:views"),
+        gigs_views: await cache.getCounter("analytics:gigs:views"),
+        creators_views: await cache.getCounter("analytics:creators:views")
+      };
+      return c.json({
+        success: true,
+        stats
+      });
+    } catch (error3) {
+      console.error("Analytics error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to get analytics"
+      }, 500);
+    }
+  });
+  app2.get("/api/features", async (c) => {
+    const cache = getCache(c);
+    try {
+      const flags = await cache.getAllFeatureFlags();
+      return c.json({
+        success: true,
+        features: flags
+      });
+    } catch (error3) {
+      console.error("Features error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to get features"
+      }, 500);
+    }
+  });
+  app2.post("/api/features", async (c) => {
+    const cache = getCache(c);
+    const { features: features2 } = await c.req.json();
+    try {
+      await cache.setAllFeatureFlags(features2);
+      return c.json({
+        success: true,
+        message: "Features updated"
+      });
+    } catch (error3) {
+      console.error("Features update error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to update features"
+      }, 500);
+    }
+  });
+  app2.post("/api/cache/invalidate", async (c) => {
+    const { pattern } = await c.req.json();
+    try {
+      console.log(`Cache invalidation requested for pattern: ${pattern}`);
+      return c.json({
+        success: true,
+        message: `Cache invalidation initiated for pattern: ${pattern}`
+      });
+    } catch (error3) {
+      console.error("Cache invalidation error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to invalidate cache"
+      }, 500);
+    }
+  });
+  app2.get("/api/cache/stats", async (c) => {
+    const cache = getCache(c);
+    try {
+      const stats = await cache.getCacheStats();
+      return c.json({
+        success: true,
+        cache_stats: stats
+      });
+    } catch (error3) {
+      console.error("Cache stats error:", error3);
+      return c.json({
+        success: false,
+        error: "Failed to get cache stats"
+      }, 500);
+    }
+  });
+}
+__name(createCachedRoutes, "createCachedRoutes");
+
+// src/middleware/cache.ts
+async function cacheMiddleware(c, next) {
+  const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+  const request = c.req;
+  const url = new URL(request.url);
+  if (request.method !== "GET") {
+    return await next();
+  }
+  const cacheKey = `route:${url.pathname}:${url.search}`;
+  try {
+    const cached = await c.env.UGC_MAROC_CACHE.get(cacheKey, "json");
+    if (cached) {
+      console.log(`Cache HIT for ${cacheKey}`);
+      return c.json(cached.data, cached.status, cached.headers);
+    }
+  } catch (error3) {
+    console.error("Cache read error:", error3);
+  }
+  await next();
+  if (c.res.status >= 200 && c.res.status < 300) {
+    try {
+      const responseData = await c.res.clone().json();
+      const cacheData = {
+        data: responseData,
+        status: c.res.status,
+        headers: Object.fromEntries(c.res.headers.entries())
+      };
+      await c.env.UGC_MAROC_CACHE.put(cacheKey, JSON.stringify(cacheData), {
+        expirationTtl: 300
+      });
+      console.log(`Cache SET for ${cacheKey}`);
+    } catch (error3) {
+      console.error("Cache write error:", error3);
+    }
+  }
+}
+__name(cacheMiddleware, "cacheMiddleware");
+async function rateLimitMiddleware(c, next) {
+  const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+  const clientId = getClientId(c.req.raw);
+  const endpoint = c.req.path;
+  let limit = 100;
+  let window = 60;
+  if (endpoint.includes("/auth/")) {
+    limit = 10;
+    window = 300;
+  } else if (endpoint.includes("/payments/")) {
+    limit = 20;
+    window = 60;
+  } else if (endpoint.includes("/api/")) {
+    limit = 100;
+    window = 60;
+  }
+  const rateLimit = await cache.checkRateLimit(clientId, endpoint, limit, window);
+  if (!rateLimit.allowed) {
+    return c.json({
+      success: false,
+      error: "Too many requests",
+      retry_after: Math.ceil((rateLimit.resetTime - Date.now()) / 1e3)
+    }, 429);
+  }
+  c.header("X-RateLimit-Limit", String(limit));
+  c.header("X-RateLimit-Remaining", String(rateLimit.remaining));
+  c.header("X-RateLimit-Reset", String(Math.ceil(rateLimit.resetTime / 1e3)));
+  await next();
+}
+__name(rateLimitMiddleware, "rateLimitMiddleware");
+async function sessionCacheMiddleware(c, next) {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return await next();
+  }
+  const token = authHeader.substring(7);
+  const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      return await next();
+    }
+    const payload = JSON.parse(atob(parts[1]));
+    const userId = payload.sub;
+    if (!userId) {
+      return await next();
+    }
+    const cachedUser = await cache.getUserSession(userId);
+    if (cachedUser) {
+      console.log(`Session cache HIT for user ${userId}`);
+      c.set("user", cachedUser);
+      c.set("userId", userId);
+      return await next();
+    }
+    console.log(`Session cache MISS for user ${userId}`);
+  } catch (error3) {
+    console.error("Session cache error:", error3);
+  }
+  await next();
+}
+__name(sessionCacheMiddleware, "sessionCacheMiddleware");
+async function analyticsMiddleware(c, next) {
+  const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+  await cache.incrementCounter("requests:total");
+  await cache.incrementCounter(`requests:${c.req.method}`);
+  await cache.incrementCounter(`requests:${c.req.path}`);
+  const clientId = getClientId(c.req.raw);
+  const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+  await cache.incrementCounter(`visitors:${today}`);
+  await next();
+  await cache.incrementCounter(`responses:${c.res.status}`);
+}
+__name(analyticsMiddleware, "analyticsMiddleware");
+async function featureFlagMiddleware(c, next) {
+  const cache = new KVCacheService(c.env.UGC_MAROC_CACHE);
+  const chatEnabled = await cache.getFeatureFlag("chat_enabled");
+  if (c.req.path.includes("/chat/") && !chatEnabled) {
+    return c.json({
+      success: false,
+      error: "Chat feature is currently disabled"
+    }, 503);
+  }
+  const aiMatchingEnabled = await cache.getFeatureFlag("ai_matching");
+  if (c.req.path.includes("/ai/") && !aiMatchingEnabled) {
+    return c.json({
+      success: false,
+      error: "AI matching feature is currently disabled"
+    }, 503);
+  }
+  await next();
+}
+__name(featureFlagMiddleware, "featureFlagMiddleware");
+
 // src/index.ts
 var app = new Hono2();
 app.use("*", cors({
@@ -9116,6 +9673,11 @@ app.use("*", cors({
   ],
   credentials: true
 }));
+app.use("*", analyticsMiddleware);
+app.use("*", rateLimitMiddleware);
+app.use("*", featureFlagMiddleware);
+app.use("*", sessionCacheMiddleware);
+app.use("*", cacheMiddleware);
 app.get("/", (c) => {
   return c.json({
     message: "UGC Maroc API - Cloudflare Workers",
@@ -9143,6 +9705,7 @@ app.get("/api/health", (c) => {
 var getDb = /* @__PURE__ */ __name((c) => drizzle(c.env.DB, { schema }), "getDb");
 createAuthRoutes(app);
 createPaymentRoutes(app);
+createCachedRoutes(app);
 app.get("/api/profiles/:id", async (c) => {
   const db = getDb(c);
   const profileId = c.req.param("id");
@@ -9555,7 +10118,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env2, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-nJwk9X/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-ssTSKf/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -9587,7 +10150,7 @@ function __facade_invoke__(request, env2, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-nJwk9X/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-ssTSKf/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

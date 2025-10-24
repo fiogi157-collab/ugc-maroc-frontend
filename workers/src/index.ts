@@ -6,11 +6,20 @@ import { schema } from './db/schema'
 import { createAuthRoutes } from './auth/routes.js'
 import { createPaymentRoutes } from './routes/payments.js'
 import { createChatRoutes } from './routes/chat.js'
+import { createCachedRoutes } from './routes/cached-routes.js'
+import { 
+  cacheMiddleware, 
+  rateLimitMiddleware, 
+  sessionCacheMiddleware,
+  analyticsMiddleware,
+  featureFlagMiddleware 
+} from './middleware/cache.js'
 
 // Types for Cloudflare Workers environment
 type Env = {
   DB: D1Database
   R2: R2Bucket
+  UGC_MAROC_CACHE: KVNamespace
   ENVIRONMENT: string
   JWT_SECRET: string
   STRIPE_SECRET_KEY: string
@@ -34,6 +43,13 @@ app.use('*', cors({
   ],
   credentials: true,
 }))
+
+// Apply KV cache middleware
+app.use('*', analyticsMiddleware)
+app.use('*', rateLimitMiddleware)
+app.use('*', featureFlagMiddleware)
+app.use('*', sessionCacheMiddleware)
+app.use('*', cacheMiddleware)
 
 // Root endpoint
 app.get('/', (c) => {
@@ -77,6 +93,10 @@ createPaymentRoutes(app)
 // ===== CHAT ROUTES =====
 // Real-time chat with Durable Objects (temporarily disabled)
 // createChatRoutes(app)
+
+// ===== CACHED ROUTES =====
+// KV-optimized routes with caching
+createCachedRoutes(app)
 
 // ===== PROFILES ROUTES =====
 app.get('/api/profiles/:id', async (c) => {

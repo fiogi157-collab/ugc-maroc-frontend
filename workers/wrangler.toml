@@ -17,6 +17,10 @@ database_id = "b9359a0f-9b90-40b4-842b-ecc8269fd09b"
 binding = "R2"
 bucket_name = "ugc-maroc-assets"
 
+[[kv_namespaces]]
+binding = "UGC_MAROC_CACHE"
+id = "df2af74565fb4eaf9e51fdc06005507c"
+
 [vars]
 ENVIRONMENT = "production"
 
