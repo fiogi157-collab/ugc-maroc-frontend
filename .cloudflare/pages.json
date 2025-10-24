@@ -1,0 +1,10 @@
+{
+  "build": {
+    "command": "",
+    "output": "./",
+    "root": "./"
+  },
+  "environment": {
+    "SKIP_INSTALL": "true"
+  }
+}
