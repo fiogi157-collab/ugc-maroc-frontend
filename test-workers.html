@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Workers API - UGC Maroc</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">🧪 Test Workers API</h1>
+        
+        <div class="max-w-4xl mx-auto">
+            <!-- Status Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div id="connection-status" class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-semibold text-gray-700">Connection</h3>
+                    <div class="text-2xl">⏳</div>
+                    <div class="text-sm text-gray-500">En attente...</div>
+                </div>
+                
+                <div id="auth-status" class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-semibold text-gray-700">Authentication</h3>
+                    <div class="text-2xl">⏳</div>
+                    <div class="text-sm text-gray-500">En attente...</div>
+                </div>
+                
+                <div id="cache-status" class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-semibold text-gray-700">Cache Routes</h3>
+                    <div class="text-2xl">⏳</div>
+                    <div class="text-sm text-gray-500">En attente...</div>
+                </div>
+                
+                <div id="payment-status" class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-semibold text-gray-700">Payments</h3>
+                    <div class="text-2xl">⏳</div>
+                    <div class="text-sm text-gray-500">En attente...</div>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="bg-white p-6 rounded-lg shadow mb-8">
+                <h2 class="text-xl font-semibold mb-4">Contrôles de test</h2>
+                <div class="flex flex-wrap gap-4">
+                    <button id="test-connection" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Test Connection
+                    </button>
+                    <button id="test-auth" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Test Authentication
+                    </button>
+                    <button id="test-cache" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                        Test Cache Routes
+                    </button>
+                    <button id="test-payments" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
+                        Test Payments
+                    </button>
+                    <button id="test-all" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        Test All
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Results -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">Résultats des tests</h2>
+                <div id="test-results" class="space-y-4">
+                    <div class="text-gray-500 text-center">Aucun test exécuté</div>
+                </div>
+            </div>
+            
+            <!-- API Info -->
+            <div class="bg-white p-6 rounded-lg shadow mt-8">
+                <h2 class="text-xl font-semibold mb-4">Informations API</h2>
+                <div id="api-info" class="text-sm text-gray-600">
+                    <div>API Base URL: <span id="api-url" class="font-mono">Chargement...</span></div>
+                    <div>Status: <span id="api-status" class="font-mono">Chargement...</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/auth-workers.js"></script>
+    <script src="/js/api-workers.js"></script>
+    <script src="/js/test-workers.js"></script>
+    
+    <script>
+        // Update API info
+        document.getElementById('api-url').textContent = API_BASE_URL;
+        document.getElementById('api-status').textContent = 'Workers API Ready';
+        
+        // Test connection button
+        document.getElementById('test-connection').addEventListener('click', async () => {
+            updateStatus('connection-status', '⏳', 'Testing...', 'text-blue-500');
+            const result = await testWorkersConnection();
+            updateStatus('connection-status', result.success ? '✅' : '❌', 
+                        result.success ? 'Success' : result.error, 
+                        result.success ? 'text-green-500' : 'text-red-500');
+            addResult('Connection Test', result);
+        });
+        
+        // Test auth button
+        document.getElementById('test-auth').addEventListener('click', async () => {
+            updateStatus('auth-status', '⏳', 'Testing...', 'text-blue-500');
+            const result = await testAuthentication();
+            updateStatus('auth-status', result.success ? '✅' : '❌', 
+                        result.success ? 'Success' : result.error, 
+                        result.success ? 'text-green-500' : 'text-red-500');
+            addResult('Authentication Test', result);
+        });
+        
+        // Test cache button
+        document.getElementById('test-cache').addEventListener('click', async () => {
+            updateStatus('cache-status', '⏳', 'Testing...', 'text-blue-500');
+            const result = await testCachedRoutes();
+            updateStatus('cache-status', result.success ? '✅' : '❌', 
+                        result.success ? 'Success' : result.error, 
+                        result.success ? 'text-green-500' : 'text-red-500');
+            addResult('Cache Routes Test', result);
+        });
+        
+        // Test payments button
+        document.getElementById('test-payments').addEventListener('click', async () => {
+            updateStatus('payment-status', '⏳', 'Testing...', 'text-blue-500');
+            const result = await testPayments();
+            updateStatus('payment-status', result.success ? '✅' : '❌', 
+                        result.success ? 'Success' : result.error, 
+                        result.success ? 'text-green-500' : 'text-red-500');
+            addResult('Payments Test', result);
+        });
+        
+        // Test all button
+        document.getElementById('test-all').addEventListener('click', async () => {
+            clearResults();
+            const results = await runAllTests();
+            
+            // Update all status cards
+            updateStatus('connection-status', results.connection.success ? '✅' : '❌', 
+                        results.connection.success ? 'Success' : results.connection.error, 
+                        results.connection.success ? 'text-green-500' : 'text-red-500');
+            
+            updateStatus('auth-status', results.authentication.success ? '✅' : '❌', 
+                        results.authentication.success ? 'Success' : results.authentication.error, 
+                        results.authentication.success ? 'text-green-500' : 'text-red-500');
+            
+            updateStatus('cache-status', results.cachedRoutes.success ? '✅' : '❌', 
+                        results.cachedRoutes.success ? 'Success' : results.cachedRoutes.error, 
+                        results.cachedRoutes.success ? 'text-green-500' : 'text-red-500');
+            
+            updateStatus('payment-status', results.payments.success ? '✅' : '❌', 
+                        results.payments.success ? 'Success' : results.payments.error, 
+                        results.payments.success ? 'text-green-500' : 'text-red-500');
+        });
+        
+        function updateStatus(elementId, icon, text, colorClass) {
+            const element = document.getElementById(elementId);
+            element.querySelector('.text-2xl').textContent = icon;
+            element.querySelector('.text-sm').textContent = text;
+            element.querySelector('.text-sm').className = `text-sm ${colorClass}`;
+        }
+        
+        function addResult(testName, result) {
+            const resultsDiv = document.getElementById('test-results');
+            if (resultsDiv.querySelector('.text-gray-500')) {
+                resultsDiv.innerHTML = '';
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `p-3 rounded ${result.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`;
+            resultDiv.innerHTML = `
+                <div class="font-semibold ${result.success ? 'text-green-800' : 'text-red-800'}">
+                    ${result.success ? '✅' : '❌'} ${testName}
+                </div>
+                <div class="text-sm ${result.success ? 'text-green-600' : 'text-red-600'}">
+                    ${result.success ? result.message : result.error}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                    ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+            
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '<div class="text-gray-500 text-center">Tests en cours...</div>';
+        }
+    </script>
+</body>
+</html>
