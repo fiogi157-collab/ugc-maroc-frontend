@@ -5,8 +5,8 @@
 // -------------------------------
 // 🔹 BACKEND API CONFIGURATION
 // -------------------------------
-// Use relative URL for API calls since everything runs on the same server
-const API_BASE_URL = window.location.origin;
+// Cloudflare Workers API URL
+const API_BASE_URL = 'https://ugc-maroc-api.fiogi157.workers.dev';
 window.API_BASE_URL = API_BASE_URL;
 
 // Helper pour requêtes API (login, signup, etc.)
@@ -26,49 +26,11 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 // -------------------------------
-// 🔹 SUPABASE CONFIGURATION
+// 🔹 CLOUDFLARE WORKERS API CONFIGURATION
 // -------------------------------
-// Fetch Supabase configuration from backend API (secure approach)
-let supabaseClient = null;
+// API is now handled by Cloudflare Workers with D1 database
+console.log("✅ API Backend connecté :", API_BASE_URL);
+console.log("✅ Cloudflare Workers + D1 configuration active");
 
-async function initializeSupabase() {
-  try {
-    const config = await apiRequest('/api/config');
-    
-    if (!config.supabaseUrl || !config.supabaseAnonKey) {
-      console.error('❌ Supabase configuration missing');
-      return null;
-    }
-
-    const { createClient } = supabase;
-    supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
-    window.supabaseClient = supabaseClient;
-    
-    console.log("✅ Supabase client initialized");
-    console.log("✅ API Backend connecté :", API_BASE_URL);
-    
-    // Emit custom event to notify other scripts that Supabase is ready
-    window.dispatchEvent(new CustomEvent('supabaseReady', { detail: { supabaseClient } }));
-    
-    return supabaseClient;
-  } catch (error) {
-    console.error("❌ Failed to initialize Supabase:", error);
-    return null;
-  }
-}
-
-// Initialize Supabase when the page loads
-if (typeof supabase !== 'undefined') {
-  initializeSupabase();
-} else {
-  console.warn('⚠️ Supabase library not loaded yet. Will initialize when available.');
-  // Wait for Supabase library to load
-  const checkSupabase = () => {
-    if (typeof supabase !== 'undefined') {
-      initializeSupabase();
-    } else {
-      setTimeout(checkSupabase, 100);
-    }
-  };
-  checkSupabase();
-}
+// Emit custom event to notify other scripts that API is ready
+window.dispatchEvent(new CustomEvent('apiReady', { detail: { apiUrl: API_BASE_URL } }));

@@ -1,0 +1,17 @@
+# Ignore these directories for Cloudflare Pages deployment
+api/
+workers/
+node_modules/
+.git/
+.DS_Store
+*.log
+temp/
+uploads/
+backups/
+docs/
+*.md
+.env*
+package*.json
+tsconfig.json
+drizzle.config.*
+wrangler.toml
