@@ -595,3 +595,5 @@ export class ChatRoom {
     }
   }
 }
+
+// Export default déjà fait plus haut
