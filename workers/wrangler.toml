@@ -21,6 +21,11 @@ bucket_name = "ugc-maroc-assets"
 binding = "UGC_MAROC_CACHE"
 id = "df2af74565fb4eaf9e51fdc06005507c"
 
+# Cloudflare Stream binding
+[[stream_bindings]]
+binding = "STREAM"
+account_id = "YOUR_ACCOUNT_ID"  # À remplacer par votre Account ID
+
 [vars]
 ENVIRONMENT = "production"
 

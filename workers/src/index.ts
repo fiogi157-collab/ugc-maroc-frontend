@@ -7,6 +7,10 @@ import { createAuthRoutes } from './auth/routes.js'
 import { createPaymentRoutes } from './routes/payments.js'
 import { createChatRoutes } from './routes/chat.js'
 import { createCachedRoutes } from './routes/cached-routes.js'
+import { createStreamRoutes } from './routes/stream.js'
+import { createImagesRoutes } from './routes/images.js'
+import { createTurnstileRoutes } from './routes/turnstile.js'
+import { createEmailRoutingRoutes } from './routes/email-routing.js'
 import { 
   cacheMiddleware, 
   rateLimitMiddleware, 
@@ -20,6 +24,7 @@ type Env = {
   DB: D1Database
   R2: R2Bucket
   UGC_MAROC_CACHE: KVNamespace
+  STREAM: any // Cloudflare Stream binding
   ENVIRONMENT: string
   JWT_SECRET: string
   STRIPE_SECRET_KEY: string
@@ -27,6 +32,10 @@ type Env = {
   STRIPE_WEBHOOK_SECRET: string
   RESEND_API_KEY: string
   OPENROUTER_API_KEY: string
+  CLOUDFLARE_ACCOUNT_ID: string
+  CLOUDFLARE_API_TOKEN: string
+  TURNSTILE_SITE_KEY: string
+  TURNSTILE_SECRET_KEY: string
   // CHAT_ROOM: DurableObjectNamespace
 }
 
@@ -97,6 +106,22 @@ createPaymentRoutes(app)
 // ===== CACHED ROUTES =====
 // KV-optimized routes with caching
 createCachedRoutes(app)
+
+// ===== STREAM ROUTES =====
+// Cloudflare Stream for video UGC
+createStreamRoutes(app)
+
+// ===== IMAGES ROUTES =====
+// Cloudflare Images for avatars, logos, thumbnails
+createImagesRoutes(app)
+
+// ===== TURNSTILE ROUTES =====
+// Anti-bot protection
+createTurnstileRoutes(app)
+
+// ===== EMAIL ROUTING ROUTES =====
+// Email routing for @ugcmaroc.ma
+createEmailRoutingRoutes(app)
 
 // ===== PROFILES ROUTES =====
 app.get('/api/profiles/:id', async (c) => {
