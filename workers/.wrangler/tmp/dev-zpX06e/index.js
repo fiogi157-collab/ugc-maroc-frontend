@@ -2571,69 +2571,6 @@ var cors = /* @__PURE__ */ __name((options) => {
   }, "cors2");
 }, "cors");
 
-// node_modules/hono/dist/utils/color.js
-function getColorEnabled() {
-  const { process, Deno } = globalThis;
-  const isNoColor = typeof Deno?.noColor === "boolean" ? Deno.noColor : process !== void 0 ? "NO_COLOR" in process?.env : false;
-  return !isNoColor;
-}
-__name(getColorEnabled, "getColorEnabled");
-async function getColorEnabledAsync() {
-  const { navigator } = globalThis;
-  const cfWorkers = "cloudflare:workers";
-  const isNoColor = navigator !== void 0 && navigator.userAgent === "Cloudflare-Workers" ? await (async () => {
-    try {
-      return "NO_COLOR" in ((await import(cfWorkers)).env ?? {});
-    } catch {
-      return false;
-    }
-  })() : !getColorEnabled();
-  return !isNoColor;
-}
-__name(getColorEnabledAsync, "getColorEnabledAsync");
-
-// node_modules/hono/dist/middleware/logger/index.js
-var humanize = /* @__PURE__ */ __name((times) => {
-  const [delimiter, separator] = [",", "."];
-  const orderTimes = times.map((v) => v.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1" + delimiter));
-  return orderTimes.join(separator);
-}, "humanize");
-var time3 = /* @__PURE__ */ __name((start) => {
-  const delta = Date.now() - start;
-  return humanize([delta < 1e3 ? delta + "ms" : Math.round(delta / 1e3) + "s"]);
-}, "time");
-var colorStatus = /* @__PURE__ */ __name(async (status) => {
-  const colorEnabled = await getColorEnabledAsync();
-  if (colorEnabled) {
-    switch (status / 100 | 0) {
-      case 5:
-        return `\x1B[31m${status}\x1B[0m`;
-      case 4:
-        return `\x1B[33m${status}\x1B[0m`;
-      case 3:
-        return `\x1B[36m${status}\x1B[0m`;
-      case 2:
-        return `\x1B[32m${status}\x1B[0m`;
-    }
-  }
-  return `${status}`;
-}, "colorStatus");
-async function log3(fn, prefix, method, path, status = 0, elapsed) {
-  const out = prefix === "<--" ? `${prefix} ${method} ${path}` : `${prefix} ${method} ${path} ${await colorStatus(status)} ${elapsed}`;
-  fn(out);
-}
-__name(log3, "log");
-var logger = /* @__PURE__ */ __name((fn = console.log) => {
-  return /* @__PURE__ */ __name(async function logger2(c, next) {
-    const { method, url } = c.req;
-    const path = url.slice(url.indexOf("/", 8));
-    await log3(fn, "<--", method, path);
-    const start = Date.now();
-    await next();
-    await log3(fn, "-->", method, path, c.res.status, time3(start));
-  }, "logger2");
-}, "logger");
-
 // node_modules/drizzle-orm/entity.js
 var entityKind = Symbol.for("drizzle:entityKind");
 var hasOwnEntityKind = Symbol.for("drizzle:hasOwnEntityKind");
@@ -8291,9 +8228,9 @@ var D1PreparedQuery = class extends SQLitePreparedQuery {
   static {
     __name(this, "D1PreparedQuery");
   }
-  constructor(stmt, query, logger2, cache, queryMetadata, cacheConfig, fields, executeMethod, _isResponseInArrayMode, customResultMapper) {
+  constructor(stmt, query, logger, cache, queryMetadata, cacheConfig, fields, executeMethod, _isResponseInArrayMode, customResultMapper) {
     super("async", executeMethod, query, cache, queryMetadata, cacheConfig);
-    this.logger = logger2;
+    this.logger = logger;
     this._isResponseInArrayMode = _isResponseInArrayMode;
     this.customResultMapper = customResultMapper;
     this.fields = fields;
@@ -8314,10 +8251,10 @@ var D1PreparedQuery = class extends SQLitePreparedQuery {
     });
   }
   async all(placeholderValues) {
-    const { fields, query, logger: logger2, stmt, customResultMapper } = this;
+    const { fields, query, logger, stmt, customResultMapper } = this;
     if (!fields && !customResultMapper) {
       const params = fillPlaceholders(query.params, placeholderValues ?? {});
-      logger2.logQuery(query.sql, params);
+      logger.logQuery(query.sql, params);
       return await this.queryWithCache(query.sql, params, async () => {
         return stmt.bind(...params).all().then(({ results }) => this.mapAllResult(results));
       });
@@ -8338,10 +8275,10 @@ var D1PreparedQuery = class extends SQLitePreparedQuery {
     return rows.map((row) => mapResultRow(this.fields, row, this.joinsNotNullableMap));
   }
   async get(placeholderValues) {
-    const { fields, joinsNotNullableMap, query, logger: logger2, stmt, customResultMapper } = this;
+    const { fields, joinsNotNullableMap, query, logger, stmt, customResultMapper } = this;
     if (!fields && !customResultMapper) {
       const params = fillPlaceholders(query.params, placeholderValues ?? {});
-      logger2.logQuery(query.sql, params);
+      logger.logQuery(query.sql, params);
       return await this.queryWithCache(query.sql, params, async () => {
         return stmt.bind(...params).all().then(({ results }) => results[0]);
       });
@@ -8392,11 +8329,11 @@ var DrizzleD1Database = class extends BaseSQLiteDatabase {
 };
 function drizzle(client, config2 = {}) {
   const dialect = new SQLiteAsyncDialect({ casing: config2.casing });
-  let logger2;
+  let logger;
   if (config2.logger === true) {
-    logger2 = new DefaultLogger();
+    logger = new DefaultLogger();
   } else if (config2.logger !== false) {
-    logger2 = config2.logger;
+    logger = config2.logger;
   }
   let schema2;
   if (config2.schema) {
@@ -8410,7 +8347,7 @@ function drizzle(client, config2 = {}) {
       tableNamesMap: tablesConfig.tableNamesMap
     };
   }
-  const session = new SQLiteD1Session(client, dialect, schema2, { logger: logger2, cache: config2.cache });
+  const session = new SQLiteD1Session(client, dialect, schema2, { logger, cache: config2.cache });
   const db = new DrizzleD1Database("async", dialect, session, schema2);
   db.$client = client;
   db.$cache = config2.cache;
@@ -8641,7 +8578,6 @@ var schema = {
 
 // src/index.ts
 var app = new Hono2();
-app.use("*", logger());
 app.use("*", cors({
   origin: ["https://ugc-maroc-frontend.pages.dev", "http://localhost:3000"],
   credentials: true
@@ -8927,7 +8863,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env2, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-5Yvdnr/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-73ShZi/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -8959,7 +8895,7 @@ function __facade_invoke__(request, env2, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-5Yvdnr/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-73ShZi/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

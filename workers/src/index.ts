@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
 import { drizzle } from 'drizzle-orm/d1'
 import { eq } from 'drizzle-orm'
 import { schema } from './db/schema'
@@ -19,7 +18,6 @@ type Env = {
 const app = new Hono<{ Bindings: Env }>()
 
 // Middleware
-app.use('*', logger())
 app.use('*', cors({
   origin: ['https://ugc-maroc-frontend.pages.dev', 'http://localhost:3000'],
   credentials: true,
