@@ -1,0 +1,22 @@
+name = "ugc-maroc-api"
+main = "src/index.ts"
+compatibility_date = "2024-10-24"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ugc-maroc-db"
+database_id = "b9359a0f-9b90-40b4-842b-ecc8269fd09b"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "ugc-maroc-assets"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Secrets will be set via: wrangler secret put SECRET_NAME
+# - STRIPE_SECRET_KEY
+# - RESEND_API_KEY  
+# - OPENROUTER_API_KEY
+# - JWT_SECRET
