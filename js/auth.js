@@ -158,7 +158,11 @@ async function signupUser(email, password, role, fullName, phone, metadata = {})
     
     // Vérifier que le client est initialisé
     if (!window.supabaseClient) {
-      throw new Error('Client Supabase non initialisé. Rafraîchissez la page.');
+      // Attendre un peu et réessayer
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!window.supabaseClient) {
+        throw new Error('Client Supabase non initialisé. Rafraîchissez la page.');
+      }
     }
     
     // 1. Créer utilisateur Supabase Auth

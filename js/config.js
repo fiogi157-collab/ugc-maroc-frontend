@@ -63,9 +63,12 @@ if (typeof supabase !== 'undefined') {
 } else {
   console.warn('⚠️ Supabase library not loaded yet. Will initialize when available.');
   // Wait for Supabase library to load
-  window.addEventListener('load', () => {
+  const checkSupabase = () => {
     if (typeof supabase !== 'undefined') {
       initializeSupabase();
+    } else {
+      setTimeout(checkSupabase, 100);
     }
-  });
+  };
+  checkSupabase();
 }
