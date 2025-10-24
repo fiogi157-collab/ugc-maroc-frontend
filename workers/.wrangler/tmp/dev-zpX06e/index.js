@@ -8579,9 +8579,31 @@ var schema = {
 // src/index.ts
 var app = new Hono2();
 app.use("*", cors({
-  origin: ["https://ugc-maroc-frontend.pages.dev", "http://localhost:3000"],
+  origin: [
+    "https://ugc-maroc-frontend.pages.dev",
+    "https://ugc-maroc.pages.dev",
+    "http://localhost:3000",
+    "http://localhost:8787"
+  ],
   credentials: true
 }));
+app.get("/", (c) => {
+  return c.json({
+    message: "UGC Maroc API - Cloudflare Workers",
+    version: "1.0.0",
+    endpoints: {
+      health: "/api/health",
+      campaigns: "/api/campaigns",
+      gigs: "/api/gigs",
+      orders: "/api/orders",
+      payments: "/api/payments",
+      messages: "/api/messages",
+      negotiations: "/api/negotiations",
+      contracts: "/api/contracts"
+    },
+    documentation: "https://github.com/fiogi157-collab/ugc-maroc-frontend"
+  });
+});
 app.get("/api/health", (c) => {
   return c.json({
     status: "ok",
@@ -8626,9 +8648,18 @@ app.get("/api/campaigns", async (c) => {
   const db = getDb(c);
   try {
     const campaigns2 = await db.select().from(schema.campaigns).all();
-    return c.json({ campaigns: campaigns2 });
+    return c.json({
+      success: true,
+      campaigns: campaigns2,
+      count: campaigns2.length
+    });
   } catch (error3) {
-    return c.json({ error: "Failed to fetch campaigns" }, 500);
+    console.error("Campaigns fetch error:", error3);
+    return c.json({
+      success: false,
+      error: "Failed to fetch campaigns",
+      details: error3.message
+    }, 500);
   }
 });
 app.get("/api/campaigns/:id", async (c) => {

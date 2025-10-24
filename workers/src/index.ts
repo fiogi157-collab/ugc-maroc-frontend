@@ -19,9 +19,33 @@ const app = new Hono<{ Bindings: Env }>()
 
 // Middleware
 app.use('*', cors({
-  origin: ['https://ugc-maroc-frontend.pages.dev', 'http://localhost:3000'],
+  origin: [
+    'https://ugc-maroc-frontend.pages.dev',
+    'https://ugc-maroc.pages.dev', 
+    'http://localhost:3000',
+    'http://localhost:8787'
+  ],
   credentials: true,
 }))
+
+// Root endpoint
+app.get('/', (c) => {
+  return c.json({ 
+    message: 'UGC Maroc API - Cloudflare Workers',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      campaigns: '/api/campaigns',
+      gigs: '/api/gigs',
+      orders: '/api/orders',
+      payments: '/api/payments',
+      messages: '/api/messages',
+      negotiations: '/api/negotiations',
+      contracts: '/api/contracts'
+    },
+    documentation: 'https://github.com/fiogi157-collab/ugc-maroc-frontend'
+  })
+})
 
 // Health check endpoint
 app.get('/api/health', (c) => {
@@ -87,9 +111,18 @@ app.get('/api/campaigns', async (c) => {
   
   try {
     const campaigns = await db.select().from(schema.campaigns).all()
-    return c.json({ campaigns })
+    return c.json({ 
+      success: true,
+      campaigns,
+      count: campaigns.length 
+    })
   } catch (error) {
-    return c.json({ error: 'Failed to fetch campaigns' }, 500)
+    console.error('Campaigns fetch error:', error)
+    return c.json({ 
+      success: false,
+      error: 'Failed to fetch campaigns',
+      details: error.message 
+    }, 500)
   }
 })
 
